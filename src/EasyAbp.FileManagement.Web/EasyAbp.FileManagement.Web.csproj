@@ -37,4 +37,10 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Pages\FileManagement\Files\File\MoveModal.cshtml.cs">
+      <DependentUpon>MoveModal.cshtml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

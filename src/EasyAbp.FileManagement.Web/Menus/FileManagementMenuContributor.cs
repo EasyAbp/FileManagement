@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+using EasyAbp.FileManagement.Localization;
+using EasyAbp.FileManagement.Permissions;
 using Volo.Abp.UI.Navigation;
 
 namespace EasyAbp.FileManagement.Web.Menus
@@ -13,11 +15,17 @@ namespace EasyAbp.FileManagement.Web.Menus
             }
         }
 
-        private Task ConfigureMainMenu(MenuConfigurationContext context)
+        private async Task ConfigureMainMenu(MenuConfigurationContext context)
         {
-            //Add main menu items.
+            var l = context.GetLocalizer<FileManagementResource>();
+             //Add main menu items.
 
-            return Task.CompletedTask;
+            if (await context.IsGrantedAsync(FileManagementPermissions.File.Default))
+            {
+                context.Menu.AddItem(
+                    new ApplicationMenuItem("File", l["Menu:File"], "/FileManagement/Files/File")
+                );
+            }
         }
     }
 }

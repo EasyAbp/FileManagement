@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
+using EasyAbp.FileManagement.Files;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
@@ -10,6 +11,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
         /* Add DbSet for each Aggregate Root here. Example:
          * public DbSet<Question> Questions { get; set; }
          */
+        public DbSet<File> Files { get; set; }
 
         public FileManagementDbContext(DbContextOptions<FileManagementDbContext> options) 
             : base(options)

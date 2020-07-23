@@ -1,7 +1,30 @@
 {
   "culture": "tr",
   "texts": {
-    "ManageYourProfile":  "Profil yönetimi",
-    "SamplePageMessage": "FileManagement modulünden örnek bir sayfa"
+    "ManageYourProfile": "Profil yönetimi",
+    "SamplePageMessage": "FileManagement modulünden örnek bir sayfa",
+    "Permission:File": "File",
+    "Permission:Create": "Create",
+    "Permission:Update": "Update",
+    "Permission:Delete": "Delete",
+    "Menu:File": "MenuFile",
+    "File": "File",
+    "FileFileName": "FileFileName",
+    "FileFilePath": "FileFilePath",
+    "FileMimeType": "FileMimeType",
+    "FileFileType": "FileFileType",
+    "FileSubFilesQuantity": "FileSubFilesQuantity",
+    "FileByteSize": "FileByteSize",
+    "FileHash": "FileHash",
+    "FileCode": "FileCode",
+    "FileLevel": "FileLevel",
+    "FileParentId": "FileParentId",
+    "FileParent": "FileParent",
+    "FileChildren": "FileChildren",
+    "FileDisplayName": "FileDisplayName",
+    "CreateFile": "CreateFile",
+    "EditFile": "EditFile",
+    "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",
+    "SuccessfullyDeleted": "Successfully deleted"
   }
 }

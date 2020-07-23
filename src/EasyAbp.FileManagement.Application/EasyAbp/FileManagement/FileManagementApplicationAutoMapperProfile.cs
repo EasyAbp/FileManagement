@@ -1,4 +1,7 @@
-﻿using AutoMapper;
+using EasyAbp.FileManagement.Files;
+using EasyAbp.FileManagement.Files.Dtos;
+using AutoMapper;
+using Volo.Abp.AutoMapper;
 
 namespace EasyAbp.FileManagement
 {
@@ -9,6 +12,8 @@ namespace EasyAbp.FileManagement
             /* You can configure your AutoMapper mapping configuration here.
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
+            CreateMap<File, FileInfoDto>();
+            CreateMap<File, FileDownloadDto>().Ignore(dto => dto.DownloadUrl);
         }
     }
 }

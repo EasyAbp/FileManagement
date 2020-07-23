@@ -6,6 +6,16 @@ namespace EasyAbp.FileManagement.Files
 {
     public class BasicFileOperationAuthorizationHandler : FileOperationAuthorizationHandler, ISingletonDependency
     {
+        protected override async Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, File resource)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override async Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, File resource)
+        {
+            throw new System.NotImplementedException();
+        }
+
         protected override async Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, File resource)
         {
             throw new System.NotImplementedException();

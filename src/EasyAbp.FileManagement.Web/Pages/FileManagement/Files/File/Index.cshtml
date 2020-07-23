@@ -1,0 +1,66 @@
+@page
+@using EasyAbp.FileManagement.Permissions
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Volo.Abp.AspNetCore.Mvc.UI.Layout
+@using EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
+@using EasyAbp.FileManagement.Localization
+@model IndexModel
+@inject IPageLayout PageLayout
+@inject IHtmlLocalizer<FileManagementResource> L
+@inject IAuthorizationService Authorization
+@{
+    PageLayout.Content.Title = L["File"].Value;
+    PageLayout.Content.BreadCrumb.Add(L["Menu:File"].Value);
+    PageLayout.Content.MenuItemName = "FileManagementFile";
+}
+
+@section scripts
+{
+    <abp-script src="/Pages/FileManagement/Files/File/index.js" />
+}
+@section styles
+{
+    <abp-style src="/Pages/FileManagement/Files/File/index.css"/>
+}
+
+<abp-card>
+    <abp-card-header>
+        <abp-row>
+            <abp-column size-md="_6">
+                <abp-card-title>@L["File"]</abp-card-title>
+            </abp-column>
+            <abp-column size-md="_6" class="text-right">
+			    @if (await Authorization.IsGrantedAsync(FileManagementPermissions.File.Create))
+                { 
+                <abp-button id="NewFileButton"
+                            text="@L["CreateFile"].Value"
+                            icon="plus"
+                            button-type="Primary" />
+                }
+            </abp-column>
+        </abp-row>
+    </abp-card-header>
+    <abp-card-body>
+        <abp-table striped-rows="true" id="FileTable" class="nowrap">
+            <thead>
+            <tr>
+                <th>@L["Actions"]</th>
+                <th>@L["FileFileName"]</th>
+                <th>@L["FileFilePath"]</th>
+                <th>@L["FileMimeType"]</th>
+                <th>@L["FileFileType"]</th>
+                <th>@L["FileSubFilesQuantity"]</th>
+                <th>@L["FileByteSize"]</th>
+                <th>@L["FileHash"]</th>
+                <th>@L["FileCode"]</th>
+                <th>@L["FileLevel"]</th>
+                <th>@L["FileParentId"]</th>
+                <th>@L["FileParent"]</th>
+                <th>@L["FileChildren"]</th>
+                <th>@L["FileDisplayName"]</th>
+            </tr>
+            </thead>
+        </abp-table>
+    </abp-card-body>
+</abp-card>

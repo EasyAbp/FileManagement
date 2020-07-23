@@ -1,6 +1,29 @@
 {
   "culture": "zh-Hant",
   "texts": {
-    "ManageYourProfile":  "管理個人資料" 
+    "ManageYourProfile": "管理個人資料",
+    "Permission:File": "File",
+    "Permission:Create": "Create",
+    "Permission:Update": "Update",
+    "Permission:Delete": "Delete",
+    "Menu:File": "MenuFile",
+    "File": "File",
+    "FileFileName": "FileFileName",
+    "FileFilePath": "FileFilePath",
+    "FileMimeType": "FileMimeType",
+    "FileFileType": "FileFileType",
+    "FileSubFilesQuantity": "FileSubFilesQuantity",
+    "FileByteSize": "FileByteSize",
+    "FileHash": "FileHash",
+    "FileCode": "FileCode",
+    "FileLevel": "FileLevel",
+    "FileParentId": "FileParentId",
+    "FileParent": "FileParent",
+    "FileChildren": "FileChildren",
+    "FileDisplayName": "FileDisplayName",
+    "CreateFile": "CreateFile",
+    "EditFile": "EditFile",
+    "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",
+    "SuccessfullyDeleted": "Successfully deleted"
   }
 }

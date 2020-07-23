@@ -1,6 +1,8 @@
-﻿using System;
+using EasyAbp.FileManagement.Files;
+using System;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
+using Volo.Abp.EntityFrameworkCore.Modeling;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
@@ -38,6 +40,16 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.HasIndex(q => q.CreationTime);
             });
             */
+
+
+            builder.Entity<File>(b =>
+            {
+                b.ToTable(options.TablePrefix + "Files", options.Schema);
+                b.ConfigureByConvention(); 
+                
+
+                /* Configure more properties here */
+            });
         }
     }
 }
