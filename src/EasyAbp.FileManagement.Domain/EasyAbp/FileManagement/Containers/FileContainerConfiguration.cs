@@ -6,7 +6,7 @@
 
         public string AbpBlobContainerName { get; set; }
         
-        public string DirectorySeparator { get; set; }
+        public string AbpBlobDirectorySeparator { get; set; }
         
         public FileContainerConfiguration()
         {

@@ -8,6 +8,9 @@ namespace EasyAbp.FileManagement.Files.Dtos
     public class CreateFileDto : IValidatableObject
     {
         [Required]
+        public string FileContainerName { get; set; }
+        
+        [Required]
         public string FileName { get; set; }
         
         public string MimeType { get; set; }
@@ -22,7 +25,20 @@ namespace EasyAbp.FileManagement.Files.Dtos
         {
             if (FileName.IsNullOrWhiteSpace())
             {
-                yield return new ValidationResult("FileName should not be empty!", new[] {nameof(FileName)});
+                yield return new ValidationResult("FileName should not be empty!",
+                    new[] {nameof(FileName)});
+            }
+            
+            if (FileContainerName.IsNullOrWhiteSpace())
+            {
+                yield return new ValidationResult("FileContainerName should not be empty!",
+                    new[] {nameof(FileContainerName)});
+            }
+            
+            if (!Enum.IsDefined(typeof(FileType), FileType))
+            {
+                yield return new ValidationResult("FileType is invalid!",
+                    new[] {nameof(FileType)});
             }
         }
     }

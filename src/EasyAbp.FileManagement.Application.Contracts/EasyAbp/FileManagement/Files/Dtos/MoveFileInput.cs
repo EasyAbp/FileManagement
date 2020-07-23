@@ -18,7 +18,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
         {
             if (NewFileName.IsNullOrWhiteSpace())
             {
-                yield return new ValidationResult("NewFileName should not be empty!", new[] {nameof(NewFileName)});
+                yield return new ValidationResult("NewFileName should not be empty!",
+                    new[] {nameof(NewFileName)});
             }
         }
     }

@@ -12,6 +12,9 @@ namespace EasyAbp.FileManagement.Files
         public virtual Guid? TenantId { get; protected set; }
 
         [NotNull]
+        public virtual string FileContainerName { get; protected set; }
+
+        [NotNull]
         public virtual string FileName { get; protected set; }
 
         [NotNull]
@@ -28,6 +31,9 @@ namespace EasyAbp.FileManagement.Files
 
         [CanBeNull]
         public virtual string Hash { get; protected set; }
+        
+        [CanBeNull]
+        public virtual string BlobName { get; protected set; }
 
         #region Properties in ITree
 
@@ -51,8 +57,10 @@ namespace EasyAbp.FileManagement.Files
         {
         }
 
-        public File(Guid id,
+        public File(
+            Guid id,
             Guid? tenantId,
+            [NotNull] string fileContainerName,
             [NotNull] string fileName,
             [NotNull] string filePath,
             [CanBeNull] string mimeType,
@@ -60,10 +68,12 @@ namespace EasyAbp.FileManagement.Files
             int subFilesQuantity,
             long byteSize,
             [CanBeNull] string hash,
+            [CanBeNull] string blobName,
             Guid? parentId,
             [NotNull] string displayName) : base(id)
         {
             TenantId = tenantId;
+            FileContainerName = fileContainerName;
             FileName = fileName;
             FilePath = filePath;
             MimeType = mimeType;
@@ -71,6 +81,29 @@ namespace EasyAbp.FileManagement.Files
             SubFilesQuantity = subFilesQuantity;
             ByteSize = byteSize;
             Hash = hash;
+            BlobName = blobName;
+            ParentId = parentId;
+            DisplayName = displayName;
+        }
+
+        public void UpdateInfo(
+            [NotNull] string fileName,
+            [NotNull] string filePath,
+            [CanBeNull] string mimeType,
+            int subFilesQuantity,
+            long byteSize,
+            [CanBeNull] string hash,
+            [CanBeNull] string blobName,
+            Guid? parentId,
+            [NotNull] string displayName)
+        {
+            FileName = fileName;
+            FilePath = filePath;
+            MimeType = mimeType;
+            SubFilesQuantity = subFilesQuantity;
+            ByteSize = byteSize;
+            Hash = hash;
+            BlobName = blobName;
             ParentId = parentId;
             DisplayName = displayName;
         }

@@ -1,15 +1,16 @@
 ﻿using System.Threading.Tasks;
 using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<FileOperationAuthorizationRequirement, File>
+    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, File>
     {
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
-            FileOperationAuthorizationRequirement requirement, File resource)
+            OperationAuthorizationRequirement requirement, File resource)
         {
-            var hasPermission = requirement.OperationName switch
+            var hasPermission = requirement.Name switch
             {
                 FileManagementPermissions.File.Default => await HasGetInfoPermissionAsync(context, resource),
                 FileManagementPermissions.File.Download => await HasDownloadPermissionAsync(context, resource),

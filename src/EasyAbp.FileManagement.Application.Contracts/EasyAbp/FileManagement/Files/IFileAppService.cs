@@ -17,5 +17,7 @@ namespace EasyAbp.FileManagement.Files
         Task<FileInfoDto> MoveAsync(MoveFileInput input);
 
         Task<FileDownloadDto> GetDownloadUrlAsync(Guid id);
+        
+        Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input);
     }
 }

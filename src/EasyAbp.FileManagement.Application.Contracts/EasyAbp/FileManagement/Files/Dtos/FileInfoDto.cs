@@ -6,6 +6,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
     [Serializable]
     public class FileInfoDto : FullAuditedEntityDto<Guid>
     {
+        public string FileContainerName { get; set; }
+
         public string FileName { get; set; }
 
         public string FilePath { get; set; }

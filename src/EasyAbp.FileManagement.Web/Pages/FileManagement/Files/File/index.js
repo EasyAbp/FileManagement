@@ -51,6 +51,7 @@ $(function () {
                         ]
                 }
             },
+            { data: "fileContainerName" },
             { data: "fileName" },
             { data: "filePath" },
             { data: "mimeType" },

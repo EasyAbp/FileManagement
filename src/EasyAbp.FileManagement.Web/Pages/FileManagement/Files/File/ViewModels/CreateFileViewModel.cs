@@ -7,6 +7,9 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels
 {
     public class CreateFileViewModel
     {
+        [Display(Name = "FileFileContainerName")]
+        public string FileContainerName { get; set; }
+
         [Display(Name = "FileFileName")]
         public string FileName { get; set; }
 
