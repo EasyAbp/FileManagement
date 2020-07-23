@@ -1,4 +1,4 @@
-﻿namespace EasyAbp.FileManagement.FileInfos
+﻿namespace EasyAbp.FileManagement.Files
 {
     public enum FileType
     {

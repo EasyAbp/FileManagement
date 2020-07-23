@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace EasyAbp.FileManagement.FileInfos
+namespace EasyAbp.FileManagement.Files
 {
     public class FileOperationAuthorizationRequirement : IAuthorizationRequirement
     {
