@@ -1,4 +1,4 @@
-﻿namespace EasyAbp.FileManagement.Common
+﻿namespace EasyAbp.FileManagement.Containers
 {
     public enum FileContainerType
     {

@@ -3,7 +3,7 @@ using System.Reflection;
 using JetBrains.Annotations;
 using Volo.Abp;
 
-namespace EasyAbp.FileManagement.Common
+namespace EasyAbp.FileManagement.Containers
 {
     public class FileContainerNameAttribute : Attribute
     {

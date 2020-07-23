@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace EasyAbp.FileManagement.Common
+namespace EasyAbp.FileManagement.FileInfos
 {
-    public class FileContainerAuthorizationRequirement : IAuthorizationRequirement
+    public class FileOperationAuthorizationRequirement : IAuthorizationRequirement
     {
         public string FileContainerName { get; set; }
         
