@@ -18,7 +18,7 @@ namespace EasyAbp.FileManagement.Permissions
             public const string Update = Default + ".Update";
             public const string Create = Default + ".Create";
             public const string Delete = Default + ".Delete";
-            public const string Download = Default + ".Download";
+            public const string GetDownloadInfo = Default + ".GetDownloadInfo";
             public const string Move = Default + ".Move";
         }
     }

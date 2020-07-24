@@ -10,6 +10,6 @@ namespace EasyAbp.FileManagement.Files
         
         public Guid? OwnerUserId { get; set; }
         
-        public File Entity { get; set; }
+        public File File { get; set; }
     }
 }

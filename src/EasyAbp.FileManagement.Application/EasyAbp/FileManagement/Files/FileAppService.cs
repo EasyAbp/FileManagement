@@ -110,7 +110,7 @@ namespace EasyAbp.FileManagement.Files
             var file = await GetEntityByIdAsync(id);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
-                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Download});
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.GetDownloadInfo});
 
             return await _fileManager.GetDownloadInfoAsync(file);
         }
@@ -157,7 +157,7 @@ namespace EasyAbp.FileManagement.Files
                 ParentId = file.ParentId,
                 FileContainerName = file.FileContainerName,
                 OwnerUserId = file.OwnerUserId,
-                Entity = file
+                File = file
             };
         }
         

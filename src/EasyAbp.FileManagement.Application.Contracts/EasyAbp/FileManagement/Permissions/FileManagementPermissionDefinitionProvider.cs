@@ -15,7 +15,7 @@ namespace EasyAbp.FileManagement.Permissions
             filePermission.AddChild(FileManagementPermissions.File.Create, L("Permission:Create"));
             filePermission.AddChild(FileManagementPermissions.File.Update, L("Permission:Update"));
             filePermission.AddChild(FileManagementPermissions.File.Delete, L("Permission:Delete"));
-            filePermission.AddChild(FileManagementPermissions.File.Download, L("Permission:Download"));
+            filePermission.AddChild(FileManagementPermissions.File.GetDownloadInfo, L("Permission:GetDownloadInfo"));
             filePermission.AddChild(FileManagementPermissions.File.Move, L("Permission:Move"));
         }
 

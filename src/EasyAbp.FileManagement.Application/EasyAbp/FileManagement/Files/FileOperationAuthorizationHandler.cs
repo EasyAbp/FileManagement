@@ -5,42 +5,52 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, FileOperationInfoModel>
+    public abstract class
+        FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement,
+            FileOperationInfoModel>
     {
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement, FileOperationInfoModel resource)
         {
-            var hasPermission = requirement.Name switch
+            switch (requirement.Name)
             {
-                FileManagementPermissions.File.Default => await HasGetInfoPermissionAsync(context, resource),
-                FileManagementPermissions.File.Download => await HasDownloadPermissionAsync(context, resource),
-                FileManagementPermissions.File.Create => await HasCreatePermissionAsync(context, resource),
-                FileManagementPermissions.File.Update => await HasUpdatePermissionAsync(context, resource),
-                FileManagementPermissions.File.Move => await HasMovePermissionAsync(context, resource),
-                FileManagementPermissions.File.Delete => await HasDeletePermissionAsync(context, resource),
-                _ => false
-            };
-
-            if (hasPermission)
-            {
-                context.Succeed(requirement);
-            }
-            else
-            {
-                context.Fail();
+                case FileManagementPermissions.File.Default:
+                    await HandleGetInfoAsync(context, requirement, resource);
+                    break;
+                case FileManagementPermissions.File.GetDownloadInfo:
+                    await HandleGetDownloadInfoAsync(context, requirement, resource);
+                    break;
+                case FileManagementPermissions.File.Create:
+                    await HandleCreateAsync(context, requirement, resource);
+                    break;
+                case FileManagementPermissions.File.Update:
+                    await HandleUpdateAsync(context, requirement, resource);
+                    break;
+                case FileManagementPermissions.File.Move:
+                    await HandleMoveAsync(context, requirement, resource);
+                    break;
+                case FileManagementPermissions.File.Delete:
+                    await HandleDeleteAsync(context, requirement, resource);
+                    break;
             }
         }
-        
-        protected abstract Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
-        
-        protected abstract Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
-        
-        protected abstract Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
-        
-        protected abstract Task<bool> HasUpdatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
-         
-        protected abstract Task<bool> HasMovePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
-         
-        protected abstract Task<bool> HasDeletePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
+
+        protected abstract Task HandleGetInfoAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
+
+        protected abstract Task HandleGetDownloadInfoAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
+
+        protected abstract Task HandleCreateAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
+
+        protected abstract Task HandleUpdateAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
+
+        protected abstract Task HandleMoveAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
+
+        protected abstract Task HandleDeleteAsync(AuthorizationHandlerContext context,
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource);
     }
 }
