@@ -75,8 +75,8 @@ namespace EasyAbp.FileManagement.Files
         }
         
         [HttpPut]
-        [Route("reUpload/{id}")]
-        [Route("reUpload/{id}/fileName/{fileName}")]
+        [Route("{id}/reUpload")]
+        [Route("{id}/reUpload/fileName/{fileName}")]
         public async Task<FileInfoDto> ReUploadAsync(Guid id, string fileName, IFormFile file)
         {
             if (file == null)
