@@ -91,7 +91,7 @@ namespace EasyAbp.FileManagement.Files
         protected virtual Task SetFailIfUserIsNotPersonalContainerOwnerAsync(FileContainerConfiguration configuration,
             AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
-            if (configuration.FileContainerType == FileContainerType.Personal &&
+            if (configuration.FileContainerType == FileContainerType.Private &&
                 resource.OwnerUserId != context.User.FindUserId())
             {
                 context.Fail();
