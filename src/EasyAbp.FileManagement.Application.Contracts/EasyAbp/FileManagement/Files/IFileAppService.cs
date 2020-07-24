@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files.Dtos;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace EasyAbp.FileManagement.Files
@@ -10,14 +9,16 @@ namespace EasyAbp.FileManagement.Files
         ICrudAppService< 
             FileInfoDto, 
             Guid, 
-            PagedAndSortedResultRequestDto,
+            GetFileListInput,
             CreateFileDto,
             UpdateFileDto>
     {
-        Task<FileInfoDto> MoveAsync(MoveFileInput input);
+        Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input);
 
-        Task<FileDownloadDto> GetDownloadUrlAsync(Guid id);
+        Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id);
         
         Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input);
+
+        Task<byte[]> DownloadAsync(Guid id, string token);
     }
 }

@@ -21,6 +21,7 @@
     "FileParent": "FileParent",
     "FileChildren": "FileChildren",
     "FileDisplayName": "FileDisplayName",
+    "FileOwnerUserId": "FileOwnerUserId",
     "CreateFile": "CreateFile",
     "EditFile": "EditFile",
     "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",

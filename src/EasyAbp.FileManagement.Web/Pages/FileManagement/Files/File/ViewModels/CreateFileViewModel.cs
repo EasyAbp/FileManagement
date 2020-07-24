@@ -24,5 +24,8 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels
 
         [Display(Name = "FileDisplayName")]
         public string DisplayName { get; set; }
+        
+        [Display(Name = "FileOwnerUserId")]
+        public Guid? OwnerUserId { get; set; }
     }
 }

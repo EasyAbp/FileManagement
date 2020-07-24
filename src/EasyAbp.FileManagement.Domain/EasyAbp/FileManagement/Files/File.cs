@@ -34,6 +34,8 @@ namespace EasyAbp.FileManagement.Files
         
         [CanBeNull]
         public virtual string BlobName { get; protected set; }
+        
+        public virtual Guid? OwnerUserId { get; protected set; }
 
         #region Properties in ITree
 
@@ -70,7 +72,8 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
             Guid? parentId,
-            [NotNull] string displayName) : base(id)
+            [NotNull] string displayName,
+            Guid? ownerUserId) : base(id)
         {
             TenantId = tenantId;
             FileContainerName = fileContainerName;
@@ -84,6 +87,7 @@ namespace EasyAbp.FileManagement.Files
             BlobName = blobName;
             ParentId = parentId;
             DisplayName = displayName;
+            OwnerUserId = ownerUserId;
         }
 
         public void UpdateInfo(
@@ -97,6 +101,11 @@ namespace EasyAbp.FileManagement.Files
             Guid? parentId,
             [NotNull] string displayName)
         {
+            if (parentId != ParentId)
+            {
+                // Todo: publish a file moved event
+            }
+            
             FileName = fileName;
             FilePath = filePath;
             MimeType = mimeType;

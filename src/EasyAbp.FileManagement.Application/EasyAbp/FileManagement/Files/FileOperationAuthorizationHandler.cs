@@ -5,10 +5,10 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, File>
+    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, FileOperationInfoModel>
     {
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
-            OperationAuthorizationRequirement requirement, File resource)
+            OperationAuthorizationRequirement requirement, FileOperationInfoModel resource)
         {
             var hasPermission = requirement.Name switch
             {
@@ -31,16 +31,16 @@ namespace EasyAbp.FileManagement.Files
             }
         }
         
-        protected abstract Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
         
-        protected abstract Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
         
-        protected abstract Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
         
-        protected abstract Task<bool> HasUpdatePermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasUpdatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
          
-        protected abstract Task<bool> HasMovePermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasMovePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
          
-        protected abstract Task<bool> HasDeletePermissionAsync(AuthorizationHandlerContext context, File resource);
+        protected abstract Task<bool> HasDeletePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource);
     }
 }

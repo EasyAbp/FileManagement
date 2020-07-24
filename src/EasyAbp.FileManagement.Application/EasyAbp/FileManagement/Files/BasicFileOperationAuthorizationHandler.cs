@@ -6,32 +6,32 @@ namespace EasyAbp.FileManagement.Files
 {
     public class BasicFileOperationAuthorizationHandler : FileOperationAuthorizationHandler, ISingletonDependency
     {
-        protected override async Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasGetInfoPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override async Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasDownloadPermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override async Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasCreatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override async Task<bool> HasUpdatePermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasUpdatePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override async Task<bool> HasMovePermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasMovePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }
 
-        protected override async Task<bool> HasDeletePermissionAsync(AuthorizationHandlerContext context, File resource)
+        protected override async Task<bool> HasDeletePermissionAsync(AuthorizationHandlerContext context, FileOperationInfoModel resource)
         {
             throw new System.NotImplementedException();
         }

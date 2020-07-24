@@ -45,10 +45,12 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
             builder.Entity<File>(b =>
             {
                 b.ToTable(options.TablePrefix + "Files", options.Schema);
-                b.ConfigureByConvention(); 
-                
+                b.ConfigureByConvention();
 
                 /* Configure more properties here */
+                b.HasIndex(x => x.Hash);
+                b.HasIndex(x => x.ParentId);
+                b.HasIndex(x => x.FilePath);
             });
         }
     }

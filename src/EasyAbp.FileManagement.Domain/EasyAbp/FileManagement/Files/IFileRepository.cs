@@ -8,6 +8,7 @@ namespace EasyAbp.FileManagement.Files
 {
     public interface IFileRepository : ITreeRepository<File>
     {
-        Task<File> FindByFilePathAsync(string filePath, bool includeDetails = true, CancellationToken cancellationToken = default);
+        Task<File> FindByFilePathAsync(string filePath, string fileContainerName, Guid? ownerUserId,
+            bool includeDetails = true, CancellationToken cancellationToken = default);
     }
 }

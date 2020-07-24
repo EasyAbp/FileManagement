@@ -7,8 +7,6 @@ namespace EasyAbp.FileManagement.Files.Dtos
     [Serializable]
     public class MoveFileInput : IValidatableObject
     {
-        public Guid FileId { get; set; }
-        
         public Guid NewParentId { get; set; }
         
         [Required]

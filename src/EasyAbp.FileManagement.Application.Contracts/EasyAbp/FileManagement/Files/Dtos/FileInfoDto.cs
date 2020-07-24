@@ -29,5 +29,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
         public Guid? ParentId { get; set; }
 
         public string DisplayName { get; set; }
+        
+        public Guid? OwnerUserId { get; set; }
     }
 }

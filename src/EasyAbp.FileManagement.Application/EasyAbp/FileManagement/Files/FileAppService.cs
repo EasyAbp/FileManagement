@@ -1,15 +1,17 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class FileAppService : CrudAppService<File, FileInfoDto, Guid, PagedAndSortedResultRequestDto, CreateFileDto, UpdateFileDto>,
+    public class FileAppService : CrudAppService<File, FileInfoDto, Guid, GetFileListInput, CreateFileDto, UpdateFileDto>,
         IFileAppService
     {
         private readonly IFileManager _fileManager;
@@ -23,23 +25,48 @@ namespace EasyAbp.FileManagement.Files
             _repository = repository;
         }
 
-        public override Task<FileInfoDto> GetAsync(Guid id)
+        public override async Task<FileInfoDto> GetAsync(Guid id)
         {
-            return base.GetAsync(id);
+            var file = await GetEntityByIdAsync(id);
+
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
+            
+            return MapToGetOutputDto(file);
         }
 
-        public override Task<PagedResultDto<FileInfoDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+        public override async Task<PagedResultDto<FileInfoDto>> GetListAsync(GetFileListInput input)
         {
-            return base.GetListAsync(input);
+            await AuthorizationService.AuthorizeAsync(new FileOperationInfoModel
+                {
+                    ParentId = input.ParentId,
+                    FileContainerName = input.FileContainerName,
+                    OwnerUserId = input.OwnerUserId
+                },
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
+
+            var query = CreateFilteredQuery(input);
+
+            var totalCount = await AsyncExecuter.CountAsync(query);
+
+            query = ApplySorting(query, input);
+            query = ApplyPaging(query, input);
+
+            var entities = await AsyncExecuter.ToListAsync(query);
+
+            return new PagedResultDto<FileInfoDto>(
+                totalCount,
+                entities.Select(MapToGetListOutputDto).ToList()
+            );
         }
 
         [Authorize]
         public override async Task<FileInfoDto> CreateAsync(CreateFileDto input)
         {
-            var file = await _fileManager.CreateAsync(input.FileContainerName, input.FileName, input.MimeType,
-                input.FileType, input.ParentId, input.Content);
+            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
+                input.MimeType, input.FileType, input.ParentId, input.Content);
 
-            await AuthorizationService.AuthorizeAsync(file,
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
 
             if (file.FileType == FileType.RegularFile)
@@ -52,28 +79,50 @@ namespace EasyAbp.FileManagement.Files
             return MapToGetOutputDto(file);
         }
 
-        public override Task DeleteAsync(Guid id)
+        [Authorize]
+        public override async Task DeleteAsync(Guid id)
         {
-            return base.DeleteAsync(id);
+            var file = await GetEntityByIdAsync(id);
+
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
+
+            await _repository.DeleteAsync(file, true);
         }
 
-        public async Task<FileInfoDto> MoveAsync(MoveFileInput input)
+        [Authorize]
+        public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
-            throw new NotImplementedException();
+            var file = await GetEntityByIdAsync(id);
+
+            await _fileManager.UpdateAsync(file, input.NewFileName, input.NewParentId);
+
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Move});
+
+            await _repository.UpdateAsync(file, autoSave: true);
+
+            return MapToGetOutputDto(file);
         }
 
-        public async Task<FileDownloadDto> GetDownloadUrlAsync(Guid id)
+        public virtual async Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var file = await GetEntityByIdAsync(id);
+
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Download});
+
+            return await _fileManager.GetDownloadInfoAsync(file);
         }
 
+        [Authorize]
         public override async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileDto input)
         {
-            var file = await _repository.GetAsync(id);
+            var file = await GetEntityByIdAsync(id);
 
-            await _fileManager.UpdateAsync(file, input.FileName, input.MimeType, input.Content);
+            await _fileManager.UpdateAsync(file, input.FileName, file.ParentId, input.MimeType, input.Content);
 
-            await AuthorizationService.AuthorizeAsync(file,
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
             
             if (file.FileType == FileType.RegularFile)
@@ -82,24 +131,45 @@ namespace EasyAbp.FileManagement.Files
             }
 
             await _repository.UpdateAsync(file, autoSave: true);
-
-            // Todo: publish an local event to remove the old blob
-
+            
             return MapToGetOutputDto(file);
         }
         
-        public async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
+        [Authorize]
+        public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
         {
-            var file = await _repository.GetAsync(id);
+            var file = await GetEntityByIdAsync(id);
 
-            await _fileManager.UpdateAsync(file, input.FileName);
+            await _fileManager.UpdateAsync(file, input.FileName, file.ParentId);
 
-            await AuthorizationService.AuthorizeAsync(file,
+            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
             await _repository.UpdateAsync(file, autoSave: true);
 
             return MapToGetOutputDto(file);
+        }
+
+        protected virtual FileOperationInfoModel CreateFileOperationInfoModel(File file)
+        {
+            return new FileOperationInfoModel
+            {
+                ParentId = file.ParentId,
+                FileContainerName = file.FileContainerName,
+                OwnerUserId = file.OwnerUserId,
+                Entity = file
+            };
+        }
+        
+        public virtual async Task<byte[]> DownloadAsync(Guid id, string token)
+        {
+            var provider = ServiceProvider.GetRequiredService<LocalFileDownloadProvider>();
+
+            await provider.CheckTokenAsync(token, id);
+
+            var file = await GetEntityByIdAsync(id);
+
+            return await _fileManager.GetBlobAsync(file);
         }
     }
 }

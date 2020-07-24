@@ -19,6 +19,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
 
         public Guid? ParentId { get; set; }
         
+        public Guid? OwnerUserId { get; set; }
+
         public byte[] Content { get; set; }
         
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)

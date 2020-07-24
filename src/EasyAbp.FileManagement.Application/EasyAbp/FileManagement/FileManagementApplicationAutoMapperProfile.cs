@@ -13,7 +13,6 @@ namespace EasyAbp.FileManagement
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
             CreateMap<File, FileInfoDto>();
-            CreateMap<File, FileDownloadDto>().Ignore(dto => dto.DownloadUrl);
         }
     }
 }
