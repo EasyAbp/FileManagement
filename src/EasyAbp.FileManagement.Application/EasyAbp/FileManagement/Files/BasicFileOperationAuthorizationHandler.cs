@@ -61,10 +61,10 @@ namespace EasyAbp.FileManagement.Files
         protected virtual async Task BasicCheckAsync(string permissionName, AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement, FileOperationInfoModel resource)
         {
-            await SetSucceedIfUserIsManagerAsync(context, requirement);
-
             await SetFailIfUserDoesNotHavePermissionAsync(permissionName, context);
 
+            await SetSucceedIfUserIsManagerAsync(context, requirement);
+            
             var configuration = _configurationProvider.Get(resource.FileContainerName);
 
             await SetFailIfUserIsNotPersonalContainerOwnerAsync(configuration, context, resource);
