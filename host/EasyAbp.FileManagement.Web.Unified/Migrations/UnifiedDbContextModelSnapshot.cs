@@ -60,7 +60,7 @@ namespace EasyAbp.FileManagement.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FileContainerName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FileName")
                         .HasColumnType("nvarchar(max)");
@@ -110,7 +110,7 @@ namespace EasyAbp.FileManagement.Migrations
 
                     b.HasIndex("Hash");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentId", "OwnerUserId", "FileContainerName", "FileType");
 
                     b.ToTable("EasyAbpFileManagementFiles");
                 });

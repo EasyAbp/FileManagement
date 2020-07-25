@@ -49,7 +49,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
 
                 /* Configure more properties here */
                 b.HasIndex(x => x.Hash);
-                b.HasIndex(x => x.ParentId);
+                b.HasIndex(x => new {x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileType});
                 b.HasIndex(x => x.FilePath);
             });
         }

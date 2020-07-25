@@ -9,7 +9,7 @@ namespace EasyAbp.FileManagement.Files
     {
         public virtual string GetHashString(byte[] fileContent)
         {
-            if (fileContent.LongLength == 0)
+            if (fileContent.IsNullOrEmpty())
             {
                 return null;
             }

@@ -23,8 +23,11 @@
     "FileChildren": "FileChildren",
     "FileDisplayName": "FileDisplayName",
     "FileOwnerUserId": "FileOwnerUserId",
-    "CreateFile": "CreateFile",
-    "EditFile": "EditFile",
+    "CreateDirectory": "CreateDirectory",
+    "UploadFile": "UploadFile",
+    "ReUploadFile": "ReUploadFile",
+    "RenameFile": "RenameFile",
+    "MoveFile": "MoveFile",
     "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",
     "SuccessfullyDeleted": "Successfully deleted"
   }

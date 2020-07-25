@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -66,7 +67,7 @@ namespace EasyAbp.FileManagement.Files
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parentId, fileContainerName, fileName,
-                filePath, mimeType, fileType, 0, fileContent.LongLength, hashString, blobName, ownerUserId);
+                filePath, mimeType, fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
 
             return file;
         }
@@ -81,7 +82,10 @@ namespace EasyAbp.FileManagement.Files
 
             var filePath = await GetFilePathAsync(newParentId, file.FileContainerName, newFileName);
 
-            await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+            if (filePath != file.FilePath)
+            {
+                await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+            }
 
             file.UpdateInfo(newParentId, newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize,
                 file.Hash, file.BlobName);
@@ -104,14 +108,17 @@ namespace EasyAbp.FileManagement.Files
             var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, filePath, newMimeType,
                 configuration.AbpBlobDirectorySeparator);
 
-            await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+            if (filePath != file.FilePath)
+            {
+                await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+            }
 
             // Todo: publish a file blobName changed local event after uow completed (try to remove the blob if no file is using the blob).
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
-            file.UpdateInfo(newParentId, newFileName, filePath, newMimeType, file.SubFilesQuantity, file.ByteSize,
-                hashString, blobName);
+            file.UpdateInfo(newParentId, newFileName, filePath, newMimeType, file.SubFilesQuantity,
+                newFileContent?.LongLength ?? 0, hashString, blobName);
 
             return file;
         }
@@ -126,7 +133,7 @@ namespace EasyAbp.FileManagement.Files
         
         protected virtual void CheckDirectoryHasNoFileContent(FileType fileType, byte[] fileContent)
         {
-            if (fileType == FileType.Directory && fileContent.LongLength != 0)
+            if (fileType == FileType.Directory && !fileContent.IsNullOrEmpty())
             {
                 throw new DirectoryFileContentIsNotEmptyException();
             }
@@ -223,7 +230,7 @@ namespace EasyAbp.FileManagement.Files
             var providers = ServiceProvider.GetServices<IFileDownloadProvider>();
 
             return specifiedProviderType == null
-                ? providers.Single(p => p.GetType() == options.DefaultFileDownloadProvider)
+                ? providers.Single(p => p.GetType() == options.DefaultFileDownloadProviderType)
                 : providers.Single(p => p.GetType() == specifiedProviderType);
         }
         

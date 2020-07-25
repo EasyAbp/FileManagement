@@ -12,5 +12,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
         public string FileContainerName { get; set; }
         
         public Guid? OwnerUserId { get; set; }
+        
+        public bool DirectoryOnly { get; set; }
     }
 }

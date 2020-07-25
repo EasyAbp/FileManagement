@@ -1,8 +1,10 @@
 using System.IO;
+using EasyAbp.FileManagement.Containers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EasyAbp.FileManagement.EntityFrameworkCore;
+using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.MultiTenancy;
 using EasyAbp.FileManagement.Web;
 using Microsoft.OpenApi.Models;
@@ -15,6 +17,8 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.Autofac;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
@@ -58,7 +62,8 @@ namespace EasyAbp.FileManagement
         typeof(AbpTenantManagementApplicationModule),
         typeof(AbpTenantManagementEntityFrameworkCoreModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
-        typeof(AbpAspNetCoreSerilogModule)
+        typeof(AbpAspNetCoreSerilogModule),
+        typeof(AbpBlobStoringFileSystemModule)
         )]
     public class FileManagementWebUnifiedModule : AbpModule
     {
@@ -106,6 +111,29 @@ namespace EasyAbp.FileManagement
             Configure<AbpMultiTenancyOptions>(options =>
             {
                 options.IsEnabled = MultiTenancyConsts.IsEnabled;
+            });
+            
+            Configure<AbpBlobStoringOptions>(options =>
+            {
+                options.Containers.Configure<LocalFileSystemBlobContainer>(container =>
+                {
+                    container.IsMultiTenant = true;
+                    container.UseFileSystem(fileSystem =>
+                    {
+                        fileSystem.BasePath = "C:\\my-files";
+                    });
+                });
+            });
+            
+            Configure<FileManagementOptions>(options =>
+            {
+                options.DefaultFileDownloadProviderType = typeof(LocalFileDownloadProvider);
+                options.Containers.Configure<CommonFileContainer>(container =>
+                {
+                    container.FileContainerType = FileContainerType.Public;
+                    container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
+                    container.AbpBlobDirectorySeparator = "/";
+                });
             });
         }
 

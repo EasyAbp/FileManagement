@@ -6,12 +6,11 @@ namespace EasyAbp.FileManagement.Containers
     {
         public FileContainerConfigurations Containers { get; }
 
-        public Type DefaultFileDownloadProvider { get; }
+        public Type DefaultFileDownloadProviderType { get; set; }
         
         public FileManagementOptions()
         {
             Containers = new FileContainerConfigurations();
-            DefaultFileDownloadProvider = null;
         }
     }
 }

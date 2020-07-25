@@ -1,0 +1,28 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal;
+@using EasyAbp.FileManagement.Localization
+@inject IHtmlLocalizer<FileManagementResource> L
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.UploadModalModel
+@{
+    Layout = null;
+}
+<script>
+    $("#file").fileinput({
+        showUpload: false,
+        previewFileType: 'any',
+        theme: "fa",
+    });
+</script>
+<form asp-page="UploadModal">
+    <abp-modal>
+        <abp-modal-header title="@L["UploadFile"].Value"></abp-modal-header>
+        <abp-modal-body>
+            <abp-input asp-for="FileContainerName" />
+            <abp-input asp-for="OwnerUserId" />
+            <abp-input asp-for="ParentId" />
+            <input asp-for="UploadedFile" type="file" id="file" data-preview-file-type="text" />
+        </abp-modal-body>
+        <abp-modal-footer buttons="@(AbpModalButtons.Cancel|AbpModalButtons.Save)"></abp-modal-footer>
+    </abp-modal>
+</form>

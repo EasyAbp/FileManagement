@@ -6,7 +6,7 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels
     public class MoveFileViewModel
     {
         [Display(Name = "FileParentId")]
-        public Guid NewParentId { get; set; }
+        public Guid? NewParentId { get; set; }
         
         [Required]
         [Display(Name = "FileNewFileName")]

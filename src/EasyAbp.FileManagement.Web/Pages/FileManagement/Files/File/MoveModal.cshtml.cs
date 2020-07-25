@@ -26,13 +26,18 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         public virtual async Task OnGetAsync()
         {
             var dto = await _service.GetAsync(Id);
-            ViewModel = ObjectMapper.Map<FileInfoDto, MoveFileViewModel>(dto);
         }
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = ObjectMapper.Map<MoveFileViewModel, UpdateFileDto>(ViewModel);
-            await _service.UpdateAsync(Id, dto);
+            var dto = new MoveFileInput
+            {
+                NewParentId = ViewModel.NewParentId,
+                NewFileName = ViewModel.NewFileName
+            };
+            
+            await _service.MoveAsync(Id, dto);
+            
             return NoContent();
         }
     }

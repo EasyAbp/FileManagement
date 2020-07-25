@@ -60,6 +60,16 @@ namespace EasyAbp.FileManagement.Files
             );
         }
 
+        protected override IQueryable<File> CreateFilteredQuery(GetFileListInput input)
+        {
+            return _repository
+                .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
+                            x.FileContainerName == input.FileContainerName)
+                .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
+                .OrderByDescending(x => x.FileType)
+                .ThenBy(x => x.FileName);
+        }
+
         [Authorize]
         public override async Task<FileInfoDto> CreateAsync(CreateFileDto input)
         {
@@ -161,7 +171,7 @@ namespace EasyAbp.FileManagement.Files
             };
         }
         
-        public virtual async Task<byte[]> DownloadAsync(Guid id, string token)
+        public virtual async Task<FileDownloadDto> DownloadAsync(Guid id, string token)
         {
             var provider = ServiceProvider.GetRequiredService<LocalFileDownloadProvider>();
 
@@ -169,7 +179,12 @@ namespace EasyAbp.FileManagement.Files
 
             var file = await GetEntityByIdAsync(id);
 
-            return await _fileManager.GetBlobAsync(file);
+            return new FileDownloadDto
+            {
+                FileName = file.FileName,
+                MimeType = file.MimeType,
+                Content = await _fileManager.GetBlobAsync(file)
+            };
         }
     }
 }

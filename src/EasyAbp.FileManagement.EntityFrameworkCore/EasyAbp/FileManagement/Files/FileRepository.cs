@@ -16,15 +16,11 @@ namespace EasyAbp.FileManagement.Files
         }
 
         public virtual async Task<File> FindByFilePathAsync(string filePath, string fileContainerName,
-            Guid? ownerUserId, bool includeDetails = true, CancellationToken cancellationToken = default)
+            Guid? ownerUserId, CancellationToken cancellationToken = default)
         {
-            return includeDetails
-                ? await WithDetails()
-                    .Where(x => x.FilePath == filePath && x.FileContainerName == fileContainerName &&
-                                x.OwnerUserId == ownerUserId).SingleOrDefaultAsync(cancellationToken)
-                : await DbSet
-                    .Where(x => x.FilePath == filePath && x.FileContainerName == fileContainerName &&
-                                x.OwnerUserId == ownerUserId).SingleOrDefaultAsync(cancellationToken);
+            return await DbSet
+                .Where(x => x.FilePath == filePath && x.FileContainerName == fileContainerName &&
+                            x.OwnerUserId == ownerUserId).SingleOrDefaultAsync(cancellationToken);
         }
     }
 }

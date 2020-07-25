@@ -19,6 +19,6 @@ namespace EasyAbp.FileManagement.Files
         
         Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input);
 
-        Task<byte[]> DownloadAsync(Guid id, string token);
+        Task<FileDownloadDto> DownloadAsync(Guid id, string token);
     }
 }

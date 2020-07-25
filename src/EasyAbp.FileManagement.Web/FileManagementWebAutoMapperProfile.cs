@@ -12,11 +12,7 @@ namespace EasyAbp.FileManagement.Web
             /* You can configure your AutoMapper mapping configuration here.
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
-            CreateMap<FileInfoDto, EditFileViewModel>();
-            CreateMap<CreateFileViewModel, CreateFileDto>()
-                .Ignore(dto => dto.Content);
-            CreateMap<EditFileViewModel, UpdateFileDto>()
-                .Ignore(dto => dto.Content);
+            CreateMap<FileInfoDto, RenameFileViewModel>();
         }
     }
 }

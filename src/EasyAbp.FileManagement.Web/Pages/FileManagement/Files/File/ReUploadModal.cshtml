@@ -3,17 +3,24 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal;
 @inject IHtmlLocalizer<FileManagementResource> L
-@model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.EditModalModel
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ReUploadModalModel
 @{
     Layout = null;
 }
-<abp-dynamic-form abp-model="ViewModel" data-ajaxForm="true" asp-page="EditModal">
+<script>
+    $("#file").fileinput({
+        showUpload: false,
+        previewFileType: 'any',
+        theme: "fa",
+    });
+</script>
+<form asp-page="ReUploadModal">
     <abp-modal>
-        <abp-modal-header title="@L["EditFile"].Value"></abp-modal-header>
+        <abp-modal-header title="@L["ReUploadFile"].Value"></abp-modal-header>
         <abp-modal-body>
             <abp-input asp-for="Id" />
-            <abp-form-content />
+            <input asp-for="UploadedFile" type="file" id="file" data-preview-file-type="text" />
         </abp-modal-body>
         <abp-modal-footer buttons="@(AbpModalButtons.Cancel|AbpModalButtons.Save)"></abp-modal-footer>
     </abp-modal>
-</abp-dynamic-form>
+</form>

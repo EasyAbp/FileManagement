@@ -31,6 +31,14 @@
     <Content Remove="Pages\**\*.css" />
     <Content Remove="Pages\**\*.js" />
     <Content Remove="wwwroot\**\*.*" />
+    <Content Update="Pages\FileManagement\Files\File\CreateDirectoryModal.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Update="Pages\FileManagement\Files\File\ReUploadModal.cshtml">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -38,8 +46,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Pages\FileManagement\Files\File\MoveModal.cshtml.cs">
-      <DependentUpon>MoveModal.cshtml</DependentUpon>
+    <Compile Update="Pages\FileManagement\Files\File\CreateDirectoryModal.cshtml.cs">
+      <DependentUpon>CreateDirectoryModal.cshtml</DependentUpon>
+    </Compile>
+    <Compile Update="Pages\FileManagement\Files\File\ReUploadModal.cshtml.cs">
+      <DependentUpon>ReUploadModal.cshtml</DependentUpon>
     </Compile>
   </ItemGroup>
 

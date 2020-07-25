@@ -7,18 +7,19 @@ using EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels;
 
 namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 {
-    public class EditModalModel : FileManagementPageModel
+    public class RenameModalModel : FileManagementPageModel
     {
         [HiddenInput]
         [BindProperty(SupportsGet = true)]
         public Guid Id { get; set; }
 
         [BindProperty]
-        public EditFileViewModel ViewModel { get; set; }
+        public RenameFileViewModel ViewModel { get; set; }
 
+        
         private readonly IFileAppService _service;
 
-        public EditModalModel(IFileAppService service)
+        public RenameModalModel(IFileAppService service)
         {
             _service = service;
         }
@@ -26,13 +27,18 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         public virtual async Task OnGetAsync()
         {
             var dto = await _service.GetAsync(Id);
-            ViewModel = ObjectMapper.Map<FileInfoDto, EditFileViewModel>(dto);
+            ViewModel = ObjectMapper.Map<FileInfoDto, RenameFileViewModel>(dto);
         }
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = ObjectMapper.Map<EditFileViewModel, UpdateFileDto>(ViewModel);
-            await _service.UpdateAsync(Id, dto);
+            var dto = new UpdateFileInfoDto
+            {
+                FileName = ViewModel.FileName,
+            };
+            
+            await _service.UpdateInfoAsync(Id, dto);
+
             return NoContent();
         }
     }

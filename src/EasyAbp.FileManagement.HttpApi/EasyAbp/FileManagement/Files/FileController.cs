@@ -11,7 +11,7 @@ namespace EasyAbp.FileManagement.Files
 {
     [RemoteService(Name = "EasyAbpFileManagement")]
     [Route("/api/fileManagement/file")]
-    public class FileController : FileManagementController, IFileAppService
+    public class FileController : FileManagementController
     {
         private readonly IFileAppService _service;
 
@@ -34,64 +34,48 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [HttpPost]
-        public Task<FileInfoDto> CreateAsync(CreateFileDto input)
+        [Consumes("multipart/form-data")]
+        public async Task<FileInfoDto> CreateAsync(CreateFileActionInput input)
         {
-            return _service.CreateAsync(input);
-        }
-
-        [HttpPost]
-        [Route("upload/fileName/{fileName}/fileContainerName/{fileContainerName}")]
-        [Route("upload/fileName/{fileName}/fileContainerName/{fileContainerName}/parentId/{parentId}")]
-        [Route("upload/fileName/{fileName}/fileContainerName/{fileContainerName}/ownerUserId/{ownerUserId}")]
-        [Route("upload/fileName/{fileName}/fileContainerName/{fileContainerName}/ownerUserId/{ownerUserId}/parentId/{parentId}")]
-        public async Task<FileInfoDto> UploadAsync(string fileName, string fileContainerName, Guid? ownerUserId, Guid? parentId, IFormFile file)
-        {
-            if (file == null)
+            if (input.File == null)
             {
                 throw new NoUploadedFileException();
             }
             
             await using var memoryStream = new MemoryStream();
             
-            await file.CopyToAsync(memoryStream);
+            await input.File.CopyToAsync(memoryStream);
 
             return await _service.CreateAsync(new CreateFileDto
             {
-                FileContainerName = fileContainerName,
-                FileName = fileName,
-                MimeType = file.ContentType,
-                FileType = FileType.RegularFile,
-                ParentId = parentId,
-                OwnerUserId = ownerUserId,
+                FileContainerName = input.FileContainerName,
+                FileName = input.FileName,
+                MimeType = input.File.ContentType,
+                FileType = input.FileType,
+                ParentId = input.ParentId,
+                OwnerUserId = input.OwnerUserId,
                 Content = memoryStream.ToArray()
             });
         }
 
         [HttpPut]
         [Route("{id}")]
-        public Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileDto input)
+        [Consumes("multipart/form-data")]
+        public async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileActionInput input)
         {
-            return _service.UpdateAsync(id, input);
-        }
-        
-        [HttpPut]
-        [Route("{id}/reUpload")]
-        [Route("{id}/reUpload/fileName/{fileName}")]
-        public async Task<FileInfoDto> ReUploadAsync(Guid id, string fileName, IFormFile file)
-        {
-            if (file == null)
+            if (input.File == null)
             {
                 throw new NoUploadedFileException();
             }
             
             await using var memoryStream = new MemoryStream();
             
-            await file.CopyToAsync(memoryStream);
+            await input.File.CopyToAsync(memoryStream);
 
             return await _service.UpdateAsync(id, new UpdateFileDto
             {
-                FileName = fileName,
-                MimeType = file.ContentType,
+                FileName = input.FileName,
+                MimeType = input.File.ContentType,
                 Content = memoryStream.ToArray()
             });
         }
@@ -124,11 +108,18 @@ namespace EasyAbp.FileManagement.Files
             return _service.UpdateInfoAsync(id, input);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("{id}/download")]
-        public Task<byte[]> DownloadAsync(Guid id, string token)
+        public async Task<IActionResult> DownloadAsync(Guid id, string token)
         {
-            return _service.DownloadAsync(id, token);
+            var dto = await _service.DownloadAsync(id, token);
+
+            var memoryStream = new MemoryStream(dto.Content);
+            
+            return new FileStreamResult(memoryStream, dto.MimeType)
+            {
+                FileDownloadName = dto.FileName
+            };
         }
     }
 }
