@@ -72,46 +72,6 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
-        public async Task<File> CreateAsync(string fileContainerName, Guid? ownerUserId, string filePath, string mimeType, FileType fileType,
-            byte[] fileContent)
-        {
-            var sp = FileManagementConsts.DirectorySeparator.ToString();
-            
-            var fileNames = filePath.Split(sp, StringSplitOptions.RemoveEmptyEntries);
-
-            if (fileNames.IsNullOrEmpty())
-            {
-                throw new InvalidFilePathException(filePath);
-            }
-
-            File parentFile = null;
-            var currentFilePath = "";
-
-            for (var i = 0; i < fileNames.Length - 1; i++)
-            {
-                var fileName = fileNames[i];
-
-                currentFilePath += sp + fileName;
-
-                var file = await _fileRepository.FindByFilePathAsync(currentFilePath, fileContainerName, ownerUserId);
-                
-                if (file == null)
-                {
-                    file = await CreateAsync(fileContainerName, ownerUserId, fileName, null, FileType.Directory,
-                        parentFile?.ParentId, null);
-                }
-                else if (file.FileType != FileType.Directory)
-                {
-                    throw new InvalidFilePathException(filePath);
-                }
-
-                parentFile = file;
-            }
-            
-            return await CreateAsync(fileContainerName, ownerUserId, fileNames.Last(), mimeType, fileType,
-                parentFile?.ParentId, fileContent);
-        }
-
         public virtual async Task<File> UpdateAsync(File file, string newFileName, Guid? newParentId)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
