@@ -2,14 +2,14 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EasyAbp.Abp.Trees;
 using EasyAbp.FileManagement.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Volo.Abp.Domain.Repositories.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class FileRepository : EfCoreTreeRepository<FileManagementDbContext, File>, IFileRepository
+    public class FileRepository : EfCoreRepository<FileManagementDbContext, File, Guid>, IFileRepository
     {
         public FileRepository(IDbContextProvider<FileManagementDbContext> dbContextProvider) : base(dbContextProvider)
         {

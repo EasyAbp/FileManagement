@@ -1,15 +1,15 @@
 using System;
-using System.Collections.Generic;
-using EasyAbp.Abp.Trees;
 using JetBrains.Annotations;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class File : FullAuditedAggregateRoot<Guid>, ITree<File>, IMultiTenant
+    public class File : FullAuditedAggregateRoot<Guid>, IMultiTenant
     {
         public virtual Guid? TenantId { get; protected set; }
+
+        public virtual Guid? ParentId { get; set; }
 
         [NotNull]
         public virtual string FileContainerName { get; protected set; }
@@ -37,24 +37,6 @@ namespace EasyAbp.FileManagement.Files
         
         public virtual Guid? OwnerUserId { get; protected set; }
 
-        #region Properties in ITree
-
-        [NotNull]
-        public virtual string Code { get; set; }
-
-        public virtual int Level { get; set; }
-
-        public virtual Guid? ParentId { get; set; }
-
-        public virtual File Parent { get; set; }
-
-        public virtual ICollection<File> Children { get; set; }
-
-        [NotNull]
-        public virtual string DisplayName { get; set; }
-
-        #endregion
-        
         protected File()
         {
         }
@@ -62,6 +44,7 @@ namespace EasyAbp.FileManagement.Files
         public File(
             Guid id,
             Guid? tenantId,
+            Guid? parentId,
             [NotNull] string fileContainerName,
             [NotNull] string fileName,
             [NotNull] string filePath,
@@ -71,11 +54,10 @@ namespace EasyAbp.FileManagement.Files
             long byteSize,
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
-            Guid? parentId,
-            [NotNull] string displayName,
             Guid? ownerUserId) : base(id)
         {
             TenantId = tenantId;
+            ParentId = parentId;
             FileContainerName = fileContainerName;
             FileName = fileName;
             FilePath = filePath;
@@ -85,27 +67,25 @@ namespace EasyAbp.FileManagement.Files
             ByteSize = byteSize;
             Hash = hash;
             BlobName = blobName;
-            ParentId = parentId;
-            DisplayName = displayName;
             OwnerUserId = ownerUserId;
         }
 
         public void UpdateInfo(
+            Guid? parentId,
             [NotNull] string fileName,
             [NotNull] string filePath,
             [CanBeNull] string mimeType,
             int subFilesQuantity,
             long byteSize,
             [CanBeNull] string hash,
-            [CanBeNull] string blobName,
-            Guid? parentId,
-            [NotNull] string displayName)
+            [CanBeNull] string blobName)
         {
             if (parentId != ParentId)
             {
                 // Todo: publish a file moved event
             }
             
+            ParentId = parentId;
             FileName = fileName;
             FilePath = filePath;
             MimeType = mimeType;
@@ -113,8 +93,6 @@ namespace EasyAbp.FileManagement.Files
             ByteSize = byteSize;
             Hash = hash;
             BlobName = blobName;
-            ParentId = parentId;
-            DisplayName = displayName;
         }
     }
 }

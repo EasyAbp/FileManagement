@@ -7,6 +7,9 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels
 {
     public class CreateFileViewModel
     {
+        [Display(Name = "FileParentId")]
+        public Guid? ParentId { get; set; }
+        
         [Display(Name = "FileFileContainerName")]
         public string FileContainerName { get; set; }
 
@@ -19,12 +22,6 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels
         [Display(Name = "FileFileType")]
         public FileType FileType { get; set; }
 
-        [Display(Name = "FileParentId")]
-        public Guid? ParentId { get; set; }
-
-        [Display(Name = "FileDisplayName")]
-        public string DisplayName { get; set; }
-        
         [Display(Name = "FileOwnerUserId")]
         public Guid? OwnerUserId { get; set; }
     }

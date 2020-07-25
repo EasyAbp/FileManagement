@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -66,8 +65,8 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
 
-            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, fileContainerName, fileName, filePath,
-                mimeType, fileType, 0, fileContent.LongLength, hashString, blobName, parentId, fileName, ownerUserId);
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parentId, fileContainerName, fileName,
+                filePath, mimeType, fileType, 0, fileContent.LongLength, hashString, blobName, ownerUserId);
 
             return file;
         }
@@ -84,8 +83,8 @@ namespace EasyAbp.FileManagement.Files
 
             await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
 
-            file.UpdateInfo(newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
-                file.BlobName, newParentId, newFileName);
+            file.UpdateInfo(newParentId, newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize,
+                file.Hash, file.BlobName);
             
             return file;
         }
@@ -111,8 +110,8 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
-            file.UpdateInfo(newFileName, filePath, newMimeType, file.SubFilesQuantity, file.ByteSize, hashString,
-                blobName, newParentId, newFileName);
+            file.UpdateInfo(newParentId, newFileName, filePath, newMimeType, file.SubFilesQuantity, file.ByteSize,
+                hashString, blobName);
 
             return file;
         }

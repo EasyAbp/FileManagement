@@ -51,6 +51,7 @@ $(function () {
                         ]
                 }
             },
+            { data: "parentId" },
             { data: "fileContainerName" },
             { data: "fileName" },
             { data: "filePath" },
@@ -59,12 +60,6 @@ $(function () {
             { data: "subFilesQuantity" },
             { data: "byteSize" },
             { data: "hash" },
-            { data: "code" },
-            { data: "level" },
-            { data: "parentId" },
-            { data: "parent" },
-            { data: "children" },
-            { data: "displayName" },
         ]
     }));
 
