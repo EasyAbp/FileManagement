@@ -66,7 +66,7 @@ namespace EasyAbp.FileManagement.Files
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
                 .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
-                .OrderByDescending(x => x.FileType)
+                .OrderBy(x => x.FileType)
                 .ThenBy(x => x.FileName);
         }
 

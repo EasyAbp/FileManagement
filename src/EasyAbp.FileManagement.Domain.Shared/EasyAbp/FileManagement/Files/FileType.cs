@@ -5,7 +5,7 @@ namespace EasyAbp.FileManagement.Files
     [Flags]
     public enum FileType
     {
-        RegularFile = 1,
-        Directory = 2
+        Directory = 1,
+        RegularFile = 2
     }
 }
