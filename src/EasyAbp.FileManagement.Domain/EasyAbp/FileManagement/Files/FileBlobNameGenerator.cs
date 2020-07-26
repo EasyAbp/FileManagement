@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Timing;
@@ -20,7 +19,7 @@ namespace EasyAbp.FileManagement.Files
             var now = _clock.Now;
 
             var blobName = now.Year + directorySeparator + now.Month + directorySeparator + now.Day +
-                           directorySeparator + Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);
+                           directorySeparator + Guid.NewGuid().ToString("N");
 
             return Task.FromResult(blobName);
         }
