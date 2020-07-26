@@ -27,7 +27,7 @@ $(function () {
                             {
                                 text: l('Download'),
                                 visible: function (data) {
-                                    return data.fileType === 1 && abp.auth.isGranted('EasyAbp.FileManagement.File.GetDownloadInfo')
+                                    return data.fileType === 2 && abp.auth.isGranted('EasyAbp.FileManagement.File.GetDownloadInfo')
                                 },
                                 action: function (data) {
                                     easyAbp.fileManagement.files.file.getDownloadInfo(data.record.id, {
@@ -51,7 +51,7 @@ $(function () {
                             {
                                 text: l('ReUpload'),
                                 visible: function (data) {
-                                    return data.fileType === 1 && abp.auth.isGranted('EasyAbp.FileManagement.File.Update')
+                                    return data.fileType === 2 && abp.auth.isGranted('EasyAbp.FileManagement.File.Update')
                                 },
                                 action: function (data) {
                                     reUploadModal.open({ id: data.record.id });
@@ -85,10 +85,10 @@ $(function () {
                 data: "fileName",
                 render: function (data, type, row) {
                     if (row.fileType === 1) {
-                        return `<i class="file-icon fa fa-file fa-fw" aria-hidden="true"></i>${data}`;
+                        return `<a href="${getDirectoryUrl(fileContainerName, ownerUserId, row.id)}"><i class="directory-icon fa fa-folder fa-fw" aria-hidden="true"></i>${data}</a>`;
                     }
                     if (row.fileType === 2) {
-                        return `<a href="${getDirectoryUrl(fileContainerName, ownerUserId, row.id)}"><i class="directory-icon fa fa-folder fa-fw" aria-hidden="true"></i>${data}</a>`;
+                        return `<i class="file-icon fa fa-file fa-fw" aria-hidden="true"></i>${data}`;
                     }
                 }
             },
