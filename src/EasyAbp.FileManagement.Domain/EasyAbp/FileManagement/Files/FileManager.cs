@@ -97,7 +97,7 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
-        public virtual async Task<File> UpdateAsync(File file, string newFileName, File oldParent, File newParent)
+        public virtual async Task<File> ChangeAsync(File file, string newFileName, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
 
@@ -123,7 +123,7 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
-        public virtual async Task<File> UpdateAsync(File file, string newFileName, string newMimeType, byte[] newFileContent, File oldParent, File newParent)
+        public virtual async Task<File> ChangeAsync(File file, string newFileName, string newMimeType, byte[] newFileContent, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
 

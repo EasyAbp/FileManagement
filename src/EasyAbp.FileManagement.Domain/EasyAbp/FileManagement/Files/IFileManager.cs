@@ -12,9 +12,9 @@ namespace EasyAbp.FileManagement.Files
         Task<File> CreateAsync([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string fileName,
             [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, byte[] fileContent);
 
-        Task<File> UpdateAsync(File file, [NotNull] string newFileName, [CanBeNull] File oldParent, [CanBeNull] File newParent);
+        Task<File> ChangeAsync(File file, [NotNull] string newFileName, [CanBeNull] File oldParent, [CanBeNull] File newParent);
 
-        Task<File> UpdateAsync(File file, [NotNull] string newFileName, [CanBeNull] string newMimeType,
+        Task<File> ChangeAsync(File file, [NotNull] string newFileName, [CanBeNull] string newMimeType,
             byte[] newFileContent, [CanBeNull] File oldParent, [CanBeNull] File newParent);
 
         Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false,

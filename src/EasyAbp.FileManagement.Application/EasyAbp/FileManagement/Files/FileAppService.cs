@@ -110,7 +110,7 @@ namespace EasyAbp.FileManagement.Files
                 ? oldParent
                 : await TryGetEntityByNullableIdAsync(input.NewParentId);
             
-            await _fileManager.UpdateAsync(file, input.NewFileName, oldParent, newParent);
+            await _fileManager.ChangeAsync(file, input.NewFileName, oldParent, newParent);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Move});
@@ -142,7 +142,7 @@ namespace EasyAbp.FileManagement.Files
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
-            await _fileManager.UpdateAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
+            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
@@ -161,7 +161,7 @@ namespace EasyAbp.FileManagement.Files
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
-            await _fileManager.UpdateAsync(file, input.FileName, parent, parent);
+            await _fileManager.ChangeAsync(file, input.FileName, parent, parent);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
