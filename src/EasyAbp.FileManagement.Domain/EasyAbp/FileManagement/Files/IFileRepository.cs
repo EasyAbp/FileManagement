@@ -13,5 +13,7 @@ namespace EasyAbp.FileManagement.Files
         Task<File> FirstOrDefaultAsync(string hash, long byteSize, CancellationToken cancellationToken = default);
         
         Task<File> FirstOrDefaultAsync(string blobName, CancellationToken cancellationToken = default);
+
+        Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id, CancellationToken cancellationToken = default);
     }
 }

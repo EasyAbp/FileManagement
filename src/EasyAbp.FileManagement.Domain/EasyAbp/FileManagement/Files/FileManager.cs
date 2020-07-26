@@ -56,7 +56,7 @@ namespace EasyAbp.FileManagement.Files
         }
 
         public virtual async Task<File> CreateAsync(string fileContainerName, Guid? ownerUserId, string fileName,
-            string mimeType, FileType fileType, Guid? parentId, byte[] fileContent)
+            string mimeType, FileType fileType, File parent, byte[] fileContent)
         {
             Check.NotNullOrWhiteSpace(fileContainerName, nameof(File.FileContainerName));
             Check.NotNullOrWhiteSpace(fileName, nameof(File.FileName));
@@ -68,7 +68,7 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
 
-            var filePath = await GetFilePathAsync(parentId, fileContainerName, fileName);
+            var filePath = await GetFilePathAsync(parent?.Id, fileContainerName, fileName);
 
             string blobName = null;
             
@@ -91,38 +91,47 @@ namespace EasyAbp.FileManagement.Files
 
             await CheckFileNotExistAsync(filePath, fileContainerName, ownerUserId);
             
-            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parentId, fileContainerName, fileName,
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName,
                 filePath, mimeType, fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
 
             return file;
         }
 
-        public virtual async Task<File> UpdateAsync(File file, string newFileName, Guid? newParentId)
+        public virtual async Task<File> UpdateAsync(File file, string newFileName, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
+
+            if (file.ParentId != oldParent?.Id)
+            {
+                throw new IncorrectOldParentException(oldParent);
+            }
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileName(newFileName, configuration);
 
-            var filePath = await GetFilePathAsync(newParentId, file.FileContainerName, newFileName);
+            var filePath = await GetFilePathAsync(newParent?.Id, file.FileContainerName, newFileName);
 
             if (filePath != file.FilePath)
             {
                 await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
             }
 
-            file.UpdateInfo(newParentId, newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize,
-                file.Hash, file.BlobName);
+            file.UpdateInfo(newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize,
+                file.Hash, file.BlobName, oldParent, newParent);
             
             return file;
         }
 
-        public virtual async Task<File> UpdateAsync(File file, string newFileName, Guid? newParentId,
-            string newMimeType, byte[] newFileContent)
+        public virtual async Task<File> UpdateAsync(File file, string newFileName, string newMimeType, byte[] newFileContent, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
 
+            if (file.ParentId != oldParent?.Id)
+            {
+                throw new IncorrectOldParentException(oldParent);
+            }
+            
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileName(newFileName, configuration);
@@ -130,7 +139,7 @@ namespace EasyAbp.FileManagement.Files
             
             var oldBlobName = file.BlobName;
 
-            var filePath = await GetFilePathAsync(newParentId, file.FileContainerName, newFileName);
+            var filePath = await GetFilePathAsync(newParent?.Id, file.FileContainerName, newFileName);
 
             var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, filePath, newMimeType,
                 configuration.AbpBlobDirectorySeparator);
@@ -150,8 +159,8 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
-            file.UpdateInfo(newParentId, newFileName, filePath, newMimeType, file.SubFilesQuantity,
-                newFileContent?.LongLength ?? 0, hashString, blobName);
+            file.UpdateInfo(newFileName, filePath, newMimeType, file.SubFilesQuantity,
+                newFileContent?.LongLength ?? 0, hashString, blobName, oldParent, newParent);
 
             return file;
         }

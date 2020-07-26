@@ -33,5 +33,16 @@ namespace EasyAbp.FileManagement.Files
         {
             return await DbSet.Where(x => x.BlobName == blobName).FirstOrDefaultAsync(cancellationToken);
         }
+
+        public virtual async Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id,
+            CancellationToken cancellationToken = default)
+        {
+            return await DbSet.Where(x => x.ParentId == id).GroupBy(x => true).Select(x =>
+                new SubFilesStatisticDataModel
+                {
+                    SubFilesQuantity = x.Count(),
+                    ByteSize = x.Sum(y => y.ByteSize)
+                }).FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

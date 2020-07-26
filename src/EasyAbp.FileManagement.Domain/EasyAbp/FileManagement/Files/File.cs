@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using JetBrains.Annotations;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
@@ -44,7 +45,7 @@ namespace EasyAbp.FileManagement.Files
         public File(
             Guid id,
             Guid? tenantId,
-            Guid? parentId,
+            [CanBeNull] File parent,
             [NotNull] string fileContainerName,
             [NotNull] string fileName,
             [NotNull] string filePath,
@@ -56,8 +57,10 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] string blobName,
             Guid? ownerUserId) : base(id)
         {
+            parent?.TryAddSubFileUpdatedDomainEvent();
+
             TenantId = tenantId;
-            ParentId = parentId;
+            ParentId = parent?.Id;
             FileContainerName = fileContainerName;
             FileName = fileName;
             FilePath = filePath;
@@ -70,22 +73,37 @@ namespace EasyAbp.FileManagement.Files
             OwnerUserId = ownerUserId;
         }
 
+        private void TryAddSubFileUpdatedDomainEvent()
+        {
+            if (GetLocalEvents().Any(x => x is SubFileUpdatedEto))
+            {
+                return;
+            }
+            
+            AddLocalEvent(new SubFileUpdatedEto
+            {
+                Parent = this
+            });
+        }
+
         public void UpdateInfo(
-            Guid? parentId,
             [NotNull] string fileName,
             [NotNull] string filePath,
             [CanBeNull] string mimeType,
             int subFilesQuantity,
             long byteSize,
             [CanBeNull] string hash,
-            [CanBeNull] string blobName)
+            [CanBeNull] string blobName,
+            [CanBeNull] File oldParent,
+            [CanBeNull] File newParent)
         {
-            if (parentId != ParentId)
+            if (ParentId != newParent?.Id || BlobName != blobName)
             {
-                // Todo: publish a file moved event
+                oldParent?.TryAddSubFileUpdatedDomainEvent();
+                newParent?.TryAddSubFileUpdatedDomainEvent();
             }
-            
-            ParentId = parentId;
+
+            ParentId = newParent?.Id;
             FileName = fileName;
             FilePath = filePath;
             MimeType = mimeType;
@@ -94,5 +112,12 @@ namespace EasyAbp.FileManagement.Files
             Hash = hash;
             BlobName = blobName;
         }
+
+        public void ForceSetStatisticData(SubFilesStatisticDataModel statisticData)
+        {
+            SubFilesQuantity = statisticData.SubFilesQuantity;
+            ByteSize = statisticData.ByteSize;
+        }
+
     }
 }
