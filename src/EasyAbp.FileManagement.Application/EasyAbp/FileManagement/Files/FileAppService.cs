@@ -92,11 +92,15 @@ namespace EasyAbp.FileManagement.Files
         public override async Task DeleteAsync(Guid id)
         {
             var file = await GetEntityByIdAsync(id);
-
+            
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
+            
+            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
             await _repository.DeleteAsync(file, true);
+            
+            parent?.TryAddSubFileUpdatedDomainEvent();
         }
 
         [Authorize]

@@ -73,7 +73,7 @@ namespace EasyAbp.FileManagement.Files
             OwnerUserId = ownerUserId;
         }
 
-        private void TryAddSubFileUpdatedDomainEvent()
+        public void TryAddSubFileUpdatedDomainEvent()
         {
             if (GetLocalEvents().Any(x => x is SubFileUpdatedEto))
             {
