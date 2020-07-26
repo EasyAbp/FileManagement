@@ -9,6 +9,8 @@ namespace EasyAbp.FileManagement.Files
         
         public string DownloadUrl { get; set; }
         
+        public string ExpectedFileName { get; set; }
+        
         public string Token { get; set; }
     }
 }

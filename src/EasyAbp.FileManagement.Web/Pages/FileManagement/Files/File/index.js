@@ -31,8 +31,12 @@ $(function () {
                                 },
                                 action: function (data) {
                                     easyAbp.fileManagement.files.file.getDownloadInfo(data.record.id, {
-                                        success: function (data) {
-                                            document.location.href = data.downloadUrl;
+                                        success: function (info) {
+                                            const a = document.createElement("a");
+                                            a.download = info.expectedFileName;
+                                            a.href = info.downloadUrl;
+                                            a.click();
+                                            a.remove();
                                         }
                                     })
                                 }

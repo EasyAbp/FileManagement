@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
+using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Services;
 
 namespace EasyAbp.FileManagement.Files
@@ -15,13 +17,18 @@ namespace EasyAbp.FileManagement.Files
         Task<File> UpdateAsync(File file, [NotNull] string newFileName, Guid? newParentId,
             [CanBeNull] string newMimeType, byte[] newFileContent);
 
-        Task SaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false);
+        Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false,
+            CancellationToken cancellationToken = default);
         
-        Task<byte[]> GetBlobAsync(File file);
+        Task<byte[]> GetBlobAsync(File file, CancellationToken cancellationToken = default);
+
+        IBlobContainer GetBlobContainer(File file);
+        
+        Task DeleteBlobAsync(File file, CancellationToken cancellationToken = default);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file);
 
         Task<bool> ExistAsync([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string filePath,
-            FileType? fileType);
+            FileType? specifiedFileType);
     }
 }

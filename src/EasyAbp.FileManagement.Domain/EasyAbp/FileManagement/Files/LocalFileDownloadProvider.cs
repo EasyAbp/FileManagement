@@ -41,6 +41,7 @@ namespace EasyAbp.FileManagement.Files
             {
                 DownloadMethod = DownloadMethod,
                 DownloadUrl = url,
+                ExpectedFileName = file.FileName,
                 Token = token
             };
         }

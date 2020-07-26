@@ -79,10 +79,7 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
 
-            if (file.FileType == FileType.RegularFile)
-            {
-                await _fileManager.SaveBlobAsync(file, input.Content);
-            }
+            await _fileManager.TrySaveBlobAsync(file, input.Content);
 
             await _repository.InsertAsync(file, autoSave: true);
 
@@ -135,10 +132,7 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
             
-            if (file.FileType == FileType.RegularFile)
-            {
-                await _fileManager.SaveBlobAsync(file, input.Content);
-            }
+            await _fileManager.TrySaveBlobAsync(file, input.Content);
 
             await _repository.UpdateAsync(file, autoSave: true);
             

@@ -22,5 +22,16 @@ namespace EasyAbp.FileManagement.Files
                 .Where(x => x.FilePath == filePath && x.FileContainerName == fileContainerName &&
                             x.OwnerUserId == ownerUserId).SingleOrDefaultAsync(cancellationToken);
         }
+
+        public virtual async Task<File> FirstOrDefaultAsync(string hash, long byteSize, CancellationToken cancellationToken = default)
+        {
+            return await DbSet.Where(x => x.Hash == hash && x.ByteSize == byteSize)
+                .FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public virtual async Task<File> FirstOrDefaultAsync(string blobName, CancellationToken cancellationToken = default)
+        {
+            return await DbSet.Where(x => x.BlobName == blobName).FirstOrDefaultAsync(cancellationToken);
+        }
     }
 }

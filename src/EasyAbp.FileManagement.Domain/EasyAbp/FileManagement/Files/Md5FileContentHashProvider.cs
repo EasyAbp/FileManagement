@@ -9,11 +9,6 @@ namespace EasyAbp.FileManagement.Files
     {
         public virtual string GetHashString(byte[] fileContent)
         {
-            if (fileContent.IsNullOrEmpty())
-            {
-                return null;
-            }
-
             var md5 = GetMd5(fileContent);
 
             return md5.Aggregate(string.Empty, (current, x) => current + $"{x:x2}");

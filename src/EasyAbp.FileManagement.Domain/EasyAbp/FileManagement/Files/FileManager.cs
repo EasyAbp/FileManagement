@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using Microsoft.Extensions.Caching.Distributed;
@@ -10,7 +11,9 @@ using Volo.Abp;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Caching;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.EventBus.Local;
 using Volo.Abp.Timing;
+using Volo.Abp.Uow;
 using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
@@ -19,6 +22,8 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IClock _clock;
         private readonly ICurrentUser _currentUser;
+        private readonly ILocalEventBus _localEventBus;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IDistributedCache<UserFileDownloadLimitCacheItem> _downloadLimitCache;
         private readonly IBlobContainerFactory _blobContainerFactory;
         private readonly IFileRepository _fileRepository;
@@ -29,6 +34,8 @@ namespace EasyAbp.FileManagement.Files
         public FileManager(
             IClock clock,
             ICurrentUser currentUser,
+            ILocalEventBus localEventBus,
+            IUnitOfWorkManager unitOfWorkManager,
             IDistributedCache<UserFileDownloadLimitCacheItem> downloadLimitCache,
             IBlobContainerFactory blobContainerFactory,
             IFileRepository fileRepository,
@@ -38,6 +45,8 @@ namespace EasyAbp.FileManagement.Files
         {
             _clock = clock;
             _currentUser = currentUser;
+            _localEventBus = localEventBus;
+            _unitOfWorkManager = unitOfWorkManager;
             _downloadLimitCache = downloadLimitCache;
             _blobContainerFactory = blobContainerFactory;
             _fileRepository = fileRepository;
@@ -57,15 +66,31 @@ namespace EasyAbp.FileManagement.Files
             CheckFileName(fileName, configuration);
             CheckDirectoryHasNoFileContent(fileType, fileContent);
 
-            var filePath = await GetFilePathAsync(parentId, fileContainerName, fileName);
-
-            var blobName = await _fileBlobNameGenerator.CreateAsync(fileType, fileName, filePath, mimeType,
-                configuration.AbpBlobDirectorySeparator);
-
-            await CheckFileNotExistAsync(filePath, fileContainerName, ownerUserId);
-
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
 
+            var filePath = await GetFilePathAsync(parentId, fileContainerName, fileName);
+
+            string blobName = null;
+            
+            if (fileType == FileType.RegularFile)
+            {
+                var existingFile = await _fileRepository.FirstOrDefaultAsync(hashString, fileContent.LongLength);
+
+                if (existingFile != null)
+                {
+                    Check.NotNullOrWhiteSpace(existingFile.BlobName, nameof(existingFile.BlobName));
+                    
+                    blobName = existingFile.BlobName;
+                }
+                else
+                {
+                    blobName = await _fileBlobNameGenerator.CreateAsync(fileType, fileName, filePath, mimeType,
+                        configuration.AbpBlobDirectorySeparator);
+                }
+            }
+
+            await CheckFileNotExistAsync(filePath, fileContainerName, ownerUserId);
+            
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parentId, fileContainerName, fileName,
                 filePath, mimeType, fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
 
@@ -103,6 +128,8 @@ namespace EasyAbp.FileManagement.Files
             CheckFileName(newFileName, configuration);
             CheckDirectoryHasNoFileContent(file.FileType, newFileContent);
             
+            var oldBlobName = file.BlobName;
+
             var filePath = await GetFilePathAsync(newParentId, file.FileContainerName, newFileName);
 
             var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, filePath, newMimeType,
@@ -112,8 +139,14 @@ namespace EasyAbp.FileManagement.Files
             {
                 await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
             }
-
-            // Todo: publish a file blobName changed local event after uow completed (try to remove the blob if no file is using the blob).
+            
+            _unitOfWorkManager.Current.OnCompleted(async () =>
+                await _localEventBus.PublishAsync(new FileBlobNameChangedEto
+                {
+                    FileId = file.Id,
+                    OldBlobName = oldBlobName,
+                    NewBlobName = blobName
+                }));
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
@@ -139,32 +172,49 @@ namespace EasyAbp.FileManagement.Files
             }
         }
 
-        public virtual async Task SaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false)
+        public virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false, CancellationToken cancellationToken = default)
         {
             if (file.FileType != FileType.RegularFile)
             {
-                throw new UnexpectedFileTypeException(file.Id, file.FileType, FileType.RegularFile);
+                return false;
             }
             
-            var configuration = _configurationProvider.Get(file.FileContainerName);
-            
-            var blobContainer = _blobContainerFactory.Create(configuration.AbpBlobContainerName);
-            
-            await blobContainer.SaveAsync(file.BlobName, fileContent, overrideExisting);
+            var blobContainer = GetBlobContainer(file);
+
+            if (!overrideExisting && await blobContainer.ExistsAsync(file.BlobName, cancellationToken))
+            {
+                return false;
+            }
+
+            await blobContainer.SaveAsync(file.BlobName, fileContent, overrideExisting, cancellationToken: cancellationToken);
+
+            return true;
         }
 
-        public virtual async Task<byte[]> GetBlobAsync(File file)
+        public virtual async Task<byte[]> GetBlobAsync(File file, CancellationToken cancellationToken = default)
         {
             if (file.FileType != FileType.RegularFile)
             {
                 throw new UnexpectedFileTypeException(file.Id, file.FileType, FileType.RegularFile);
             }
-            
+
+            var blobContainer = GetBlobContainer(file);
+
+            return await blobContainer.GetAllBytesAsync(file.BlobName, cancellationToken: cancellationToken);
+        }
+
+        public virtual IBlobContainer GetBlobContainer(File file)
+        {
             var configuration = _configurationProvider.Get(file.FileContainerName);
             
-            var blobContainer = _blobContainerFactory.Create(configuration.AbpBlobContainerName);
+            return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
+        }
 
-            return await blobContainer.GetAllBytesAsync(file.BlobName);
+        public async Task DeleteBlobAsync(File file, CancellationToken cancellationToken = default)
+        {
+            var blobContainer = GetBlobContainer(file);
+
+            await blobContainer.DeleteAsync(file.BlobName, cancellationToken);
         }
 
         public virtual async Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file)
@@ -214,7 +264,8 @@ namespace EasyAbp.FileManagement.Files
             return downloadInfoModel;
         }
 
-        public async Task<bool> ExistAsync(string fileContainerName, Guid? ownerUserId, string filePath, FileType? fileType)
+        public virtual async Task<bool> ExistAsync(string fileContainerName, Guid? ownerUserId, string filePath,
+            FileType? specifiedFileType)
         {
             return await _fileRepository.FindByFilePathAsync(filePath, fileContainerName, ownerUserId) != null;
         }
@@ -241,7 +292,7 @@ namespace EasyAbp.FileManagement.Files
 
         protected virtual async Task CheckFileNotExistAsync(string filePath, string fileContainerName, Guid? ownerUserId)
         {
-            if (await _fileRepository.FindByFilePathAsync(filePath, fileContainerName, ownerUserId) != null)
+            if (await ExistAsync(fileContainerName, ownerUserId, filePath, null))
             {
                 throw new FileAlreadyExistsException(filePath);
             }
