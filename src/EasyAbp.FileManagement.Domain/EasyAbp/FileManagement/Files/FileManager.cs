@@ -165,23 +165,6 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
-        public virtual async Task DeleteAsync(File file, bool autoSave = false,
-            CancellationToken cancellationToken = default)
-        {
-            var parent = file.ParentId.HasValue
-                ? await _fileRepository.GetAsync(file.ParentId.Value, true, cancellationToken)
-                : null;
-
-            parent?.TryAddSubFileUpdatedDomainEvent();
-
-            await _fileRepository.DeleteAsync(file, true, cancellationToken);
-
-            if (file.FileType == FileType.Directory)
-            {
-                await _fileRepository.DeleteSubFilesAsync(file, autoSave, cancellationToken);
-            }
-        }
-
         protected virtual void CheckFileName(string fileName, FileContainerConfiguration configuration)
         {
             if (fileName.Contains(FileManagementConsts.DirectorySeparator))

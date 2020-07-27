@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.EntityFrameworkCore;
@@ -46,12 +47,47 @@ namespace EasyAbp.FileManagement.Files
                 }).FirstOrDefaultAsync(cancellationToken);
         }
 
+        [Obsolete]
+        public override Task DeleteAsync(Expression<Func<File, bool>> predicate, bool autoSave = false,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            throw new NotSupportedException();
+        }
+
+        public override async Task DeleteAsync(File entity, bool autoSave = false, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var parent = entity.ParentId.HasValue
+                ? await GetAsync(entity.ParentId.Value, true, cancellationToken)
+                : null;
+
+            parent?.TryAddSubFileUpdatedDomainEvent();
+            
+            await base.DeleteAsync(entity, autoSave, cancellationToken);
+            
+            if (entity.FileType == FileType.Directory)
+            {
+                await DeleteSubFilesAsync(entity, autoSave, cancellationToken);
+            }
+        }
+
+        public override async Task DeleteAsync(Guid id, bool autoSave = false, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var entity = await FindAsync(id, cancellationToken: cancellationToken);
+            
+            if (entity == null)
+            {
+                return;
+            }
+
+            await DeleteAsync(entity, autoSave, cancellationToken);
+        }
+
         public virtual async Task DeleteSubFilesAsync(File parent, bool autoSave = false,
             CancellationToken cancellationToken = default)
         {
             var basePath = parent.FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator);
 
-            await DeleteAsync(
+            await base.DeleteAsync(
                 x => x.FilePath.StartsWith(basePath) && x.FileContainerName == parent.FileContainerName &&
                      x.OwnerUserId == parent.OwnerUserId, autoSave, cancellationToken);
         }

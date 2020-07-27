@@ -96,7 +96,7 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
 
-            await _fileManager.DeleteAsync(file, true);
+            await _repository.DeleteAsync(file, true);
         }
 
         [Authorize]
