@@ -10,7 +10,9 @@ namespace EasyAbp.FileManagement.Files.Dtos
         [Required]
         public string FileContainerName { get; set; }
         
-        [Required]
+        /// <summary>
+        /// Will generate a unique name if the inputted FileName is null or whitespace.
+        /// </summary>
         public string FileName { get; set; }
         
         public FileType FileType { get; set; }
@@ -23,12 +25,6 @@ namespace EasyAbp.FileManagement.Files.Dtos
         
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (FileName.IsNullOrWhiteSpace())
-            {
-                yield return new ValidationResult("FileName should not be empty!",
-                    new[] {nameof(FileName)});
-            }
-            
             if (FileContainerName.IsNullOrWhiteSpace())
             {
                 yield return new ValidationResult("FileContainerName should not be empty!",

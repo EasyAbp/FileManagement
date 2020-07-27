@@ -41,6 +41,8 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new NoUploadedFileException();
             }
+
+            var fileName = input.FileName.IsNullOrWhiteSpace() ? GenerateUniqueFileName(input.File) : input.FileName;
             
             await using var memoryStream = new MemoryStream();
             
@@ -49,13 +51,18 @@ namespace EasyAbp.FileManagement.Files
             return await _service.CreateAsync(new CreateFileDto
             {
                 FileContainerName = input.FileContainerName,
-                FileName = input.FileName,
+                FileName = fileName,
                 MimeType = input.File.ContentType,
                 FileType = input.FileType,
                 ParentId = input.ParentId,
                 OwnerUserId = input.OwnerUserId,
                 Content = memoryStream.ToArray()
             });
+        }
+
+        protected virtual string GenerateUniqueFileName(IFormFile inputFile)
+        {
+            return Guid.NewGuid().ToString("N") + Path.GetExtension(inputFile.FileName);
         }
 
         [HttpPut]
