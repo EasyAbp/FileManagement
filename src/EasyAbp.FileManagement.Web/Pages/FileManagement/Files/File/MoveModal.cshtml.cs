@@ -26,6 +26,11 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         public virtual async Task OnGetAsync()
         {
             var dto = await _service.GetAsync(Id);
+            
+            ViewModel = new MoveFileViewModel
+            {
+                NewFileName = dto.FileName
+            };
         }
 
         public virtual async Task<IActionResult> OnPostAsync()

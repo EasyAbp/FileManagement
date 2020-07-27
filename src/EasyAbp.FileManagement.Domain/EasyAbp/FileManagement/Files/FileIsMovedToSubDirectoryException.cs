@@ -1,0 +1,12 @@
+﻿using Volo.Abp;
+
+namespace EasyAbp.FileManagement.Files
+{
+    public class FileIsMovedToSubDirectoryException : BusinessException
+    {
+        public FileIsMovedToSubDirectoryException() : base(
+            message: "A directory cannot be moved from a directory to one of its sub directories.")
+        {
+        }
+    }
+}

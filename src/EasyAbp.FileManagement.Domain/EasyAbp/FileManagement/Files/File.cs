@@ -97,6 +97,12 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] File oldParent,
             [CanBeNull] File newParent)
         {
+            if (newParent != null &&
+                newParent.FilePath.StartsWith(FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator)))
+            {
+                throw new FileIsMovedToSubDirectoryException();
+            }
+            
             if (ParentId != newParent?.Id || BlobName != blobName)
             {
                 oldParent?.TryAddSubFileUpdatedDomainEvent();

@@ -49,7 +49,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task DeleteSubFilesAsync(File parent, bool autoSave = false,
             CancellationToken cancellationToken = default)
         {
-            var basePath = parent.FilePath.EnsureEndsWith('/');
+            var basePath = parent.FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator);
 
             await DeleteAsync(
                 x => x.FilePath.StartsWith(basePath) && x.FileContainerName == parent.FileContainerName &&
