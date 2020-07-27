@@ -1,13 +1,17 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Caching;
+using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
 {
@@ -132,7 +136,52 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.GetDownloadInfo});
 
-            return await _fileManager.GetDownloadInfoAsync(file);
+            var downloadLimitCache =
+                ServiceProvider.GetRequiredService<IDistributedCache<UserFileDownloadLimitCacheItem>>();
+
+            var configurationProvider = ServiceProvider.GetRequiredService<IFileContainerConfigurationProvider>();
+            
+            var configuration = configurationProvider.Get(file.FileContainerName);
+            
+            if (!configuration.EachUserGetDownloadInfoLimitPreMinute.HasValue)
+            {
+                return await _fileManager.GetDownloadInfoAsync(file);
+            }
+            
+            var cacheItemKey = GetDownloadLimitCacheItemKey();
+
+            var absoluteExpiration = Clock.Now.AddMinutes(1);
+            
+            var cacheItem = await downloadLimitCache.GetOrAddAsync(GetDownloadLimitCacheItemKey(),
+                () => Task.FromResult(new UserFileDownloadLimitCacheItem
+                {
+                    Count = 0,
+                    AbsoluteExpiration = absoluteExpiration
+                }), () => new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpiration = absoluteExpiration
+                });
+
+            if (cacheItem.Count >= configuration.EachUserGetDownloadInfoLimitPreMinute.Value)
+            {
+                throw new UserGetDownloadInfoExceededLimitException();
+            }
+            
+            var infoModel = await _fileManager.GetDownloadInfoAsync(file);
+
+            cacheItem.Count++;
+
+            await downloadLimitCache.SetAsync(cacheItemKey, cacheItem, new DistributedCacheEntryOptions
+            {
+                AbsoluteExpiration = cacheItem.AbsoluteExpiration
+            });
+
+            return infoModel;
+        }
+        
+        protected virtual string GetDownloadLimitCacheItemKey()
+        {
+            return CurrentUser.GetId().ToString();
         }
 
         [Authorize]

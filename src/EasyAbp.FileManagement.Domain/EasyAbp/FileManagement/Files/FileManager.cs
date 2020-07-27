@@ -21,11 +21,8 @@ namespace EasyAbp.FileManagement.Files
 {
     public class FileManager : DomainService, IFileManager
     {
-        private readonly IClock _clock;
-        private readonly ICurrentUser _currentUser;
         private readonly ILocalEventBus _localEventBus;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
-        private readonly IDistributedCache<UserFileDownloadLimitCacheItem> _downloadLimitCache;
         private readonly IBlobContainerFactory _blobContainerFactory;
         private readonly IFileRepository _fileRepository;
         private readonly IFileBlobNameGenerator _fileBlobNameGenerator;
@@ -33,22 +30,16 @@ namespace EasyAbp.FileManagement.Files
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public FileManager(
-            IClock clock,
-            ICurrentUser currentUser,
             ILocalEventBus localEventBus,
             IUnitOfWorkManager unitOfWorkManager,
-            IDistributedCache<UserFileDownloadLimitCacheItem> downloadLimitCache,
             IBlobContainerFactory blobContainerFactory,
             IFileRepository fileRepository,
             IFileBlobNameGenerator fileBlobNameGenerator,
             IFileContentHashProvider fileContentHashProvider,
             IFileContainerConfigurationProvider configurationProvider)
         {
-            _clock = clock;
-            _currentUser = currentUser;
             _localEventBus = localEventBus;
             _unitOfWorkManager = unitOfWorkManager;
-            _downloadLimitCache = downloadLimitCache;
             _blobContainerFactory = blobContainerFactory;
             _fileRepository = fileRepository;
             _fileBlobNameGenerator = fileBlobNameGenerator;
@@ -293,42 +284,7 @@ namespace EasyAbp.FileManagement.Files
             
             var provider = GetFileDownloadProvider(file);
 
-            var configuration = _configurationProvider.Get(file.FileContainerName);
-
-            if (!configuration.EachUserGetDownloadInfoLimitPreMinute.HasValue)
-            {
-                return await provider.CreateDownloadInfoAsync(file);
-            }
-
-            var cacheItemKey = GetDownloadLimitCacheItemKey();
-
-            var absoluteExpiration = _clock.Now.AddMinutes(1);
-            
-            var cacheItem = await _downloadLimitCache.GetOrAddAsync(GetDownloadLimitCacheItemKey(),
-                () => Task.FromResult(new UserFileDownloadLimitCacheItem
-                {
-                    Count = 0,
-                    AbsoluteExpiration = absoluteExpiration
-                }), () => new DistributedCacheEntryOptions
-                {
-                    AbsoluteExpiration = absoluteExpiration
-                });
-
-            if (cacheItem.Count >= configuration.EachUserGetDownloadInfoLimitPreMinute.Value)
-            {
-                throw new UserGetDownloadInfoExceededLimitException();
-            }
-            
-            var downloadInfoModel = await provider.CreateDownloadInfoAsync(file);
-
-            cacheItem.Count++;
-
-            await _downloadLimitCache.SetAsync(cacheItemKey, cacheItem, new DistributedCacheEntryOptions
-            {
-                AbsoluteExpiration = cacheItem.AbsoluteExpiration
-            });
-
-            return downloadInfoModel;
+            return await provider.CreateDownloadInfoAsync(file);
         }
 
         protected virtual IFileDownloadProvider GetFileDownloadProvider(File file)
@@ -344,11 +300,6 @@ namespace EasyAbp.FileManagement.Files
             return specifiedProviderType == null
                 ? providers.Single(p => p.GetType() == options.DefaultFileDownloadProviderType)
                 : providers.Single(p => p.GetType() == specifiedProviderType);
-        }
-        
-        protected virtual string GetDownloadLimitCacheItemKey()
-        {
-            return _currentUser.GetId().ToString();
         }
 
         protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
