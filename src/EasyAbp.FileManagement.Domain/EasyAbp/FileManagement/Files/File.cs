@@ -48,7 +48,6 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] File parent,
             [NotNull] string fileContainerName,
             [NotNull] string fileName,
-            [NotNull] string filePath,
             [CanBeNull] string mimeType,
             FileType fileType,
             int subFilesQuantity,
@@ -63,7 +62,7 @@ namespace EasyAbp.FileManagement.Files
             ParentId = parent?.Id;
             FileContainerName = fileContainerName;
             FileName = fileName;
-            FilePath = filePath;
+            FilePath = GetFilePath(parent, fileName);
             MimeType = mimeType;
             FileType = fileType;
             SubFilesQuantity = subFilesQuantity;
@@ -88,7 +87,6 @@ namespace EasyAbp.FileManagement.Files
 
         public void UpdateInfo(
             [NotNull] string fileName,
-            [NotNull] string filePath,
             [CanBeNull] string mimeType,
             int subFilesQuantity,
             long byteSize,
@@ -111,12 +109,30 @@ namespace EasyAbp.FileManagement.Files
 
             ParentId = newParent?.Id;
             FileName = fileName;
-            FilePath = filePath;
+            FilePath = GetFilePath(newParent, fileName);
             MimeType = mimeType;
             SubFilesQuantity = subFilesQuantity;
             ByteSize = byteSize;
             Hash = hash;
             BlobName = blobName;
+        }
+
+        public void UpdateLocation(
+            [NotNull] string newFileName,
+            [CanBeNull] File oldParent,
+            [CanBeNull] File newParent)
+        {
+            UpdateInfo(newFileName, MimeType, SubFilesQuantity, ByteSize, Hash, BlobName, oldParent, newParent);
+        }
+
+        public void RefreshFilePath(File parent)
+        {
+            if (parent?.Id != ParentId)
+            {
+                throw new IncorrectParentException(parent);
+            }
+            
+            FilePath = GetFilePath(parent, FileName);
         }
 
         public void ForceSetStatisticData(SubFilesStatisticDataModel statisticData)
@@ -125,5 +141,24 @@ namespace EasyAbp.FileManagement.Files
             ByteSize = statisticData.ByteSize;
         }
 
+        private string GetFilePath(File parent, string fileName)
+        {
+            if (parent == null)
+            {
+                return fileName;
+            }
+
+            if (parent.FileType != FileType.Directory)
+            {
+                throw new UnexpectedFileTypeException(parent.Id, parent.FileType, FileType.Directory);
+            }
+
+            if (parent.FileContainerName != FileContainerName)
+            {
+                throw new UnexpectedFileContainerNameException(parent.FileContainerName, FileContainerName);
+            }
+
+            return parent.FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator) + fileName;
+        }
     }
 }

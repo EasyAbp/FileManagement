@@ -97,12 +97,19 @@ namespace EasyAbp.FileManagement.Files
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
 
             await _repository.DeleteAsync(file, true);
+            
+            if (file.FileType == FileType.Directory)
+            {
+                await _repository.DeleteSubFilesAsync(file, file.FileContainerName, file.OwnerUserId, true);
+            }
         }
 
         [Authorize]
         public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
             var file = await GetEntityByIdAsync(id);
+
+            var originalFilePath = file.FilePath;
 
             var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
@@ -116,6 +123,11 @@ namespace EasyAbp.FileManagement.Files
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Move});
 
             await _repository.UpdateAsync(file, autoSave: true);
+
+            if (file.FileType == FileType.Directory)
+            {
+                await _repository.RefreshSubFilesAsync(originalFilePath, file, file.FileContainerName, file.OwnerUserId, true);
+            }
 
             return MapToGetOutputDto(file);
         }
@@ -139,6 +151,8 @@ namespace EasyAbp.FileManagement.Files
         public override async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileDto input)
         {
             var file = await GetEntityByIdAsync(id);
+            
+            var originalFilePath = file.FilePath;
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
@@ -151,6 +165,11 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file, autoSave: true);
             
+            if (file.FileType == FileType.Directory)
+            {
+                await _repository.RefreshSubFilesAsync(originalFilePath, file, file.FileContainerName, file.OwnerUserId, true);
+            }
+            
             return MapToGetOutputDto(file);
         }
         
@@ -158,6 +177,8 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
         {
             var file = await GetEntityByIdAsync(id);
+
+            var originalFilePath = file.FilePath;
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
@@ -167,6 +188,11 @@ namespace EasyAbp.FileManagement.Files
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
             await _repository.UpdateAsync(file, autoSave: true);
+            
+            if (file.FileType == FileType.Directory)
+            {
+                await _repository.RefreshSubFilesAsync(originalFilePath, file, file.FileContainerName, file.OwnerUserId, true);
+            }
 
             return MapToGetOutputDto(file);
         }

@@ -27,8 +27,5 @@ namespace EasyAbp.FileManagement.Files
         Task DeleteBlobAsync(File file, CancellationToken cancellationToken = default);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file);
-
-        Task<bool> ExistAsync([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string filePath,
-            FileType? specifiedFileType);
     }
 }

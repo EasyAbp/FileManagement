@@ -67,9 +67,7 @@ namespace EasyAbp.FileManagement.Files
             CheckDirectoryHasNoFileContent(fileType, fileContent);
 
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
-
-            var filePath = await GetFilePathAsync(parent?.Id, fileContainerName, fileName);
-
+            
             string blobName = null;
             
             if (fileType == FileType.RegularFile)
@@ -84,15 +82,15 @@ namespace EasyAbp.FileManagement.Files
                 }
                 else
                 {
-                    blobName = await _fileBlobNameGenerator.CreateAsync(fileType, fileName, filePath, mimeType,
+                    blobName = await _fileBlobNameGenerator.CreateAsync(fileType, fileName, parent, mimeType,
                         configuration.AbpBlobDirectorySeparator);
                 }
             }
 
-            await CheckFileNotExistAsync(filePath, fileContainerName, ownerUserId);
-            
-            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName,
-                filePath, mimeType, fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
+            await CheckFileNotExistAsync(fileName, parent?.Id, fileContainerName, ownerUserId);
+
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName, mimeType,
+                fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
 
             return file;
         }
@@ -103,22 +101,20 @@ namespace EasyAbp.FileManagement.Files
 
             if (file.ParentId != oldParent?.Id)
             {
-                throw new IncorrectOldParentException(oldParent);
+                throw new IncorrectParentException(oldParent);
             }
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileName(newFileName, configuration);
 
-            var filePath = await GetFilePathAsync(newParent?.Id, file.FileContainerName, newFileName);
-
-            if (filePath != file.FilePath)
+            if (newFileName != file.FileName || newParent?.Id != file.ParentId)
             {
-                await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+                await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
             }
 
-            file.UpdateInfo(newFileName, filePath, file.MimeType, file.SubFilesQuantity, file.ByteSize,
-                file.Hash, file.BlobName, oldParent, newParent);
+            file.UpdateInfo(newFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash, file.BlobName,
+                oldParent, newParent);
             
             return file;
         }
@@ -129,7 +125,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (file.ParentId != oldParent?.Id)
             {
-                throw new IncorrectOldParentException(oldParent);
+                throw new IncorrectParentException(oldParent);
             }
             
             var configuration = _configurationProvider.Get(file.FileContainerName);
@@ -137,18 +133,16 @@ namespace EasyAbp.FileManagement.Files
             CheckFileName(newFileName, configuration);
             CheckDirectoryHasNoFileContent(file.FileType, newFileContent);
             
-            var oldBlobName = file.BlobName;
-
-            var filePath = await GetFilePathAsync(newParent?.Id, file.FileContainerName, newFileName);
-
-            var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, filePath, newMimeType,
-                configuration.AbpBlobDirectorySeparator);
-
-            if (filePath != file.FilePath)
+            if (newFileName != file.FileName || newParent?.Id != file.ParentId)
             {
-                await CheckFileNotExistAsync(filePath, file.FileContainerName, file.OwnerUserId);
+                await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
             }
             
+            var oldBlobName = file.BlobName;
+
+            var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, newParent, newMimeType,
+                configuration.AbpBlobDirectorySeparator);
+
             _unitOfWorkManager.Current.OnCompleted(async () =>
                 await _localEventBus.PublishAsync(new FileBlobNameChangedEto
                 {
@@ -159,8 +153,8 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
-            file.UpdateInfo(newFileName, filePath, newMimeType, file.SubFilesQuantity,
-                newFileContent?.LongLength ?? 0, hashString, blobName, oldParent, newParent);
+            file.UpdateInfo(newFileName, newMimeType, file.SubFilesQuantity, newFileContent?.LongLength ?? 0,
+                hashString, blobName, oldParent, newParent);
 
             return file;
         }
@@ -273,12 +267,6 @@ namespace EasyAbp.FileManagement.Files
             return downloadInfoModel;
         }
 
-        public virtual async Task<bool> ExistAsync(string fileContainerName, Guid? ownerUserId, string filePath,
-            FileType? specifiedFileType)
-        {
-            return await _fileRepository.FindByFilePathAsync(filePath, fileContainerName, ownerUserId) != null;
-        }
-
         protected virtual IFileDownloadProvider GetFileDownloadProvider(File file)
         {
             var options = ServiceProvider.GetRequiredService<IOptions<FileManagementOptions>>().Value;
@@ -299,35 +287,12 @@ namespace EasyAbp.FileManagement.Files
             return _currentUser.GetId().ToString();
         }
 
-        protected virtual async Task CheckFileNotExistAsync(string filePath, string fileContainerName, Guid? ownerUserId)
+        protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
         {
-            if (await ExistAsync(fileContainerName, ownerUserId, filePath, null))
+            if (await _fileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId) != null)
             {
-                throw new FileAlreadyExistsException(filePath);
+                throw new FileAlreadyExistsException(fileName, parentId);
             }
-        }
-
-        protected virtual async Task<string> GetFilePathAsync(Guid? parentId, string fileContainerName, string fileName)
-        {
-            if (!parentId.HasValue)
-            {
-                return fileName;
-            }
-
-            var parentFile = await _fileRepository.GetAsync(parentId.Value);
-
-            if (parentFile.FileType != FileType.Directory)
-            {
-                throw new UnexpectedFileTypeException(parentFile.Id, parentFile.FileType, FileType.Directory);
-            }
-
-            if (parentFile.FileContainerName != fileContainerName)
-            {
-                throw new UnexpectedFileContainerNameException(fileContainerName, parentFile.FileContainerName);
-            }
-
-            return parentFile.FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator) + fileName;
-
         }
     }
 }
