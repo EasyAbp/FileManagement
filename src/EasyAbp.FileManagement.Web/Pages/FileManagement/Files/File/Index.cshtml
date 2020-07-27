@@ -14,7 +14,8 @@
     PageLayout.Content.BreadCrumb.Add(L["Menu:File"].Value);
     PageLayout.Content.MenuItemName = "FileManagementFile";
 
-    var currentPath = "/" + Model.CurrentDirectory?.FilePath;
+    // Todo: should be full path
+    var currentPath = Model.CurrentDirectory?.FileName;
 }
 
 @section scripts {

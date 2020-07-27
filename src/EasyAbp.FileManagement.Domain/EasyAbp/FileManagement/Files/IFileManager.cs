@@ -17,6 +17,8 @@ namespace EasyAbp.FileManagement.Files
         Task<File> ChangeAsync(File file, [NotNull] string newFileName, [CanBeNull] string newMimeType,
             byte[] newFileContent, [CanBeNull] File oldParent, [CanBeNull] File newParent);
 
+        Task DeleteAsync(File file, CancellationToken cancellationToken = default);
+
         Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false,
             CancellationToken cancellationToken = default);
         

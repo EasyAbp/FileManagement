@@ -18,9 +18,6 @@ namespace EasyAbp.FileManagement.Files
         [NotNull]
         public virtual string FileName { get; protected set; }
 
-        [NotNull]
-        public virtual string FilePath { get; protected set; }
-
         [CanBeNull]
         public virtual string MimeType { get; protected set; }
 
@@ -56,13 +53,17 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] string blobName,
             Guid? ownerUserId) : base(id)
         {
+            if (parent != null && parent.FileContainerName != fileContainerName)
+            {
+                throw new UnexpectedFileContainerNameException(parent.FileContainerName, fileContainerName);
+            }
+            
             parent?.TryAddSubFileUpdatedDomainEvent();
 
             TenantId = tenantId;
             ParentId = parent?.Id;
             FileContainerName = fileContainerName;
             FileName = fileName;
-            FilePath = GetFilePath(parent, fileName);
             MimeType = mimeType;
             FileType = fileType;
             SubFilesQuantity = subFilesQuantity;
@@ -95,10 +96,9 @@ namespace EasyAbp.FileManagement.Files
             [CanBeNull] File oldParent,
             [CanBeNull] File newParent)
         {
-            if (newParent != null &&
-                newParent.FilePath.StartsWith(FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator)))
+            if (newParent != null && newParent.FileContainerName != FileContainerName)
             {
-                throw new FileIsMovedToSubDirectoryException();
+                throw new UnexpectedFileContainerNameException(newParent.FileContainerName, FileContainerName);
             }
             
             if (ParentId != newParent?.Id || BlobName != blobName)
@@ -109,7 +109,6 @@ namespace EasyAbp.FileManagement.Files
 
             ParentId = newParent?.Id;
             FileName = fileName;
-            FilePath = GetFilePath(newParent, fileName);
             MimeType = mimeType;
             SubFilesQuantity = subFilesQuantity;
             ByteSize = byteSize;
@@ -125,40 +124,10 @@ namespace EasyAbp.FileManagement.Files
             UpdateInfo(newFileName, MimeType, SubFilesQuantity, ByteSize, Hash, BlobName, oldParent, newParent);
         }
 
-        public void RefreshFilePath(File parent)
-        {
-            if (parent?.Id != ParentId)
-            {
-                throw new IncorrectParentException(parent);
-            }
-            
-            FilePath = GetFilePath(parent, FileName);
-        }
-
         public void ForceSetStatisticData(SubFilesStatisticDataModel statisticData)
         {
             SubFilesQuantity = statisticData.SubFilesQuantity;
             ByteSize = statisticData.ByteSize;
-        }
-
-        private string GetFilePath(File parent, string fileName)
-        {
-            if (parent == null)
-            {
-                return fileName;
-            }
-
-            if (parent.FileType != FileType.Directory)
-            {
-                throw new UnexpectedFileTypeException(parent.Id, parent.FileType, FileType.Directory);
-            }
-
-            if (parent.FileContainerName != FileContainerName)
-            {
-                throw new UnexpectedFileContainerNameException(parent.FileContainerName, FileContainerName);
-            }
-
-            return parent.FilePath.EnsureEndsWith(FileManagementConsts.DirectorySeparator) + fileName;
         }
     }
 }

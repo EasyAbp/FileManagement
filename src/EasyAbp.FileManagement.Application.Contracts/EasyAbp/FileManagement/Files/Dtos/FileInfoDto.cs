@@ -12,8 +12,6 @@ namespace EasyAbp.FileManagement.Files.Dtos
 
         public string FileName { get; set; }
 
-        public string FilePath { get; set; }
-
         public string MimeType { get; set; }
 
         public FileType FileType { get; set; }

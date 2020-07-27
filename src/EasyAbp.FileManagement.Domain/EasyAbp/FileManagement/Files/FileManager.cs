@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -113,6 +114,11 @@ namespace EasyAbp.FileManagement.Files
                 await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
             }
 
+            if (oldParent != newParent)
+            {
+                await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
+            }
+
             file.UpdateInfo(newFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash, file.BlobName,
                 oldParent, newParent);
             
@@ -137,6 +143,11 @@ namespace EasyAbp.FileManagement.Files
             {
                 await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
             }
+
+            if (oldParent != newParent)
+            {
+                await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
+            }
             
             var oldBlobName = file.BlobName;
 
@@ -158,6 +169,59 @@ namespace EasyAbp.FileManagement.Files
 
             return file;
         }
+        
+        protected virtual async Task CheckNotMovingDirectoryToSubDirectoryAsync([NotNull] File file, [CanBeNull] File targetParent)
+        {
+            if (file.FileType != FileType.Directory)
+            {
+                return;
+            }
+
+            var parent = targetParent;
+            
+            while (parent != null)
+            {
+                if (parent.Id == file.Id)
+                {
+                    throw new FileIsMovedToSubDirectoryException();
+                }
+
+                parent = parent.ParentId.HasValue ? await _fileRepository.GetAsync(parent.ParentId.Value) : null;
+            }
+        }
+
+        public virtual async Task DeleteAsync([NotNull] File file, CancellationToken cancellationToken = default)
+        {
+            var parent = file.ParentId.HasValue
+                ? await _fileRepository.GetAsync(file.ParentId.Value, true, cancellationToken)
+                : null;
+
+            parent?.TryAddSubFileUpdatedDomainEvent();
+            
+            await _fileRepository.DeleteAsync(file, true, cancellationToken);
+            
+            if (file.FileType == FileType.Directory)
+            {
+                await DeleteSubFilesAsync(file, file.FileContainerName, file.OwnerUserId, cancellationToken);
+            }
+        }
+
+        protected virtual async Task DeleteSubFilesAsync([CanBeNull] File file, [NotNull] string fileContainerName,
+            Guid? ownerUserId, CancellationToken cancellationToken = default)
+        {
+            var subFiles = await _fileRepository.GetListAsync(file?.Id, fileContainerName, ownerUserId,
+                null, cancellationToken);
+
+            foreach (var subFile in subFiles)
+            {
+                if (subFile.FileType == FileType.Directory)
+                {
+                    await DeleteSubFilesAsync(subFile, fileContainerName, ownerUserId, cancellationToken);
+                }
+                
+                await _fileRepository.DeleteAsync(subFile, true, cancellationToken);
+            }
+        }
 
         protected virtual void CheckFileName(string fileName, FileContainerConfiguration configuration)
         {
@@ -166,7 +230,7 @@ namespace EasyAbp.FileManagement.Files
                 throw new FileNameContainsSeparatorException(fileName, FileManagementConsts.DirectorySeparator);
             }
         }
-        
+
         protected virtual void CheckDirectoryHasNoFileContent(FileType fileType, byte[] fileContent)
         {
             if (fileType == FileType.Directory && !fileContent.IsNullOrEmpty())

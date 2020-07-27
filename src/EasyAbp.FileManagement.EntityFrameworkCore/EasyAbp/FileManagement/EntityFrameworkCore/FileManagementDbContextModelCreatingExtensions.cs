@@ -51,7 +51,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.HasIndex(x => x.BlobName);
                 b.HasIndex(x => x.Hash);
                 b.HasIndex(x => new {x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileType});
-                b.HasIndex(x => new {x.FilePath, x.OwnerUserId, x.FileContainerName});
+                b.HasIndex(x => new {x.FileName, x.OwnerUserId, x.FileContainerName});
             });
         }
     }
