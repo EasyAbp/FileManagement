@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace EasyAbp.FileManagement.Files
             Guid? ownerUserId, CancellationToken cancellationToken = default)
         {
             return await DbSet
-                .Where(x => x.FilePath == filePath && x.FileContainerName == fileContainerName &&
-                            x.OwnerUserId == ownerUserId).SingleOrDefaultAsync(cancellationToken);
+                .Where(x => x.FilePath == filePath && x.OwnerUserId == ownerUserId &&
+                            x.FileContainerName == fileContainerName).SingleOrDefaultAsync(cancellationToken);
         }
 
         public virtual async Task<File> FirstOrDefaultAsync(string hash, long byteSize, CancellationToken cancellationToken = default)
@@ -43,6 +44,16 @@ namespace EasyAbp.FileManagement.Files
                     SubFilesQuantity = x.Count(),
                     ByteSize = x.Sum(y => y.ByteSize)
                 }).FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public virtual async Task DeleteSubFilesAsync(File parent, bool autoSave = false,
+            CancellationToken cancellationToken = default)
+        {
+            var basePath = parent.FilePath.EnsureEndsWith('/');
+
+            await DeleteAsync(
+                x => x.FilePath.StartsWith(basePath) && x.FileContainerName == parent.FileContainerName &&
+                     x.OwnerUserId == parent.OwnerUserId, autoSave, cancellationToken);
         }
     }
 }

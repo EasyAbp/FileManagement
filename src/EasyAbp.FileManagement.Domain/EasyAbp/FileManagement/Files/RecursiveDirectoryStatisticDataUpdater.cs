@@ -28,7 +28,7 @@ namespace EasyAbp.FileManagement.Files
             
                 await _fileRepository.UpdateAsync(parent, true);
 
-                parent = parent.ParentId.HasValue ? await _fileRepository.GetAsync(parent.ParentId.Value) : null;
+                parent = parent.ParentId.HasValue ? await _fileRepository.FindAsync(parent.ParentId.Value) : null;
             }
         }
     }

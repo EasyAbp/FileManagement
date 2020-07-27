@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Volo.Abp.Domain.Repositories;
@@ -15,5 +16,7 @@ namespace EasyAbp.FileManagement.Files
         Task<File> FirstOrDefaultAsync(string blobName, CancellationToken cancellationToken = default);
 
         Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id, CancellationToken cancellationToken = default);
+
+        Task DeleteSubFilesAsync(File parent, bool autoSave = false, CancellationToken cancellationToken = default);
     }
 }
