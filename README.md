@@ -9,7 +9,7 @@ An abp application module that allows users to upload and manage their own files
 
 ### Install with [AbpHelper](https://github.com/EasyAbp/AbpHelper.GUI)
 
-    * Coming soon.
+* Coming soon.
 
 ### Install Manually
 
@@ -42,11 +42,19 @@ An abp application module that allows users to upload and manage their own files
 1. Create a custom **FileOperationAuthorizationHandler**. (see [sample](host/EasyAbp.FileManagement.Web.Unified/CommonContainerFileOperationAuthorizationHandler.cs))
 
 ![Files](docs/images/Files.png)
-![Upload](doc/images/Upload.png)
+![Upload](docs/images/Upload.png)
 
 ## Road map
 
-- [ ] More options.
+- [x] Multi container.
+- [x] Multi file upload.
+- [x] Upload constraints.
+- [x] User-space isolation.
+- [x] Reuse existing BLOB resources.
+- [x] Directory occupancy statistics.
+- [x] Auto deleting unused BLOB resources.
+- [x] Auto rename files with duplicate names.
+- [ ] Container space quota control.
 - [ ] Customized upload way.
 - [ ] Complex file search.
 - [ ] Unit tests.
