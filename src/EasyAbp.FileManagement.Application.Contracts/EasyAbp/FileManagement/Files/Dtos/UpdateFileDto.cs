@@ -21,6 +21,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
                 yield return new ValidationResult("FileName should not be empty!",
                     new[] {nameof(FileName)});
             }
+            
+            FileName = FileName.Trim();
         }
     }
 }

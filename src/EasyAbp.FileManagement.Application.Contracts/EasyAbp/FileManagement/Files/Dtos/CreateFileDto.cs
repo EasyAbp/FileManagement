@@ -42,6 +42,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
                 yield return new ValidationResult("FileType is invalid!",
                     new[] {nameof(FileType)});
             }
+
+            FileName = FileName.Trim();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using EasyAbp.FileManagement.Containers;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.EventBus;
@@ -10,17 +11,25 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IFileManager _fileManager;
         private readonly IFileRepository _fileRepository;
+        private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public UnusedBlobCleaner(
             IFileManager fileManager,
-            IFileRepository fileRepository)
+            IFileRepository fileRepository,
+            IFileContainerConfigurationProvider configurationProvider)
         {
             _fileManager = fileManager;
             _fileRepository = fileRepository;
+            _configurationProvider = configurationProvider;
         }
 
         public virtual async Task HandleEventAsync(EntityDeletedEventData<File> eventData)
         {
+            if (_configurationProvider.Get(eventData.Entity.FileContainerName).RetainDeletedBlobs)
+            {
+                return;
+            }
+            
             if (await _fileRepository.FirstOrDefaultAsync(eventData.Entity.BlobName) == null)
             {
                 await _fileManager.DeleteBlobAsync(eventData.Entity);
@@ -36,6 +45,11 @@ namespace EasyAbp.FileManagement.Files
                 return;
             }
 
+            if (_configurationProvider.Get(file.FileContainerName).RetainDeletedBlobs)
+            {
+                return;
+            }
+            
             if (await _fileRepository.FirstOrDefaultAsync(eventData.OldBlobName) == null)
             {
                 var blobContainer = _fileManager.GetBlobContainer(file);

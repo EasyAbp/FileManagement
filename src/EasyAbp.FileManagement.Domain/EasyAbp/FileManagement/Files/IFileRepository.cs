@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using JetBrains.Annotations;
 using Volo.Abp.Domain.Repositories;
 
 namespace EasyAbp.FileManagement.Files
@@ -21,5 +20,8 @@ namespace EasyAbp.FileManagement.Files
 
         Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id,
             CancellationToken cancellationToken = default);
+
+        Task<string> GetFileNameWithNextSerialNumberAsync(string fileName, Guid? parentId, string fileContainerName,
+            Guid? ownerUserId, CancellationToken cancellationToken = default);
     }
 }

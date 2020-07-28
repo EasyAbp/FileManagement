@@ -5,17 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.BlobStoring;
-using Volo.Abp.Caching;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.EventBus.Local;
-using Volo.Abp.Timing;
 using Volo.Abp.Uow;
-using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
 {
@@ -79,6 +75,15 @@ namespace EasyAbp.FileManagement.Files
                 }
             }
 
+            if (configuration.EnableAutoRename)
+            {
+                if (await IsFileExistAsync(fileName, parent?.Id, fileContainerName, ownerUserId))
+                {
+                    fileName = await _fileRepository.GetFileNameWithNextSerialNumberAsync(fileName, parent?.Id,
+                        fileContainerName, ownerUserId);
+                }
+            }
+            
             await CheckFileNotExistAsync(fileName, parent?.Id, fileContainerName, ownerUserId);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName, mimeType,
@@ -304,10 +309,15 @@ namespace EasyAbp.FileManagement.Files
 
         protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
         {
-            if (await _fileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId) != null)
+            if (await IsFileExistAsync(fileName, parentId, fileContainerName, ownerUserId))
             {
                 throw new FileAlreadyExistsException(fileName, parentId);
             }
+        }
+        
+        protected virtual async Task<bool> IsFileExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
+        {
+            return await _fileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId) != null;
         }
     }
 }
