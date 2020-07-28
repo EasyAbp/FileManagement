@@ -5,9 +5,7 @@ using Microsoft.AspNetCore.Authorization.Infrastructure;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public abstract class
-        FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement,
-            FileOperationInfoModel>
+    public abstract class FileOperationAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, FileOperationInfoModel>
     {
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context,
             OperationAuthorizationRequirement requirement, FileOperationInfoModel resource)

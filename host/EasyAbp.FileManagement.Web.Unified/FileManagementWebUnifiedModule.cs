@@ -130,6 +130,7 @@ namespace EasyAbp.FileManagement
                 options.DefaultFileDownloadProviderType = typeof(LocalFileDownloadProvider);
                 options.Containers.Configure<CommonFileContainer>(container =>
                 {
+                    // private container never be used by non-owner users (except user who has the "File.Manage" permission).
                     container.FileContainerType = FileContainerType.Public;
                     container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
                     container.AbpBlobDirectorySeparator = "/";
