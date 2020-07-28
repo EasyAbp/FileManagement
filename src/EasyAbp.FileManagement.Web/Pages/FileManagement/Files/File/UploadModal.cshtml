@@ -6,11 +6,17 @@
 @model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.UploadModalModel
 @{
     Layout = null;
+    var allowedFileExtensionsJsCode = Model.Configuration.AllowOnlyConfiguredFileExtensions ? Model.GetAllowedFileExtensionsJsCode() : "null";
 }
 <script>
+    // Todo: MaxByteSizeForEachUpload
+    // Todo: disabled file extensions
     $("#file").fileinput({
         showUpload: false,
         minFileSize: -1,
+        maxFileSize: @Model.Configuration.MaxByteSizeForEachFile,
+        maxFileCount: @Model.Configuration.MaxFileQuantityForEachUpload,
+        allowedFileExtensions: @Html.Raw(allowedFileExtensionsJsCode),
         previewFileType: 'any',
         theme: "fa",
         uploadAsync: false

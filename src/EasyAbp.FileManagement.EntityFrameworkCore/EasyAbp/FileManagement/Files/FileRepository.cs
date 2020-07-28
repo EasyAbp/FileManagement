@@ -81,7 +81,7 @@ namespace EasyAbp.FileManagement.Files
                 fileNames
                     .Select(x => x.Substring(part1.Length, x.LastIndexOf(part2, StringComparison.Ordinal) - part1.Length))
                     .Select(x => int.TryParse(x, out var number) ? number : 0).Where(x => x > 0).OrderBy(x => x)
-                    .ToImmutableHashSet().TakeWhile((x, i) => x == i + 1).LastOrDefault() + 1;
+                    .TakeWhile((x, i) => x == i + 1).LastOrDefault() + 1;
 
             return $"{part1}{nextNumber}{part2}";
         }

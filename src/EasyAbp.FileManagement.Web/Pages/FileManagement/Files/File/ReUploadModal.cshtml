@@ -8,11 +8,17 @@
     Layout = null;
 }
 <script>
+    // Todo: MaxByteSizeForEachUpload
+    // Todo: disabled file extensions
     $("#file").fileinput({
         showUpload: false,
         minFileSize: -1,
+        maxFileSize: @Model.Configuration.MaxByteSizeForEachFile,
+        maxFileCount: @Model.Configuration.MaxFileQuantityForEachUpload,
+        allowedFileExtensions: @Html.Raw(Model.GetAllowedFileExtensionsJsCode()),
         previewFileType: 'any',
         theme: "fa",
+        uploadAsync: false
     });
 </script>
 <form asp-page="ReUploadModal">

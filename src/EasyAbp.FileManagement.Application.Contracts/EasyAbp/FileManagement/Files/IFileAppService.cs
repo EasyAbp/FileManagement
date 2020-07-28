@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
@@ -23,5 +24,7 @@ namespace EasyAbp.FileManagement.Files
         Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input);
 
         Task<FileDownloadDto> DownloadAsync(Guid id, string token);
+
+        Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName, Guid? ownerUserId);
     }
 }

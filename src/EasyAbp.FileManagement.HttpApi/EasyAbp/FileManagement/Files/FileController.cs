@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -163,6 +164,14 @@ namespace EasyAbp.FileManagement.Files
             {
                 FileDownloadName = dto.FileName
             };
+        }
+
+        [HttpGet]
+        [Route("configuration")]
+        public async Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName,
+            Guid? ownerUserId)
+        {
+            return await _service.GetConfigurationAsync(fileContainerName, ownerUserId);
         }
     }
 }

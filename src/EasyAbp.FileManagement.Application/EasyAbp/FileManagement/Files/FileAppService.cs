@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -21,13 +22,16 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IFileManager _fileManager;
         private readonly IFileRepository _repository;
-        
+        private readonly IFileContainerConfigurationProvider _configurationProvider;
+
         public FileAppService(
             IFileManager fileManager,
-            IFileRepository repository) : base(repository)
+            IFileRepository repository,
+            IFileContainerConfigurationProvider configurationProvider) : base(repository)
         {
             _fileManager = fileManager;
             _repository = repository;
+            _configurationProvider = configurationProvider;
         }
 
         public override async Task<FileInfoDto> GetAsync(Guid id)
@@ -78,6 +82,11 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public override async Task<FileInfoDto> CreateAsync(CreateFileDto input)
         {
+            var configuration = _configurationProvider.Get(input.FileContainerName);
+
+            CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
+            CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+         
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
             var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
@@ -93,6 +102,47 @@ namespace EasyAbp.FileManagement.Files
             return MapToGetOutputDto(file);
         }
 
+        protected virtual void CheckFileQuantity(int count, FileContainerConfiguration configuration)
+        {
+            if (count > configuration.MaxFileQuantityForEachUpload)
+            {
+                throw new UploadQuantityExceededLimitException(count, configuration.MaxFileQuantityForEachUpload);
+            }
+        }
+
+        protected virtual void CheckFileSize(Dictionary<string, long> fileNameByteSizeMapping, FileContainerConfiguration configuration)
+        {
+            foreach (var pair in fileNameByteSizeMapping.Where(pair => pair.Value > configuration.MaxByteSizeForEachFile))
+            {
+                throw new FileSizeExceededLimitException(pair.Key, pair.Value, configuration.MaxByteSizeForEachFile);
+            }
+
+            var totalByteSize = fileNameByteSizeMapping.Values.Sum();
+            
+            if (totalByteSize > configuration.MaxByteSizeForEachUpload)
+            {
+                throw new UploadSizeExceededLimitException(totalByteSize, configuration.MaxByteSizeForEachUpload);
+            }
+        }
+        
+        protected virtual void CheckFileExtension(IEnumerable<string> fileExtensions, FileContainerConfiguration configuration)
+        {
+            foreach (var ext in fileExtensions.Where(ext => !IsFileExtensionAllowed(ext, configuration)))
+            {
+                throw new FileExtensionIsNotAllowedException(ext);
+            }
+        }
+
+        protected virtual bool IsFileExtensionAllowed(string ext, FileContainerConfiguration configuration)
+        {
+            if (!configuration.FileExtensionsConfiguration.ContainsKey(ext))
+            {
+                return !configuration.AllowOnlyConfiguredFileExtensions;
+            }
+
+            return configuration.FileExtensionsConfiguration[ext];
+        }
+
         [Authorize]
         public override async Task DeleteAsync(Guid id)
         {
@@ -106,6 +156,12 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual async Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileDto input)
         {
+            var configuration = _configurationProvider.Get(input.FileInfos.First().FileContainerName);
+
+            CheckFileQuantity(input.FileInfos.Count, configuration);
+            CheckFileSize(input.FileInfos.ToDictionary(x => x.FileName, x => x.Content?.LongLength ?? 0), configuration);
+            CheckFileExtension(input.FileInfos.Select(x => Path.GetExtension(x.FileName)).Distinct().ToList(), configuration);
+            
             var files = new File[input.FileInfos.Count];
 
             for (var i = 0; i < input.FileInfos.Count; i++)
@@ -135,7 +191,13 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
+            var newFileName = input.NewFileName;
+            
             var file = await GetEntityByIdAsync(id);
+            
+            var configuration = _configurationProvider.Get(file.FileContainerName);
+            
+            CheckFileExtension(new[] {Path.GetExtension(newFileName)}, configuration);
 
             var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
@@ -143,7 +205,7 @@ namespace EasyAbp.FileManagement.Files
                 ? oldParent
                 : await TryGetEntityByNullableIdAsync(input.NewParentId);
             
-            await _fileManager.ChangeAsync(file, input.NewFileName, oldParent, newParent);
+            await _fileManager.ChangeAsync(file, newFileName, oldParent, newParent);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Move});
@@ -168,11 +230,9 @@ namespace EasyAbp.FileManagement.Files
             var downloadLimitCache =
                 ServiceProvider.GetRequiredService<IDistributedCache<UserFileDownloadLimitCacheItem>>();
 
-            var configurationProvider = ServiceProvider.GetRequiredService<IFileContainerConfigurationProvider>();
+            var configuration = _configurationProvider.Get(file.FileContainerName);
             
-            var configuration = configurationProvider.Get(file.FileContainerName);
-            
-            if (!configuration.EachUserGetDownloadInfoLimitPreMinute.HasValue)
+            if (!configuration.GetDownloadInfoTimesLimitEachUserPerMinute.HasValue)
             {
                 return await _fileManager.GetDownloadInfoAsync(file);
             }
@@ -191,7 +251,7 @@ namespace EasyAbp.FileManagement.Files
                     AbsoluteExpiration = absoluteExpiration
                 });
 
-            if (cacheItem.Count >= configuration.EachUserGetDownloadInfoLimitPreMinute.Value)
+            if (cacheItem.Count >= configuration.GetDownloadInfoTimesLimitEachUserPerMinute.Value)
             {
                 throw new UserGetDownloadInfoExceededLimitException();
             }
@@ -218,6 +278,10 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
             
+            var configuration = _configurationProvider.Get(file.FileContainerName);
+
+            CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
+            CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
@@ -236,11 +300,17 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
         {
+            var fileName = input.FileName;
+            
             var file = await GetEntityByIdAsync(id);
 
+            var configuration = _configurationProvider.Get(file.FileContainerName);
+
+            CheckFileExtension(new[] {Path.GetExtension(fileName)}, configuration);
+            
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
-            await _fileManager.ChangeAsync(file, input.FileName, parent, parent);
+            await _fileManager.ChangeAsync(file, fileName, parent, parent);
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
@@ -275,6 +345,16 @@ namespace EasyAbp.FileManagement.Files
                 MimeType = file.MimeType,
                 Content = await _fileManager.GetBlobAsync(file)
             };
+        }
+
+        [Authorize]
+        public virtual Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName,
+            Guid? ownerUserId)
+        {
+            // Todo: should map to PublicFileContainerConfiguration type
+            return Task.FromResult(
+                _configurationProvider.Get(fileContainerName) as PublicFileContainerConfiguration
+            );
         }
     }
 }

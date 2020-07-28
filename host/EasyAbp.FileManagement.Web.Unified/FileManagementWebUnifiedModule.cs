@@ -133,6 +133,20 @@ namespace EasyAbp.FileManagement
                     container.FileContainerType = FileContainerType.Public;
                     container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
                     container.AbpBlobDirectorySeparator = "/";
+                    
+                    container.RetainDeletedBlobs = false;
+                    container.EnableAutoRename = true;
+
+                    container.MaxByteSizeForEachFile = 5 * 1024 * 1024;
+                    container.MaxByteSizeForEachUpload = 10 * 1024 * 1024;
+                    container.MaxFileQuantityForEachUpload = 2;
+
+                    container.AllowOnlyConfiguredFileExtensions = true;
+                    container.FileExtensionsConfiguration.Add(".jpg", true);
+                    container.FileExtensionsConfiguration.Add(".png", true);
+                    // container.FileExtensionsConfiguration.Add(".exe", false);
+
+                    container.GetDownloadInfoTimesLimitEachUserPerMinute = 10;
                 });
             });
         }
