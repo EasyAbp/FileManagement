@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using EasyAbp.FileManagement.Files;
@@ -23,7 +24,7 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         public Guid? ParentId { get; set; }
 
         [BindProperty]
-        public IFormFile UploadedFile { get; set; }
+        public IFormFile[] UploadedFiles { get; set; }
 
         private readonly IFileAppService _service;
 
@@ -34,18 +35,22 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = new CreateFileDto
+            var dto = new CreateManyFileDto {FileInfos = new List<CreateFileDto>()};
+            foreach (var uploadedFile in UploadedFiles)
             {
-                FileContainerName = FileContainerName,
-                OwnerUserId = OwnerUserId,
-                FileName = UploadedFile.FileName,
-                FileType = FileType.RegularFile,
-                MimeType = UploadedFile.ContentType,
-                ParentId = ParentId,
-                Content = await UploadedFile.GetAllBytesAsync()
-            };
-            
-            await _service.CreateAsync(dto);
+                dto.FileInfos.Add(new CreateFileDto
+                {
+                    FileContainerName = FileContainerName,
+                    OwnerUserId = OwnerUserId,
+                    FileName = uploadedFile.FileName,
+                    FileType = FileType.RegularFile,
+                    MimeType = uploadedFile.ContentType,
+                    ParentId = ParentId,
+                    Content = await uploadedFile.GetAllBytesAsync()
+                });
+            }
+
+            await _service.CreateManyAsync(dto);
             
             return NoContent();
         }

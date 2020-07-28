@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files.Dtos;
+using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 
 namespace EasyAbp.FileManagement.Files
@@ -13,6 +14,8 @@ namespace EasyAbp.FileManagement.Files
             CreateFileDto,
             UpdateFileDto>
     {
+        Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileDto input);
+        
         Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id);

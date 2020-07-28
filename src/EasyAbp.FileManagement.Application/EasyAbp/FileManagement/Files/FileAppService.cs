@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -84,10 +85,10 @@ namespace EasyAbp.FileManagement.Files
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
+            
+            await _repository.InsertAsync(file, autoSave: true);
 
             await _fileManager.TrySaveBlobAsync(file, input.Content);
-
-            await _repository.InsertAsync(file, autoSave: true);
 
             return MapToGetOutputDto(file);
         }
@@ -101,6 +102,34 @@ namespace EasyAbp.FileManagement.Files
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
 
             await _fileManager.DeleteAsync(file);
+        }
+
+        public virtual async Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileDto input)
+        {
+            var files = new File[input.FileInfos.Count];
+
+            for (var i = 0; i < input.FileInfos.Count; i++)
+            {
+                var fileInfo = input.FileInfos[i];
+                var parent = await TryGetEntityByNullableIdAsync(fileInfo.ParentId);
+
+                var file = await _fileManager.CreateAsync(fileInfo.FileContainerName, fileInfo.OwnerUserId,
+                    fileInfo.FileName, fileInfo.MimeType, fileInfo.FileType, parent, fileInfo.Content);
+
+                await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                    new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
+
+                await _repository.InsertAsync(file, autoSave: true);
+
+                files[i] = file;
+            }
+
+            for (var i = 0; i < files.Length; i++)
+            {
+                await _fileManager.TrySaveBlobAsync(files[i], input.FileInfos[i].Content);
+            }
+
+            return new ListResultDto<FileInfoDto>(files.Select(MapToGetListOutputDto).ToList());
         }
 
         [Authorize]
@@ -196,10 +225,10 @@ namespace EasyAbp.FileManagement.Files
 
             await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
-            
-            await _fileManager.TrySaveBlobAsync(file, input.Content);
 
             await _repository.UpdateAsync(file, autoSave: true);
+
+            await _fileManager.TrySaveBlobAsync(file, input.Content);
 
             return MapToGetOutputDto(file);
         }

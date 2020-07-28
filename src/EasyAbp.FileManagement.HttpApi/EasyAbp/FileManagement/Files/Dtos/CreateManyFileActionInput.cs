@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class CreateFileActionInput : IValidatableObject
+    public class CreateManyFileActionInput : IValidatableObject
     {
         [Required]
         public string FileContainerName { get; set; }
@@ -16,7 +16,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
         
         public Guid? OwnerUserId { get; set; }
         
-        public IFormFile File { get; set; }
+        public IFormFile[] File { get; set; }
         
         public bool GenerateUniqueFileName { get; set; }
         

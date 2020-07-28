@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files.Dtos;
@@ -42,7 +43,7 @@ namespace EasyAbp.FileManagement.Files
                 throw new NoUploadedFileException();
             }
 
-            var fileName = input.FileName.IsNullOrWhiteSpace() ? GenerateUniqueFileName(input.File) : input.FileName;
+            var fileName = input.GenerateUniqueFileName ? GenerateUniqueFileName(input.File) : input.File.FileName;
             
             await using var memoryStream = new MemoryStream();
             
@@ -58,6 +59,41 @@ namespace EasyAbp.FileManagement.Files
                 OwnerUserId = input.OwnerUserId,
                 Content = memoryStream.ToArray()
             });
+        }
+        
+        [HttpPost]
+        [Route("many")]
+        [Consumes("multipart/form-data")]
+        public async Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileActionInput input)
+        {
+            if (input.File.IsNullOrEmpty())
+            {
+                throw new NoUploadedFileException();
+            }
+
+            var createFileDtos = new List<CreateFileDto>();
+            
+            foreach (var file in input.File)
+            {
+                var fileName = input.GenerateUniqueFileName ? GenerateUniqueFileName(file) : file.FileName;
+
+                await using var memoryStream = new MemoryStream();
+                
+                await file.CopyToAsync(memoryStream);
+
+                createFileDtos.Add(new CreateFileDto
+                {
+                    FileContainerName = input.FileContainerName,
+                    FileName = fileName,
+                    MimeType = file.ContentType,
+                    FileType = input.FileType,
+                    ParentId = input.ParentId,
+                    OwnerUserId = input.OwnerUserId,
+                    Content = memoryStream.ToArray()
+                });
+            }
+
+            return await _service.CreateManyAsync(new CreateManyFileDto {FileInfos = createFileDtos});
         }
 
         protected virtual string GenerateUniqueFileName(IFormFile inputFile)
