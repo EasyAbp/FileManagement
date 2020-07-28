@@ -1,6 +1,7 @@
 using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Files.Dtos;
 using AutoMapper;
+using EasyAbp.FileManagement.Containers;
 using Volo.Abp.AutoMapper;
 
 namespace EasyAbp.FileManagement
@@ -13,6 +14,7 @@ namespace EasyAbp.FileManagement
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
             CreateMap<File, FileInfoDto>();
+            CreateMap<FileContainerConfiguration, PublicFileContainerConfiguration>(MemberList.Destination);
         }
     }
 }

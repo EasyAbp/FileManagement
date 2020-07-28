@@ -351,10 +351,9 @@ namespace EasyAbp.FileManagement.Files
         public virtual Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName,
             Guid? ownerUserId)
         {
-            // Todo: should map to PublicFileContainerConfiguration type
             return Task.FromResult(
-                _configurationProvider.Get(fileContainerName) as PublicFileContainerConfiguration
-            );
+                ObjectMapper.Map<FileContainerConfiguration, PublicFileContainerConfiguration>(
+                    _configurationProvider.Get(fileContainerName)));
         }
     }
 }
