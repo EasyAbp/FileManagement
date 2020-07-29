@@ -37,7 +37,7 @@ namespace EasyAbp.FileManagement.Files
 
         [HttpPost]
         [Consumes("multipart/form-data")]
-        public async Task<CreateFileOutput> CreateAsync(CreateFileActionInput input)
+        public async Task<CreateFileOutput> CreateAsync([FromForm] CreateFileActionInput input)
         {
             if (input.File == null)
             {
@@ -65,7 +65,7 @@ namespace EasyAbp.FileManagement.Files
         [HttpPost]
         [Route("many")]
         [Consumes("multipart/form-data")]
-        public async Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileActionInput input)
+        public async Task<CreateManyFileOutput> CreateManyAsync([FromForm] CreateManyFileActionInput input)
         {
             if (input.File.IsNullOrEmpty())
             {
@@ -105,7 +105,7 @@ namespace EasyAbp.FileManagement.Files
         [HttpPut]
         [Route("{id}")]
         [Consumes("multipart/form-data")]
-        public async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileActionInput input)
+        public async Task<FileInfoDto> UpdateAsync(Guid id, [FromForm] UpdateFileActionInput input)
         {
             if (input.File == null)
             {
