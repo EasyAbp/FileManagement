@@ -85,7 +85,11 @@ namespace EasyAbp.FileManagement.Files
             var configuration = _configurationProvider.Get(input.FileContainerName);
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
-            CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+
+            if (input.FileType == FileType.RegularFile)
+            {
+                CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+            }
          
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
@@ -160,7 +164,10 @@ namespace EasyAbp.FileManagement.Files
 
             CheckFileQuantity(input.FileInfos.Count, configuration);
             CheckFileSize(input.FileInfos.ToDictionary(x => x.FileName, x => x.Content?.LongLength ?? 0), configuration);
-            CheckFileExtension(input.FileInfos.Select(x => Path.GetExtension(x.FileName)).Distinct().ToList(), configuration);
+
+            CheckFileExtension(
+                input.FileInfos.Where(x => x.FileType == FileType.RegularFile)
+                    .Select(x => Path.GetExtension(x.FileName)).Distinct().ToList(), configuration);
             
             var files = new File[input.FileInfos.Count];
 
