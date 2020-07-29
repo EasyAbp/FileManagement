@@ -17,8 +17,7 @@ using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class FileAppService : CrudAppService<File, FileInfoDto, Guid, GetFileListInput, CreateFileDto, UpdateFileDto>,
-        IFileAppService
+    public class FileAppService : ReadOnlyAppService<File, FileInfoDto, Guid, GetFileListInput>, IFileAppService
     {
         private readonly IFileManager _fileManager;
         private readonly IFileRepository _repository;
@@ -80,7 +79,7 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [Authorize]
-        public override async Task<FileInfoDto> CreateAsync(CreateFileDto input)
+        public virtual async Task<CreateFileOutput> CreateAsync(CreateFileInput input)
         {
             var configuration = _configurationProvider.Get(input.FileContainerName);
 
@@ -103,7 +102,18 @@ namespace EasyAbp.FileManagement.Files
 
             await _fileManager.TrySaveBlobAsync(file, input.Content);
 
-            return MapToGetOutputDto(file);
+            var downloadInfoModel = await _fileManager.GetDownloadInfoAsync(file);
+            
+            return MapToCreateOutputDto(file, downloadInfoModel);
+        }
+
+        protected virtual CreateFileOutput MapToCreateOutputDto(File file, FileDownloadInfoModel downloadInfoModel)
+        {
+            return new CreateFileOutput
+            {
+                FileInfo = ObjectMapper.Map<File, FileInfoDto>(file),
+                DownloadInfo = downloadInfoModel
+            };
         }
 
         protected virtual void CheckFileQuantity(int count, FileContainerConfiguration configuration)
@@ -148,7 +158,7 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [Authorize]
-        public override async Task DeleteAsync(Guid id)
+        public virtual async Task DeleteAsync(Guid id)
         {
             var file = await GetEntityByIdAsync(id);
             
@@ -158,7 +168,7 @@ namespace EasyAbp.FileManagement.Files
             await _fileManager.DeleteAsync(file);
         }
 
-        public virtual async Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileDto input)
+        public virtual async Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileInput input)
         {
             var configuration = _configurationProvider.Get(input.FileInfos.First().FileContainerName);
 
@@ -192,7 +202,14 @@ namespace EasyAbp.FileManagement.Files
                 await _fileManager.TrySaveBlobAsync(files[i], input.FileInfos[i].Content);
             }
 
-            return new ListResultDto<FileInfoDto>(files.Select(MapToGetListOutputDto).ToList());
+            var items = new List<CreateFileOutput>();
+
+            foreach (var file in files)
+            {
+                items.Add(MapToCreateOutputDto(file, await _fileManager.GetDownloadInfoAsync(file)));
+            }
+
+            return new CreateManyFileOutput {Items = items};
         }
 
         [Authorize]
@@ -281,7 +298,7 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [Authorize]
-        public override async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileDto input)
+        public virtual async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input)
         {
             var file = await GetEntityByIdAsync(id);
             
@@ -305,7 +322,7 @@ namespace EasyAbp.FileManagement.Files
         }
         
         [Authorize]
-        public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
+        public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
             var fileName = input.FileName;
             
@@ -338,7 +355,7 @@ namespace EasyAbp.FileManagement.Files
             };
         }
         
-        public virtual async Task<FileDownloadDto> DownloadAsync(Guid id, string token)
+        public virtual async Task<FileDownloadOutput> DownloadAsync(Guid id, string token)
         {
             var provider = ServiceProvider.GetRequiredService<LocalFileDownloadProvider>();
 
@@ -346,7 +363,7 @@ namespace EasyAbp.FileManagement.Files
 
             var file = await GetEntityByIdAsync(id);
 
-            return new FileDownloadDto
+            return new FileDownloadOutput
             {
                 FileName = file.FileName,
                 MimeType = file.MimeType,

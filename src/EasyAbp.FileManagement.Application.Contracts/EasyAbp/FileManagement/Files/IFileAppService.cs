@@ -8,22 +8,26 @@ using Volo.Abp.Application.Services;
 namespace EasyAbp.FileManagement.Files
 {
     public interface IFileAppService :
-        ICrudAppService< 
+        IReadOnlyAppService< 
             FileInfoDto, 
             Guid, 
-            GetFileListInput,
-            CreateFileDto,
-            UpdateFileDto>
+            GetFileListInput>
     {
-        Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileDto input);
-        
+        Task<CreateFileOutput> CreateAsync(CreateFileInput input);
+
+        Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileInput input);
+
+        Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input);
+
         Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input);
+
+        Task DeleteAsync(Guid id);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id);
         
-        Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input);
+        Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input);
 
-        Task<FileDownloadDto> DownloadAsync(Guid id, string token);
+        Task<FileDownloadOutput> DownloadAsync(Guid id, string token);
 
         Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName, Guid? ownerUserId);
     }

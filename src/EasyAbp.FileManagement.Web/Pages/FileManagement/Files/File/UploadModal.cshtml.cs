@@ -44,10 +44,10 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = new CreateManyFileDto {FileInfos = new List<CreateFileDto>()};
+            var dto = new CreateManyFileInput {FileInfos = new List<CreateFileInput>()};
             foreach (var uploadedFile in UploadedFiles)
             {
-                dto.FileInfos.Add(new CreateFileDto
+                dto.FileInfos.Add(new CreateFileInput
                 {
                     FileContainerName = FileContainerName,
                     OwnerUserId = OwnerUserId,

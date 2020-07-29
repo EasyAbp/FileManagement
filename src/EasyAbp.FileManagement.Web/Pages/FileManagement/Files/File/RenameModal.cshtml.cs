@@ -32,7 +32,7 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = new UpdateFileInfoDto
+            var dto = new UpdateFileInfoInput
             {
                 FileName = ViewModel.FileName,
             };

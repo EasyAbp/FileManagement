@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class CreateFileDto : IValidatableObject
+    public class CreateFileInput : IValidatableObject
     {
         [Required]
         public string FileContainerName { get; set; }

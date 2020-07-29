@@ -37,7 +37,7 @@ namespace EasyAbp.FileManagement.Files
 
         [HttpPost]
         [Consumes("multipart/form-data")]
-        public async Task<FileInfoDto> CreateAsync(CreateFileActionInput input)
+        public async Task<CreateFileOutput> CreateAsync(CreateFileActionInput input)
         {
             if (input.File == null)
             {
@@ -50,7 +50,7 @@ namespace EasyAbp.FileManagement.Files
             
             await input.File.CopyToAsync(memoryStream);
 
-            return await _service.CreateAsync(new CreateFileDto
+            return await _service.CreateAsync(new CreateFileInput
             {
                 FileContainerName = input.FileContainerName,
                 FileName = fileName,
@@ -65,14 +65,14 @@ namespace EasyAbp.FileManagement.Files
         [HttpPost]
         [Route("many")]
         [Consumes("multipart/form-data")]
-        public async Task<ListResultDto<FileInfoDto>> CreateManyAsync(CreateManyFileActionInput input)
+        public async Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileActionInput input)
         {
             if (input.File.IsNullOrEmpty())
             {
                 throw new NoUploadedFileException();
             }
 
-            var createFileDtos = new List<CreateFileDto>();
+            var createFileDtos = new List<CreateFileInput>();
             
             foreach (var file in input.File)
             {
@@ -82,7 +82,7 @@ namespace EasyAbp.FileManagement.Files
                 
                 await file.CopyToAsync(memoryStream);
 
-                createFileDtos.Add(new CreateFileDto
+                createFileDtos.Add(new CreateFileInput
                 {
                     FileContainerName = input.FileContainerName,
                     FileName = fileName,
@@ -94,7 +94,7 @@ namespace EasyAbp.FileManagement.Files
                 });
             }
 
-            return await _service.CreateManyAsync(new CreateManyFileDto {FileInfos = createFileDtos});
+            return await _service.CreateManyAsync(new CreateManyFileInput {FileInfos = createFileDtos});
         }
 
         protected virtual string GenerateUniqueFileName(IFormFile inputFile)
@@ -116,7 +116,7 @@ namespace EasyAbp.FileManagement.Files
             
             await input.File.CopyToAsync(memoryStream);
 
-            return await _service.UpdateAsync(id, new UpdateFileDto
+            return await _service.UpdateAsync(id, new UpdateFileInput
             {
                 FileName = input.FileName,
                 MimeType = input.File.ContentType,
@@ -147,7 +147,7 @@ namespace EasyAbp.FileManagement.Files
 
         [HttpPut]
         [Route("{id}/info")]
-        public Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoDto input)
+        public Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
             return _service.UpdateInfoAsync(id, input);
         }

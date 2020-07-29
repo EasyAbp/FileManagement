@@ -32,7 +32,7 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = new CreateFileDto
+            var dto = new CreateFileInput
             {
                 FileContainerName = FileContainerName,
                 OwnerUserId = OwnerUserId,

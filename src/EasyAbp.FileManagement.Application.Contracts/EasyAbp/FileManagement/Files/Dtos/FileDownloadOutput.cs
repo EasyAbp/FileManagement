@@ -1,6 +1,6 @@
 ﻿namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class FileDownloadDto
+    public class FileDownloadOutput
     {
         public string FileName { get; set; }
 

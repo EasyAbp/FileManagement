@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class CreateManyFileDto : IValidatableObject
+    public class CreateManyFileInput : IValidatableObject
     {
-        public List<CreateFileDto> FileInfos { get; set; }
+        public List<CreateFileInput> FileInfos { get; set; }
         
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -19,7 +19,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
             if (FileInfos.Select(x => x.FileContainerName).Distinct().Count() > 1)
             {
                 yield return new ValidationResult("FileContainerName of files should not be the same!",
-                    new[] {nameof(CreateFileDto.FileContainerName)});
+                    new[] {nameof(CreateFileInput.FileContainerName)});
             }
         }
     }

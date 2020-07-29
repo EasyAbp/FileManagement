@@ -50,7 +50,7 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
                 throw new ReUploadWithDifferentExtensionException();
             }
 
-            var updateFileDto = new UpdateFileDto
+            var updateFileDto = new UpdateFileInput
             {
                 FileName = dto.FileName,
                 MimeType = UploadedFile.ContentType,
