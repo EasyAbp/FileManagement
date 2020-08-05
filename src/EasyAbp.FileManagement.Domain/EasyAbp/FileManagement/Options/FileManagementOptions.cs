@@ -1,6 +1,7 @@
 ﻿using System;
+using EasyAbp.FileManagement.Options.Containers;
 
-namespace EasyAbp.FileManagement.Containers
+namespace EasyAbp.FileManagement.Options
 {
     public class FileManagementOptions
     {

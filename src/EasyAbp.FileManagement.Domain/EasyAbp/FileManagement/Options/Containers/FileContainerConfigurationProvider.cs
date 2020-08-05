@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Options;
 using Volo.Abp.DependencyInjection;
 
-namespace EasyAbp.FileManagement.Containers
+namespace EasyAbp.FileManagement.Options.Containers
 {
     public class FileContainerConfigurationProvider : IFileContainerConfigurationProvider, ITransientDependency
     {

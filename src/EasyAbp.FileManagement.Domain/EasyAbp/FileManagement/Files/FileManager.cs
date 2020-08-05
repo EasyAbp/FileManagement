@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
+using EasyAbp.FileManagement.Options;
+using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

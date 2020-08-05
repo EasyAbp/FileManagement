@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using EasyAbp.FileManagement.Containers;
 using JetBrains.Annotations;
 
-namespace EasyAbp.FileManagement.Containers
+namespace EasyAbp.FileManagement.Options.Containers
 {
     public class FileContainerConfiguration : PublicFileContainerConfiguration
     {

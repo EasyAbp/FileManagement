@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Volo.Abp;
 
-namespace EasyAbp.FileManagement.Containers
+namespace EasyAbp.FileManagement.Options.Containers
 {
     public class FileContainerConfigurations
     {

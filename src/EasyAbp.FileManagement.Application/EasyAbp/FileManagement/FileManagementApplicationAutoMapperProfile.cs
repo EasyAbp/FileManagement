@@ -2,6 +2,7 @@ using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Files.Dtos;
 using AutoMapper;
 using EasyAbp.FileManagement.Containers;
+using EasyAbp.FileManagement.Options.Containers;
 using Volo.Abp.AutoMapper;
 
 namespace EasyAbp.FileManagement

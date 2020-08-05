@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
+using EasyAbp.FileManagement.Options.Containers;
 using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;

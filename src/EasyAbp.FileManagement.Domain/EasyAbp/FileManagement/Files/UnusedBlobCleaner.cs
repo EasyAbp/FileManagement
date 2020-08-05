@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
+using EasyAbp.FileManagement.Options.Containers;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Domain.Entities.Events;
 using Volo.Abp.EventBus;
