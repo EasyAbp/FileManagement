@@ -13,7 +13,7 @@ using Volo.Abp.EntityFrameworkCore;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class FileRepository : EfCoreRepository<FileManagementDbContext, File, Guid>, IFileRepository
+    public class FileRepository : EfCoreRepository<IFileManagementDbContext, File, Guid>, IFileRepository
     {
         public FileRepository(IDbContextProvider<FileManagementDbContext> dbContextProvider) : base(dbContextProvider)
         {
