@@ -15,7 +15,7 @@ namespace EasyAbp.FileManagement.Files
 {
     public class FileRepository : EfCoreRepository<IFileManagementDbContext, File, Guid>, IFileRepository
     {
-        public FileRepository(IDbContextProvider<FileManagementDbContext> dbContextProvider) : base(dbContextProvider)
+        public FileRepository(IDbContextProvider<IFileManagementDbContext> dbContextProvider) : base(dbContextProvider)
         {
         }
 
