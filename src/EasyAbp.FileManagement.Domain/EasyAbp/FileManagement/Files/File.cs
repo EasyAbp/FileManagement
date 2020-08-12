@@ -34,6 +34,9 @@ namespace EasyAbp.FileManagement.Files
         public virtual string BlobName { get; protected set; }
         
         public virtual Guid? OwnerUserId { get; protected set; }
+        
+        [CanBeNull]
+        public virtual string Flag { get; protected set; }
 
         protected File()
         {
@@ -51,7 +54,8 @@ namespace EasyAbp.FileManagement.Files
             long byteSize,
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
-            Guid? ownerUserId) : base(id)
+            Guid? ownerUserId,
+            [CanBeNull] string flag = null) : base(id)
         {
             if (parent != null && parent.FileContainerName != fileContainerName)
             {
@@ -71,6 +75,7 @@ namespace EasyAbp.FileManagement.Files
             Hash = hash;
             BlobName = blobName;
             OwnerUserId = ownerUserId;
+            Flag = flag;
         }
 
         public void TryAddSubFileUpdatedDomainEvent()
@@ -128,6 +133,11 @@ namespace EasyAbp.FileManagement.Files
         {
             SubFilesQuantity = statisticData.SubFilesQuantity;
             ByteSize = statisticData.ByteSize;
+        }
+
+        public void SetFlag([CanBeNull] string flag)
+        {
+            Flag = flag;
         }
     }
 }
