@@ -31,7 +31,7 @@ namespace EasyAbp.FileManagement.Files
                 return;
             }
             
-            if (await _fileRepository.FirstOrDefaultAsync(eventData.Entity.BlobName) == null)
+            if (await _fileRepository.FirstOrDefaultAsync(eventData.Entity.FileContainerName, eventData.Entity.BlobName) == null)
             {
                 await _fileManager.DeleteBlobAsync(eventData.Entity);
             }
@@ -51,7 +51,7 @@ namespace EasyAbp.FileManagement.Files
                 return;
             }
             
-            if (await _fileRepository.FirstOrDefaultAsync(eventData.OldBlobName) == null)
+            if (await _fileRepository.FirstOrDefaultAsync(eventData.FileContainerName, eventData.OldBlobName) == null)
             {
                 var blobContainer = _fileManager.GetBlobContainer(file);
 

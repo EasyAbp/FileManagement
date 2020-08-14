@@ -62,7 +62,7 @@ namespace EasyAbp.FileManagement.Files
             
             if (fileType == FileType.RegularFile)
             {
-                var existingFile = await _fileRepository.FirstOrDefaultAsync(hashString, fileContent.LongLength);
+                var existingFile = await _fileRepository.FirstOrDefaultAsync(fileContainerName, hashString, fileContent.LongLength);
 
                 if (existingFile != null)
                 {
@@ -156,6 +156,7 @@ namespace EasyAbp.FileManagement.Files
                 await _localEventBus.PublishAsync(new FileBlobNameChangedEto
                 {
                     FileId = file.Id,
+                    FileContainerName = file.FileContainerName,
                     OldBlobName = oldBlobName,
                     NewBlobName = blobName
                 }));

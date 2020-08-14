@@ -7,6 +7,8 @@ namespace EasyAbp.FileManagement.Files
     {
         public Guid FileId { get; set; }
         
+        public string FileContainerName { get; set; }
+        
         public string OldBlobName { get; set; }
         
         public string NewBlobName { get; set; }

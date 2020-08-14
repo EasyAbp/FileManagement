@@ -37,15 +37,19 @@ namespace EasyAbp.FileManagement.Files
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public virtual async Task<File> FirstOrDefaultAsync(string hash, long byteSize, CancellationToken cancellationToken = default)
+        public virtual async Task<File> FirstOrDefaultAsync(string fileContainerName, string hash, long byteSize,
+            CancellationToken cancellationToken = default)
         {
-            return await DbSet.Where(x => x.Hash == hash && x.ByteSize == byteSize)
+            return await DbSet
+                .Where(x => x.Hash == hash && x.ByteSize == byteSize && x.FileContainerName == fileContainerName)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
-        public virtual async Task<File> FirstOrDefaultAsync(string blobName, CancellationToken cancellationToken = default)
+        public virtual async Task<File> FirstOrDefaultAsync(string fileContainerName, string blobName,
+            CancellationToken cancellationToken = default)
         {
-            return await DbSet.Where(x => x.BlobName == blobName).FirstOrDefaultAsync(cancellationToken);
+            return await DbSet.Where(x => x.BlobName == blobName && x.FileContainerName == fileContainerName)
+                .FirstOrDefaultAsync(cancellationToken);
         }
 
         public virtual async Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id,
