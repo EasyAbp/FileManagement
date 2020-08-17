@@ -103,17 +103,19 @@ namespace EasyAbp.FileManagement.Files
 
             await _fileManager.TrySaveBlobAsync(file, input.Content);
 
-            var downloadInfoModel = await _fileManager.GetDownloadInfoAsync(file);
-            
-            return MapToCreateOutputDto(file, downloadInfoModel);
+            return await MapToCreateOutputDtoAsync(file);
         }
 
-        protected virtual CreateFileOutput MapToCreateOutputDto(File file, FileDownloadInfoModel downloadInfoModel)
+        protected virtual async Task<CreateFileOutput> MapToCreateOutputDtoAsync(File file)
         {
+            var downloadInfo = file.FileType == FileType.RegularFile
+                ? await _fileManager.GetDownloadInfoAsync(file)
+                : null;
+            
             return new CreateFileOutput
             {
                 FileInfo = ObjectMapper.Map<File, FileInfoDto>(file),
-                DownloadInfo = downloadInfoModel
+                DownloadInfo = downloadInfo
             };
         }
 
@@ -207,7 +209,7 @@ namespace EasyAbp.FileManagement.Files
 
             foreach (var file in files)
             {
-                items.Add(MapToCreateOutputDto(file, await _fileManager.GetDownloadInfoAsync(file)));
+                items.Add(await MapToCreateOutputDtoAsync(file));
             }
 
             return new CreateManyFileOutput {Items = items};
