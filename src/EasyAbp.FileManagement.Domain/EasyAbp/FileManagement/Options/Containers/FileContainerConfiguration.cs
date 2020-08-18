@@ -13,7 +13,7 @@ namespace EasyAbp.FileManagement.Options.Containers
         /// <summary>
         /// Do not delete the BLOB even if no file is using it.
         /// </summary>
-        public bool RetainDeletedBlobs { get; set; }
+        public bool RetainUnusedBlobs { get; set; }
 
         [CanBeNull]
         public Type SpecifiedFileDownloadProviderType { get; set; }

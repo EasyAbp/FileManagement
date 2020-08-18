@@ -26,7 +26,7 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual async Task HandleEventAsync(EntityDeletedEventData<File> eventData)
         {
-            if (_configurationProvider.Get(eventData.Entity.FileContainerName).RetainDeletedBlobs)
+            if (_configurationProvider.Get(eventData.Entity.FileContainerName).RetainUnusedBlobs)
             {
                 return;
             }
@@ -46,7 +46,7 @@ namespace EasyAbp.FileManagement.Files
                 return;
             }
 
-            if (_configurationProvider.Get(file.FileContainerName).RetainDeletedBlobs)
+            if (_configurationProvider.Get(file.FileContainerName).RetainUnusedBlobs)
             {
                 return;
             }

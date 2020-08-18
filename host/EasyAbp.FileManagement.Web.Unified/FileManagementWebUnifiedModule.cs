@@ -135,7 +135,7 @@ namespace EasyAbp.FileManagement
                     container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
                     container.AbpBlobDirectorySeparator = "/";
                     
-                    container.RetainDeletedBlobs = false;
+                    container.RetainUnusedBlobs = false;
                     container.EnableAutoRename = true;
 
                     container.MaxByteSizeForEachFile = 5 * 1024 * 1024;
