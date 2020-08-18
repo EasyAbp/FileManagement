@@ -120,7 +120,8 @@ namespace EasyAbp.FileManagement
                     container.IsMultiTenant = true;
                     container.UseFileSystem(fileSystem =>
                     {
-                        fileSystem.BasePath = "C:\\my-files";
+                        // fileSystem.BasePath = "C:\\my-files";
+                        fileSystem.BasePath = Path.Combine(hostingEnvironment.ContentRootPath, "my-files");
                     });
                 });
             });
