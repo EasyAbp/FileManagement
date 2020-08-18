@@ -28,7 +28,7 @@ steps:
   inputs:
     script: |
       echo commands
-      sed -i '0,/Default[^,]*/s//$(ConnectionStrings)"/g' host/EasyAbp.PrivateMessaging.Web.Unified/appsettings.json
+      sed -i '0,/Default[^,]*/s//$(ConnectionStrings)"/g' host/EasyAbp.FileManagement.Web.Unified/appsettings.json
       echo commands executed
 - task: DotNetCoreCLI@2
   displayName: 'restore'
@@ -51,7 +51,8 @@ steps:
   displayName: 'update database'
   inputs:
     script: | 
-      dotnet ef database update --project host/EasyAbp.PrivateMessaging.Web.Unified/EasyAbp.PrivateMessaging.Web.Unified.csproj
+      dotnet ef database update --project host/EasyAbp.FileManagement.Web.Unified/EasyAbp.FileManagement.Web.Unified.csproj
+
 
 - task: Docker@2
   displayName: 'build and push docker'
@@ -59,6 +60,6 @@ steps:
     containerRegistry: $(DockerRegistry)
     repository: $(repository)
     command: 'buildAndPush'
-    Dockerfile: 'host/EasyAbp.PrivateMessaging.Web.Unified/Dockerfile'
+    Dockerfile: 'host/EasyAbp.FileManagement.Web.Unified/Dockerfile'
     buildContext: .
     tags: 'latest'
