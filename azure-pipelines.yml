@@ -46,7 +46,13 @@ steps:
   inputs:
    script: |
     dotnet publish
-    
+
+- task: CmdLine@2
+  displayName: 'drop database'
+  inputs:
+    script: |
+      dotnet ef database drop --project host/EasyAbp.FileManagement.Web.Unified/EasyAbp.FileManagement.Web.Unified.csproj -f
+
 - task: CmdLine@2
   displayName: 'update database'
   inputs:
