@@ -2,6 +2,7 @@
 
 [![NuGet](https://img.shields.io/nuget/v/EasyAbp.FileManagement.Domain.Shared.svg?style=flat-square)](https://www.nuget.org/packages/EasyAbp.FileManagement.Domain.Shared)
 [![NuGet Download](https://img.shields.io/nuget/dt/EasyAbp.FileManagement.Domain.Shared.svg?style=flat-square)](https://www.nuget.org/packages/EasyAbp.FileManagement.Domain.Shared)
+[![GitHub stars](https://img.shields.io/github/stars/EasyAbp/FileManagement?style=social)](https://www.github.com/EasyAbp/FileManagement)
 
 An abp application module that allows users to upload and manage their own files based on the ABP BLOB storing.
 
@@ -9,15 +10,9 @@ An abp application module that allows users to upload and manage their own files
 
 We have launched an online demo for this module: [https://file.samples.easyabp.io](https://file.samples.easyabp.io)
 
-## Getting Started
+## Installation
 
-### Install with [AbpHelper](https://github.com/EasyAbp/AbpHelper.GUI)
-
-* Coming soon.
-
-### Install Manually
-
-1. Install the following NuGet packages. (see how)
+1. Install the following NuGet packages. ([see how](https://github.com/EasyAbp/EasyAbpGuide/blob/master/How-To.md#add-nuget-packages))
 
     * EasyAbp.FileManagement.Application
     * EasyAbp.FileManagement.Application.Contracts
@@ -29,7 +24,7 @@ We have launched an online demo for this module: [https://file.samples.easyabp.i
     * (Optional) EasyAbp.FileManagement.MongoDB
     * (Optional) EasyAbp.FileManagement.Web
 
-1. Add `DependsOn(typeof(xxx))` attribute to configure the module dependencies. (see how)
+1. Add `DependsOn(typeof(FileManagementXxxModule))` attribute to configure the module dependencies. ([see how](https://github.com/EasyAbp/EasyAbpGuide/blob/master/How-To.md#add-module-dependencies))
 
 1. Add `builder.ConfigureFileManagement();` to the `OnModelCreating()` method in **MyProjectMigrationsDbContext.cs**.
 
