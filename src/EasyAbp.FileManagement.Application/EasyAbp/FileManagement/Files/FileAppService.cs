@@ -38,7 +38,7 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
             
             return MapToGetOutputDto(file);
@@ -46,7 +46,7 @@ namespace EasyAbp.FileManagement.Files
 
         public override async Task<PagedResultDto<FileInfoDto>> GetListAsync(GetFileListInput input)
         {
-            await AuthorizationService.AuthorizeAsync(new FileOperationInfoModel
+            await AuthorizationService.CheckAsync(new FileOperationInfoModel
                 {
                     ParentId = input.ParentId,
                     FileContainerName = input.FileContainerName,
@@ -96,7 +96,7 @@ namespace EasyAbp.FileManagement.Files
             var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
                 input.MimeType, input.FileType, parent, input.Content);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
             
             await _repository.InsertAsync(file);
@@ -165,7 +165,7 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
             
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
 
             await _fileManager.DeleteAsync(file);
@@ -192,7 +192,7 @@ namespace EasyAbp.FileManagement.Files
                 var file = await _fileManager.CreateAsync(fileInfo.FileContainerName, fileInfo.OwnerUserId,
                     fileInfo.FileName, fileInfo.MimeType, fileInfo.FileType, parent, fileInfo.Content);
 
-                await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+                await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                     new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
 
                 await _repository.InsertAsync(file);
@@ -234,7 +234,7 @@ namespace EasyAbp.FileManagement.Files
             
             await _fileManager.ChangeAsync(file, newFileName, oldParent, newParent);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Move});
 
             await _repository.UpdateAsync(file, autoSave: true);
@@ -251,7 +251,7 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.GetDownloadInfo});
 
             var downloadLimitCache =
@@ -314,7 +314,7 @@ namespace EasyAbp.FileManagement.Files
             
             await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
             await _repository.UpdateAsync(file);
@@ -339,7 +339,7 @@ namespace EasyAbp.FileManagement.Files
             
             await _fileManager.ChangeAsync(file, fileName, parent, parent);
 
-            await AuthorizationService.AuthorizeAsync(CreateFileOperationInfoModel(file),
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
             await _repository.UpdateAsync(file, autoSave: true);
