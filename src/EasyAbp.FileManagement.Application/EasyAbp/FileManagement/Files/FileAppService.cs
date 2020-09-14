@@ -41,7 +41,7 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
             
-            return MapToGetOutputDto(file);
+            return await MapToGetOutputDtoAsync(file);
         }
 
         public override async Task<PagedResultDto<FileInfoDto>> GetListAsync(GetFileListInput input)
@@ -239,7 +239,7 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file, autoSave: true);
 
-            return MapToGetOutputDto(file);
+            return await MapToGetOutputDtoAsync(file);
         }
 
         protected virtual async Task<File> TryGetEntityByNullableIdAsync(Guid? fileId)
@@ -321,7 +321,7 @@ namespace EasyAbp.FileManagement.Files
 
             await _fileManager.TrySaveBlobAsync(file, input.Content);
 
-            return MapToGetOutputDto(file);
+            return await MapToGetOutputDtoAsync(file);
         }
         
         [Authorize]
@@ -344,7 +344,7 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file, autoSave: true);
 
-            return MapToGetOutputDto(file);
+            return await MapToGetOutputDtoAsync(file);
         }
 
         protected virtual FileOperationInfoModel CreateFileOperationInfoModel(File file)
