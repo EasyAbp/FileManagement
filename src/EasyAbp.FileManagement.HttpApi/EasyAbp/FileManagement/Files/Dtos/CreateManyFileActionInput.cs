@@ -16,7 +16,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
         
         public Guid? OwnerUserId { get; set; }
         
-        public IFormFile[] File { get; set; }
+        public IFormFile[] Files { get; set; }
         
         public bool GenerateUniqueFileName { get; set; }
         

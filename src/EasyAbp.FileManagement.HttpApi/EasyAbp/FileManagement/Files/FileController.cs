@@ -67,14 +67,14 @@ namespace EasyAbp.FileManagement.Files
         [Consumes("multipart/form-data")]
         public async Task<CreateManyFileOutput> CreateManyAsync([FromForm] CreateManyFileActionInput input)
         {
-            if (input.File.IsNullOrEmpty())
+            if (input.Files.IsNullOrEmpty())
             {
                 throw new NoUploadedFileException();
             }
 
             var createFileDtos = new List<CreateFileInput>();
             
-            foreach (var file in input.File)
+            foreach (var file in input.Files)
             {
                 var fileName = input.GenerateUniqueFileName ? GenerateUniqueFileName(file) : file.FileName;
 
