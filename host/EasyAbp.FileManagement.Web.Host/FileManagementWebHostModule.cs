@@ -58,6 +58,7 @@ namespace EasyAbp.FileManagement
         typeof(AbpTenantManagementWebModule),
         typeof(AbpTenantManagementHttpApiClientModule),
         typeof(AbpFeatureManagementHttpApiClientModule),
+        typeof(AbpFeatureManagementWebModule),
         typeof(AbpPermissionManagementHttpApiClientModule),
         typeof(AbpAspNetCoreSerilogModule)
         )]
