@@ -4,7 +4,7 @@ WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:5.0.101-buster-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:latest AS build
 WORKDIR /src
 COPY ["host/EasyAbp.FileManagement.Web.Unified/EasyAbp.FileManagement.Web.Unified.csproj", "host/EasyAbp.FileManagement.Web.Unified/"]
 COPY ["src/EasyAbp.FileManagement.Application/EasyAbp.FileManagement.Application.csproj", "src/EasyAbp.FileManagement.Application/"]
