@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace />
     <PreserveCompilationReferences>true</PreserveCompilationReferences>
     <UserSecretsId>EasyAbp.FileManagement-c2d31439-b723-48e2-b061-5ebd7aeb6010</UserSecretsId>
@@ -10,36 +10,36 @@
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="IdentityServer4.AccessTokenValidation" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="3.1.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.1.5" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Autofac" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Account.Web.IdentityServer" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Account.Application" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.SettingManagement.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.AuditLogging.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.IdentityServer.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Identity.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Identity.Application" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.Identity.HttpApi" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.PermissionManagement.Domain.Identity" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.TenantManagement.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.TenantManagement.HttpApi" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.FeatureManagement.EntityFrameworkCore" Version="3.2.1" />
-    <PackageReference Include="Volo.Abp.FeatureManagement.HttpApi" Version="3.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="5.0.*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="5.0.*" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Authentication.JwtBearer" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Autofac" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Caching.StackExchangeRedis" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.EntityFrameworkCore.SqlServer" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Serilog" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Account.Web.IdentityServer" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Account.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.SettingManagement.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.AuditLogging.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.IdentityServer.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.HttpApi" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Identity.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Identity.HttpApi" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.PermissionManagement.Domain.Identity" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.TenantManagement.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.TenantManagement.HttpApi" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.EntityFrameworkCore" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.FeatureManagement.HttpApi" Version="$(AbpVersion)" />
     <ProjectReference Include="..\..\src\EasyAbp.FileManagement.Application.Contracts\EasyAbp.FileManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\EasyAbp.FileManagement.Host.Shared\EasyAbp.FileManagement.Host.Shared.csproj" />
   </ItemGroup>
