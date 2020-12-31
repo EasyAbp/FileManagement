@@ -12,7 +12,7 @@ using Volo.Abp.Application.Dtos;
 namespace EasyAbp.FileManagement.Files
 {
     [RemoteService(Name = "EasyAbpFileManagement")]
-    [Route("/api/fileManagement/file")]
+    [Route("/api/file-management/file")]
     public class FileController : FileManagementController
     {
         private readonly IFileAppService _service;
