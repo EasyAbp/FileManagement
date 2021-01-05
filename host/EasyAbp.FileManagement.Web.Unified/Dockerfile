@@ -16,6 +16,7 @@ COPY ["host/EasyAbp.FileManagement.Host.Shared/EasyAbp.FileManagement.Host.Share
 COPY ["src/EasyAbp.FileManagement.Web/EasyAbp.FileManagement.Web.csproj", "src/EasyAbp.FileManagement.Web/"]
 COPY ["src/EasyAbp.FileManagement.HttpApi/EasyAbp.FileManagement.HttpApi.csproj", "src/EasyAbp.FileManagement.HttpApi/"]
 COPY ["src/EasyAbp.FileManagement.EntityFrameworkCore/EasyAbp.FileManagement.EntityFrameworkCore.csproj", "src/EasyAbp.FileManagement.EntityFrameworkCore/"]
+COPY Directory.Build.props .
 RUN dotnet restore "host/EasyAbp.FileManagement.Web.Unified/EasyAbp.FileManagement.Web.Unified.csproj"
 COPY . .
 WORKDIR "/src/host/EasyAbp.FileManagement.Web.Unified"
