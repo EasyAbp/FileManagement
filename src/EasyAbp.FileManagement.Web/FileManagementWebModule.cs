@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using EasyAbp.Abp.TagHelperPlus;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using EasyAbp.FileManagement.Localization;
 using EasyAbp.FileManagement.Web.Menus;
@@ -15,8 +16,9 @@ namespace EasyAbp.FileManagement.Web
     [DependsOn(
         typeof(FileManagementHttpApiModule),
         typeof(AbpAspNetCoreMvcUiThemeSharedModule),
-        typeof(AbpAutoMapperModule)
-        )]
+        typeof(AbpAutoMapperModule),
+        typeof(AbpTagHelperPlusModule)
+    )]
     public class FileManagementWebModule : AbpModule
     {
         public override void PreConfigureServices(ServiceConfigurationContext context)

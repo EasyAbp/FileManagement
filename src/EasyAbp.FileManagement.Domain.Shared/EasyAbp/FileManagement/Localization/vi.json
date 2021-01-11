@@ -19,7 +19,7 @@
     "FileChildren": "Children",
     "FileDisplayName": "Display name",
     "FileOwnerUserId": "Owner user ID",
-    "CreateDirectory": "New",
+    "CreateDirectory": "Create directory",
     "UploadFile": "Edit",
     "ReUploadFile": "Re-upload",
     "RenameFile": "Rename",
