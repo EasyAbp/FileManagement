@@ -14,7 +14,7 @@ namespace EasyAbp.FileManagement.Files
         // Todo: should be a configuration
         public static TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(1);
         
-        public static string BasePath = "api/fileManagement/file/{0}/download";
+        public static string BasePath = "api/file-management/file/{0}/download";
 
         private readonly IConfiguration _configuration;
         private readonly IDistributedCache<LocalFileDownloadCacheItem> _cache;
