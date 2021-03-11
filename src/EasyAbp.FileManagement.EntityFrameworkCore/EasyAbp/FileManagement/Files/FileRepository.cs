@@ -48,14 +48,14 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<File> FirstOrDefaultAsync(string fileContainerName, string blobName,
             CancellationToken cancellationToken = default)
         {
-            return await DbSet.Where(x => x.BlobName == blobName && x.FileContainerName == fileContainerName)
+            return await (await GetDbSetAsync()).Where(x => x.BlobName == blobName && x.FileContainerName == fileContainerName)
                 .FirstOrDefaultAsync(cancellationToken);
         }
 
         public virtual async Task<SubFilesStatisticDataModel> GetSubFilesStatisticDataAsync(Guid id,
             CancellationToken cancellationToken = default)
         {
-            return await DbSet.Where(x => x.ParentId == id).GroupBy(x => true).Select(x =>
+            return await (await GetDbSetAsync()).Where(x => x.ParentId == id).GroupBy(x => true).Select(x =>
                 new SubFilesStatisticDataModel
                 {
                     SubFilesQuantity = x.Count(),
