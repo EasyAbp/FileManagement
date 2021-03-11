@@ -20,7 +20,7 @@
     "FileDisplayName": "Display name",
     "FileOwnerUserId": "Owner user ID",
     "CreateDirectory": "Create directory",
-    "UploadFile": "Edit",
+    "UploadFile": "Upload",
     "ReUploadFile": "Re-upload",
     "RenameFile": "Rename",
     "MoveFile": "Move",
