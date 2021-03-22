@@ -139,7 +139,7 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [HttpGet]
-        [Route("{id}/downloadInfo")]
+        [Route("{id}/download-info")]
         public Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id)
         {
             return _service.GetDownloadInfoAsync(id);
