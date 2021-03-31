@@ -35,9 +35,9 @@ We have launched an online demo for this module: [https://file.samples.easyabp.i
 
 1. Add permissions to the roles you want.
 
-1. Configure a BLOB container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L116-L126) and [doc](https://docs.abp.io/en/abp/latest/Blob-Storing))
+1. Configure a BLOB container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L119-L130) and [doc](https://docs.abp.io/en/abp/latest/Blob-Storing))
 
-1. Configure a file container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L128-L153))
+1. Configure a file container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L132-L157))
 
 1. Create a custom **FileOperationAuthorizationHandler**. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/CommonContainerFileOperationAuthorizationHandler.cs))
 
