@@ -35,6 +35,7 @@ using Volo.Abp.MultiTenancy;
 using Volo.Abp.PermissionManagement;
 using Volo.Abp.PermissionManagement.Web;
 using Volo.Abp.Security.Claims;
+using Volo.Abp.Swashbuckle;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.Web;
 using Volo.Abp.UI.Navigation.Urls;
@@ -60,7 +61,8 @@ namespace EasyAbp.FileManagement
         typeof(AbpFeatureManagementHttpApiClientModule),
         typeof(AbpFeatureManagementWebModule),
         typeof(AbpPermissionManagementHttpApiClientModule),
-        typeof(AbpAspNetCoreSerilogModule)
+        typeof(AbpAspNetCoreSerilogModule),
+        typeof(AbpSwashbuckleModule)
         )]
     public class FileManagementWebHostModule : AbpModule
     {
@@ -221,7 +223,7 @@ namespace EasyAbp.FileManagement
             }
 
             app.UseHttpsRedirection();
-            app.UseVirtualFiles();
+            app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication(); 
 

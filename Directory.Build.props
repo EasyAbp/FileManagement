@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
 
-    <AbpVersion>4.2.2</AbpVersion>
+    <AbpVersion>4.3.0</AbpVersion>
+    <EasyAbpAbpTagHelperPlusModuleVersion>0.6.3</EasyAbpAbpTagHelperPlusModuleVersion>
 
   </PropertyGroup>
 </Project>
