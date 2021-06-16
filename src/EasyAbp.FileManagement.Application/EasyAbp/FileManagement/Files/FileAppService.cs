@@ -54,7 +54,7 @@ namespace EasyAbp.FileManagement.Files
                 },
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
 
-            var query = CreateFilteredQuery(input);
+            var query = await CreateFilteredQueryAsync(input);
 
             var totalCount = await AsyncExecuter.CountAsync(query);
 
@@ -69,8 +69,10 @@ namespace EasyAbp.FileManagement.Files
             );
         }
 
-        protected override IQueryable<File> CreateFilteredQuery(GetFileListInput input)
+        protected override async Task<IQueryable<File>> CreateFilteredQueryAsync(GetFileListInput input)
         {
+            await Task.CompletedTask;
+            
             return _repository
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
@@ -255,7 +257,7 @@ namespace EasyAbp.FileManagement.Files
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.GetDownloadInfo});
 
             var downloadLimitCache =
-                ServiceProvider.GetRequiredService<IDistributedCache<UserFileDownloadLimitCacheItem>>();
+                LazyServiceProvider.LazyGetRequiredService<IDistributedCache<UserFileDownloadLimitCacheItem>>();
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
             
@@ -360,7 +362,7 @@ namespace EasyAbp.FileManagement.Files
         
         public virtual async Task<FileDownloadOutput> DownloadAsync(Guid id, string token)
         {
-            var provider = ServiceProvider.GetRequiredService<LocalFileDownloadProvider>();
+            var provider = LazyServiceProvider.LazyGetRequiredService<LocalFileDownloadProvider>();
 
             await provider.CheckTokenAsync(token, id);
 
