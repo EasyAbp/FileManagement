@@ -4,7 +4,7 @@ using Volo.Abp.Application.Dtos;
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class FileInfoDto : FullAuditedEntityDto<Guid>
+    public class FileInfoDto : ExtensibleFullAuditedEntityDto<Guid>
     {
         public Guid? ParentId { get; set; }
 

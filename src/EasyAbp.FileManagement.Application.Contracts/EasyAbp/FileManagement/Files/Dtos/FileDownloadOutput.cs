@@ -1,6 +1,8 @@
-﻿namespace EasyAbp.FileManagement.Files.Dtos
+﻿using Volo.Abp.ObjectExtending;
+
+namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class FileDownloadOutput
+    public class FileDownloadOutput : ExtensibleObject
     {
         public string FileName { get; set; }
 
