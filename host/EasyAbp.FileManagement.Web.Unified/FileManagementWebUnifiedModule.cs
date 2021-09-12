@@ -150,7 +150,8 @@ namespace EasyAbp.FileManagement
 
                     container.AllowOnlyConfiguredFileExtensions = true;
                     container.FileExtensionsConfiguration.Add(".jpg", true);
-                    container.FileExtensionsConfiguration.Add(".PNG.png", true);
+                    container.FileExtensionsConfiguration.Add(".PNG", true);
+                    // container.FileExtensionsConfiguration.Add(".tar.gz", true);
                     // container.FileExtensionsConfiguration.Add(".exe", false);
 
                     container.GetDownloadInfoTimesLimitEachUserPerMinute = 10;
