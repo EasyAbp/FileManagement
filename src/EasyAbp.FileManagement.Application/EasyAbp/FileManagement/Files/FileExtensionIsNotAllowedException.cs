@@ -4,9 +4,9 @@ namespace EasyAbp.FileManagement.Files
 {
     public class FileExtensionIsNotAllowedException : BusinessException
     {
-        public FileExtensionIsNotAllowedException(string fileExtension) : base(
+        public FileExtensionIsNotAllowedException(string fileName) : base(
             "FileExtensionIsNotAllowed",
-            $"The extension {fileExtension} is not allowed.")
+            $"The extension of {fileName} is not allowed.")
         {
         }
     }

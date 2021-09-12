@@ -68,8 +68,8 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         {
             return Configuration.FileExtensionsConfiguration.IsNullOrEmpty()
                 ? "[]"
-                : ("['" + Configuration.FileExtensionsConfiguration.Where(x => x.Value).Select(x => x.Key).ToList()
-                    .JoinAsString("' ,'") + "']").Replace(".", "");
+                : "['" + Configuration.FileExtensionsConfiguration.Where(x => x.Value)
+                    .Select(x => x.Key.ReplaceFirst(".", "")).ToList().JoinAsString("' ,'") + "']";
         }
     }
 }

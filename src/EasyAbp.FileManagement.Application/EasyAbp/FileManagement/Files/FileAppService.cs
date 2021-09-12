@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -10,7 +9,6 @@ using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
@@ -90,7 +88,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (input.FileType == FileType.RegularFile)
             {
-                CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+                CheckFileExtension(new[] {input.FileName}, configuration);
             }
          
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
@@ -144,22 +142,24 @@ namespace EasyAbp.FileManagement.Files
             }
         }
         
-        protected virtual void CheckFileExtension(IEnumerable<string> fileExtensions, FileContainerConfiguration configuration)
+        protected virtual void CheckFileExtension(IEnumerable<string> fileNames, FileContainerConfiguration configuration)
         {
-            foreach (var ext in fileExtensions.Where(ext => !IsFileExtensionAllowed(ext, configuration)))
+            foreach (var fileName in fileNames.Where(fileName => !IsFileExtensionAllowed(fileName, configuration)))
             {
-                throw new FileExtensionIsNotAllowedException(ext);
+                throw new FileExtensionIsNotAllowedException(fileName);
             }
         }
 
-        protected virtual bool IsFileExtensionAllowed(string ext, FileContainerConfiguration configuration)
+        protected virtual bool IsFileExtensionAllowed(string fileName, FileContainerConfiguration configuration)
         {
-            if (!configuration.FileExtensionsConfiguration.ContainsKey(ext))
+            var lowerFileName = fileName.ToLowerInvariant();
+
+            foreach (var pair in configuration.FileExtensionsConfiguration.Where(x => lowerFileName.EndsWith(x.Key.ToLowerInvariant())))
             {
-                return !configuration.AllowOnlyConfiguredFileExtensions;
+                return pair.Value;
             }
 
-            return configuration.FileExtensionsConfiguration[ext];
+            return !configuration.AllowOnlyConfiguredFileExtensions;
         }
 
         [Authorize]
@@ -181,8 +181,8 @@ namespace EasyAbp.FileManagement.Files
             CheckFileSize(input.FileInfos.ToDictionary(x => x.FileName, x => x.Content?.LongLength ?? 0), configuration);
 
             CheckFileExtension(
-                input.FileInfos.Where(x => x.FileType == FileType.RegularFile)
-                    .Select(x => Path.GetExtension(x.FileName)).Distinct().ToList(), configuration);
+                input.FileInfos.Where(x => x.FileType == FileType.RegularFile).Select(x => x.FileName).ToList(),
+                configuration);
             
             var files = new File[input.FileInfos.Count];
 
@@ -226,7 +226,7 @@ namespace EasyAbp.FileManagement.Files
             
             var configuration = _configurationProvider.Get(file.FileContainerName);
             
-            CheckFileExtension(new[] {Path.GetExtension(newFileName)}, configuration);
+            CheckFileExtension(new[] {newFileName}, configuration);
 
             var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
@@ -310,7 +310,7 @@ namespace EasyAbp.FileManagement.Files
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
-            CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+            CheckFileExtension(new[] {input.FileName}, configuration);
 
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
@@ -335,7 +335,7 @@ namespace EasyAbp.FileManagement.Files
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
-            CheckFileExtension(new[] {Path.GetExtension(fileName)}, configuration);
+            CheckFileExtension(new[] {fileName}, configuration);
             
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
