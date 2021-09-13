@@ -12,6 +12,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
+using Volo.Abp.ObjectExtending;
 using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
@@ -90,11 +91,8 @@ namespace EasyAbp.FileManagement.Files
             {
                 CheckFileExtension(new[] {input.FileName}, configuration);
             }
-         
-            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
-            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
-                input.MimeType, input.FileType, parent, input.Content);
+            var file = await CreateFileEntityAsync(input);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
@@ -189,10 +187,8 @@ namespace EasyAbp.FileManagement.Files
             for (var i = 0; i < input.FileInfos.Count; i++)
             {
                 var fileInfo = input.FileInfos[i];
-                var parent = await TryGetEntityByNullableIdAsync(fileInfo.ParentId);
-
-                var file = await _fileManager.CreateAsync(fileInfo.FileContainerName, fileInfo.OwnerUserId,
-                    fileInfo.FileName, fileInfo.MimeType, fileInfo.FileType, parent, fileInfo.Content);
+                
+                var file = await CreateFileEntityAsync(fileInfo);
 
                 await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                     new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
@@ -311,10 +307,8 @@ namespace EasyAbp.FileManagement.Files
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
             CheckFileExtension(new[] {input.FileName}, configuration);
-
-            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             
-            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
+            await UpdateFileEntityAsync(file, input);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
@@ -326,6 +320,27 @@ namespace EasyAbp.FileManagement.Files
             return await MapToGetOutputDtoAsync(file);
         }
         
+        protected virtual async Task<File> CreateFileEntityAsync(CreateFileInput input)
+        {
+            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
+
+            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
+                input.MimeType, input.FileType, parent, input.Content);
+            
+            input.MapExtraPropertiesTo(file);
+
+            return file;
+        }
+
+        protected virtual async Task UpdateFileEntityAsync(File file, UpdateFileInput input)
+        {
+            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
+
+            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
+            
+            input.MapExtraPropertiesTo(file);
+        }
+
         [Authorize]
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {

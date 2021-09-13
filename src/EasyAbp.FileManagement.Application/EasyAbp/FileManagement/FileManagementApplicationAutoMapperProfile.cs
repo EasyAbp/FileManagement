@@ -14,7 +14,8 @@ namespace EasyAbp.FileManagement
             /* You can configure your AutoMapper mapping configuration here.
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
-            CreateMap<File, FileInfoDto>();
+            
+            CreateMap<File, FileInfoDto>().MapExtraProperties();
             CreateMap<FileContainerConfiguration, PublicFileContainerConfiguration>(MemberList.Destination);
         }
     }
