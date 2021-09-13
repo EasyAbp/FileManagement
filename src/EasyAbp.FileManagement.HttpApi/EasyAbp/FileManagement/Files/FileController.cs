@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files
 {
@@ -49,8 +50,8 @@ namespace EasyAbp.FileManagement.Files
             await using var memoryStream = new MemoryStream();
             
             await input.File.CopyToAsync(memoryStream);
-
-            return await _service.CreateAsync(new CreateFileInput
+            
+            var createFileInput = new CreateFileInput
             {
                 FileContainerName = input.FileContainerName,
                 FileName = fileName,
@@ -59,7 +60,11 @@ namespace EasyAbp.FileManagement.Files
                 ParentId = input.ParentId,
                 OwnerUserId = input.OwnerUserId,
                 Content = memoryStream.ToArray()
-            });
+            };
+            
+            input.MapExtraPropertiesTo(createFileInput, MappingPropertyDefinitionChecks.None);
+
+            return await _service.CreateAsync(createFileInput);
         }
         
         [HttpPost]
@@ -93,8 +98,15 @@ namespace EasyAbp.FileManagement.Files
                     Content = memoryStream.ToArray()
                 });
             }
+            
+            var createManyFileInput = new CreateManyFileInput
+            {
+                FileInfos = createFileDtos
+            };
+            
+            input.MapExtraPropertiesTo(createManyFileInput, MappingPropertyDefinitionChecks.None);
 
-            return await _service.CreateManyAsync(new CreateManyFileInput {FileInfos = createFileDtos});
+            return await _service.CreateManyAsync(createManyFileInput);
         }
 
         protected virtual string GenerateUniqueFileName(IFormFile inputFile)
@@ -116,12 +128,16 @@ namespace EasyAbp.FileManagement.Files
             
             await input.File.CopyToAsync(memoryStream);
 
-            return await _service.UpdateAsync(id, new UpdateFileInput
+            var updateDto = new UpdateFileInput
             {
                 FileName = input.FileName,
                 MimeType = input.File.ContentType,
                 Content = memoryStream.ToArray()
-            });
+            };
+            
+            input.MapExtraPropertiesTo(updateDto, MappingPropertyDefinitionChecks.None);
+            
+            return await _service.UpdateAsync(id, updateDto);
         }
 
         [HttpDelete]
