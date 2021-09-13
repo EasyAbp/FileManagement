@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
+using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class UpdateFileActionInput : IValidatableObject
+    public class UpdateFileActionInput : ExtensibleObject
     {
         [Required]
         public string FileName { get; set; }
