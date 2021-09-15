@@ -1,6 +1,10 @@
 {
   "culture": "zh-Hans",
   "texts": {
+    "Permission:FileManagement": "文件管理",
+    "Permission:Manage": "管理",
+    "Permission:GetDownloadInfo": "获取下载信息",
+    "Permission:Move": "移动",
     "Permission:File": "文件",
     "Permission:Create": "新建",
     "Permission:Update": "编辑",
