@@ -13,6 +13,9 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
 
             var builder = new DbContextOptionsBuilder<UnifiedDbContext>()
                 .UseSqlServer(configuration.GetConnectionString("Default"));
+            //var connectionStr = configuration.GetConnectionString("Default");
+            //var builder = new DbContextOptionsBuilder<UnifiedDbContext>()
+            //    .UseMySql(connectionStr, Microsoft.EntityFrameworkCore.ServerVersion.AutoDetect(connectionStr));
 
             return new UnifiedDbContext(builder.Options);
         }

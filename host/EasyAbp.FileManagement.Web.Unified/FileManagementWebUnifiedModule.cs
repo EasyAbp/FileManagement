@@ -22,6 +22,7 @@ using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
+using Volo.Abp.EntityFrameworkCore.MySQL;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
@@ -40,6 +41,7 @@ using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.Web;
 using Volo.Abp.Threading;
 using Volo.Abp.VirtualFileSystem;
+using Volo.Abp.AspNetCore.Mvc.AntiForgery;
 
 namespace EasyAbp.FileManagement
 {
@@ -80,6 +82,7 @@ namespace EasyAbp.FileManagement
             Configure<AbpDbContextOptions>(options =>
             {
                 options.UseSqlServer();
+                //options.UseMySQL();
             });
 
             if (hostingEnvironment.IsDevelopment())
@@ -117,10 +120,17 @@ namespace EasyAbp.FileManagement
             {
                 options.IsEnabled = MultiTenancyConsts.IsEnabled;
             });
-            
+
+            Configure<AbpAntiForgeryOptions>(options =>
+            {
+                options.AutoValidateIgnoredHttpMethods.Add("POST");
+                options.AutoValidateIgnoredHttpMethods.Add("DELETE");
+                options.AutoValidateIgnoredHttpMethods.Add("PUT");
+            });
+
             Configure<AbpBlobStoringOptions>(options =>
             {
-                options.Containers.Configure<LocalFileSystemBlobContainer>(container =>
+                options.Containers.Configure<DefaultContainer>(container =>
                 {
                     container.IsMultiTenant = true;
                     container.UseFileSystem(fileSystem =>
@@ -129,8 +139,8 @@ namespace EasyAbp.FileManagement
                         fileSystem.BasePath = Path.Combine(hostingEnvironment.ContentRootPath, "my-files");
                     });
                 });
-            });
-            
+            });            
+
             Configure<FileManagementOptions>(options =>
             {
                 options.DefaultFileDownloadProviderType = typeof(LocalFileDownloadProvider);
@@ -138,7 +148,7 @@ namespace EasyAbp.FileManagement
                 {
                     // private container never be used by non-owner users (except user who has the "File.Manage" permission).
                     container.FileContainerType = FileContainerType.Public;
-                    container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
+                    container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<DefaultContainer>();
                     container.AbpBlobDirectorySeparator = "/";
                     
                     container.RetainUnusedBlobs = false;

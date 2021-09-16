@@ -85,6 +85,10 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<CreateFileOutput> CreateAsync(CreateFileInput input)
         {
             var configuration = _configurationProvider.Get(input.FileContainerName);
+            if (configuration == null)
+            {
+                throw new FileContainerNotExistException(input.FileContainerName);
+            }
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
 
@@ -99,8 +103,8 @@ namespace EasyAbp.FileManagement.Files
                 input.MimeType, input.FileType, parent, input.Content);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
-                new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
-            
+                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
+
             await _repository.InsertAsync(file);
 
             await _fileManager.TrySaveBlobAsync(file, input.Content);

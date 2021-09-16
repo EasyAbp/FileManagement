@@ -25,5 +25,7 @@ namespace EasyAbp.FileManagement.Files
 
         Task<string> GetFileNameWithNextSerialNumberAsync(string fileName, Guid? parentId, string fileContainerName,
             Guid? ownerUserId, CancellationToken cancellationToken = default);
+
+        Task<string> GetDataBaseTypeName();
     }
 }

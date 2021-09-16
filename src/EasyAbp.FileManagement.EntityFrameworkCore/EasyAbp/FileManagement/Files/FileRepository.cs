@@ -89,5 +89,10 @@ namespace EasyAbp.FileManagement.Files
 
             return $"{part1}{nextNumber}{part2}";
         }
+
+        public virtual async Task<string> GetDataBaseTypeName()
+        {
+            return (await this.GetDbContextAsync()).Database.GetDbConnection().GetType().Name;
+        }
     }
 }

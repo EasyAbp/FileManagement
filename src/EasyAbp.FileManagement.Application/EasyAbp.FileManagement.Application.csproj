@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Volo.Abp.AutoMapper" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.Ddd.Application" Version="$(AbpVersion)" />
+    <PackageReference Include="Volo.Abp.Identity.Application" Version="$(AbpVersion)" />
     <ProjectReference Include="..\EasyAbp.FileManagement.Application.Contracts\EasyAbp.FileManagement.Application.Contracts.csproj" />
     <ProjectReference Include="..\EasyAbp.FileManagement.Domain\EasyAbp.FileManagement.Domain.csproj" />
   </ItemGroup>

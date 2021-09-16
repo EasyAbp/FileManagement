@@ -5,6 +5,7 @@ using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Options.Containers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Volo.Abp.BlobStoring;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Timing;
 
@@ -19,7 +20,7 @@ namespace EasyAbp.FileManagement
             _clock = clock;
             
             SpecifiedFileContainerNames = new[]
-                {FileContainerNameAttribute.GetContainerName(typeof(CommonFileContainer))};    // Only for CommonFileContainer
+                {FileContainerNameAttribute.GetContainerName(typeof(DefaultContainer))};    // Only for CommonFileContainer
         }
         
         protected override async Task HandleGetInfoAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement,

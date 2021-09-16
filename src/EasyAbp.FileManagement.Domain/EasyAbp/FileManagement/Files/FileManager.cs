@@ -94,6 +94,23 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
+        public virtual async Task<File> CreateAsync(string fileContainerName, Guid? ownerUserId, File parent, string blobName,
+            string fileName,string mimeType)
+        {
+            var fileContent = await GetBlobAsync(fileContainerName, blobName);
+            var fileLength = fileContent.Length;
+            var hashString = _fileContentHashProvider.GetHashString(fileContent);
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName, mimeType,
+                FileType.RegularFile, 0, fileLength, hashString, blobName, ownerUserId);
+            return file;
+        }
+        public virtual File CreateAsync(string fileContainerName, Guid? ownerUserId, string fileName)
+        {
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, null, fileContainerName, fileName, null,
+                FileType.Directory, 0, 0, string.Empty, null, ownerUserId);
+            return file;
+        }
+
         public virtual async Task<File> ChangeAsync(File file, string newFileName, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
@@ -268,7 +285,19 @@ namespace EasyAbp.FileManagement.Files
 
             return await blobContainer.GetAllBytesAsync(file.BlobName, cancellationToken: cancellationToken);
         }
+        public virtual async Task<byte[]> GetBlobAsync(string fileContainerName, string blobName, CancellationToken cancellationToken = default)
+        {
+            var blobContainer = GetBlobContainer(fileContainerName);
 
+            return await blobContainer.GetAllBytesAsync(blobName, cancellationToken: cancellationToken);
+        }
+
+        public virtual IBlobContainer GetBlobContainer(string fileContainerName)
+        {
+            var configuration = _configurationProvider.Get(fileContainerName);
+
+            return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
+        }
         public virtual IBlobContainer GetBlobContainer(File file)
         {
             var configuration = _configurationProvider.Get(file.FileContainerName);

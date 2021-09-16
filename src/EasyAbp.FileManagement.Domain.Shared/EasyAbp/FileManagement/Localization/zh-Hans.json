@@ -25,6 +25,18 @@
     "RenameFile": "重命名",
     "MoveFile": "移动",
     "FileDeletionConfirmationMessage": "确认删除文件 {0}?",
-    "SuccessfullyDeleted": "删除成功"
+    "SuccessfullyDeleted": "删除成功",
+    "DisplayName:EasyAbp.FileManagement.Backup.AutoBackup": "自动备份",
+    "Description:EasyAbp.FileManagement.Backup.AutoBackup": "是否启动自动备份",
+    "DisplayName:EasyAbp.FileManagement.Backup.Frequency": "备份频次",
+    "Description:EasyAbp.FileManagement.Backup.Frequency": "多久时间间隔备份一次,1意味着1天一次",
+    "DisplayName:EasyAbp.FileManagement.Backup.MaxCount": "最大数",
+    "Description:EasyAbp.FileManagement.Backup.MaxCount": "备份文件的最大数",
+    "DisplayName:EasyAbp.FileManagement.Backup.StartTime": "开始时间",
+    "Description:EasyAbp.FileManagement.Backup.StartTime": "开始备份的时间",
+    "DisplayName:EasyAbp.FileManagement.Backup.EndTime": "结束时间",
+    "Description:EasyAbp.FileManagement.Backup.EndTime": "备份结束时间",
+    "DisplayName:EasyAbp.FileManagement.Backup.CyclicCovering": "覆盖备份",
+    "Description:EasyAbp.FileManagement.Backup.CyclicCovering": "是否覆盖备份"
   }
 }

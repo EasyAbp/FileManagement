@@ -12,6 +12,27 @@ namespace EasyAbp.FileManagement.Files
         Task<File> CreateAsync([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string fileName,
             [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, byte[] fileContent);
 
+        /// <summary>
+        /// 文件已经插入到FileSystem的create方法
+        /// </summary>
+        /// <param name="fileContainerName"></param>
+        /// <param name="ownerUserId"></param>
+        /// <param name="blobName"></param>
+        /// <param name="fileName"></param>
+        /// <param name="fileLength"></param>
+        /// <param name="mimeType"></param>
+        /// <returns></returns>
+        Task<File> CreateAsync(string fileContainerName, Guid? ownerUserId, File parent,string blobName,
+            string fileName, string mimeType);
+
+        /// <summary>
+        /// database backup directory
+        /// </summary>
+        /// <param name="fileContainerName"></param>
+        /// <param name="ownerUserId"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        File CreateAsync(string fileContainerName, Guid? ownerUserId, string fileName);
         Task<File> ChangeAsync(File file, [NotNull] string newFileName, [CanBeNull] File oldParent, [CanBeNull] File newParent);
 
         Task<File> ChangeAsync(File file, [NotNull] string newFileName, [CanBeNull] string newMimeType,

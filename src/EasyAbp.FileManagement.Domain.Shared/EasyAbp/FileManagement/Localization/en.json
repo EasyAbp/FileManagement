@@ -25,6 +25,18 @@
     "RenameFile": "Rename",
     "MoveFile": "Move",
     "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",
-    "SuccessfullyDeleted": "Successfully deleted"
+    "SuccessfullyDeleted": "Successfully deleted",
+    "DisplayName:EasyAbp.FileManagement.Backup.AutoBackup": "Auto Backup",
+    "Description:EasyAbp.FileManagement.Backup.AutoBackup": "Allow Auto Backup",
+    "DisplayName:EasyAbp.FileManagement.Backup.Frequency": "Frequency",
+    "Description:EasyAbp.FileManagement.Backup.Frequency": "Backup Frequency,for example 1 means per day",
+    "DisplayName:EasyAbp.FileManagement.Backup.MaxCount": "Max Count",
+    "Description:EasyAbp.FileManagement.Backup.MaxCount": "The max Count of backup",
+    "DisplayName:EasyAbp.FileManagement.Backup.StartTime": "Start Time",
+    "Description:EasyAbp.FileManagement.Backup.StartTime": "the start time of starting backup",
+    "DisplayName:EasyAbp.FileManagement.Backup.EndTime": "End Time",
+    "Description:EasyAbp.FileManagement.Backup.EndTime": "the end time of starting backup",
+    "DisplayName:EasyAbp.FileManagement.Backup.CyclicCovering": "Cyclic Covering",
+    "Description:EasyAbp.FileManagement.Backup.CyclicCovering": "Is it Cyclic Covering"
   }
 }
