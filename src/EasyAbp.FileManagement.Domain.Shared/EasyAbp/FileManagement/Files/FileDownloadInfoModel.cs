@@ -1,9 +1,10 @@
 ﻿using System;
+using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files
 {
     [Serializable]
-    public class FileDownloadInfoModel
+    public class FileDownloadInfoModel : ExtensibleObject
     {
         public string DownloadMethod { get; set; }
         

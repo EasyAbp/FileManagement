@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class CreateFileInput : IValidatableObject
+    public class CreateFileInput : ExtensibleObject
     {
         [Required]
         public string FileContainerName { get; set; }
@@ -23,8 +24,10 @@ namespace EasyAbp.FileManagement.Files.Dtos
 
         public byte[] Content { get; set; }
         
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            base.Validate(validationContext);
+            
             if (FileName.IsNullOrWhiteSpace())
             {
                 yield return new ValidationResult("FileName should not be empty!",

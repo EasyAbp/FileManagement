@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -10,10 +9,10 @@ using EasyAbp.FileManagement.Permissions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
+using Volo.Abp.ObjectExtending;
 using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement.Files
@@ -94,13 +93,10 @@ namespace EasyAbp.FileManagement.Files
 
             if (input.FileType == FileType.RegularFile)
             {
-                CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
+                CheckFileExtension(new[] {input.FileName}, configuration);
             }
-         
-            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
-            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
-                input.MimeType, input.FileType, parent, input.Content);
+            var file = await CreateFileEntityAsync(input);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
@@ -148,22 +144,24 @@ namespace EasyAbp.FileManagement.Files
             }
         }
         
-        protected virtual void CheckFileExtension(IEnumerable<string> fileExtensions, FileContainerConfiguration configuration)
+        protected virtual void CheckFileExtension(IEnumerable<string> fileNames, FileContainerConfiguration configuration)
         {
-            foreach (var ext in fileExtensions.Where(ext => !IsFileExtensionAllowed(ext, configuration)))
+            foreach (var fileName in fileNames.Where(fileName => !IsFileExtensionAllowed(fileName, configuration)))
             {
-                throw new FileExtensionIsNotAllowedException(ext);
+                throw new FileExtensionIsNotAllowedException(fileName);
             }
         }
 
-        protected virtual bool IsFileExtensionAllowed(string ext, FileContainerConfiguration configuration)
+        protected virtual bool IsFileExtensionAllowed(string fileName, FileContainerConfiguration configuration)
         {
-            if (!configuration.FileExtensionsConfiguration.ContainsKey(ext))
+            var lowerFileName = fileName.ToLowerInvariant();
+
+            foreach (var pair in configuration.FileExtensionsConfiguration.Where(x => lowerFileName.EndsWith(x.Key.ToLowerInvariant())))
             {
-                return !configuration.AllowOnlyConfiguredFileExtensions;
+                return pair.Value;
             }
 
-            return configuration.FileExtensionsConfiguration[ext];
+            return !configuration.AllowOnlyConfiguredFileExtensions;
         }
 
         [Authorize]
@@ -185,18 +183,16 @@ namespace EasyAbp.FileManagement.Files
             CheckFileSize(input.FileInfos.ToDictionary(x => x.FileName, x => x.Content?.LongLength ?? 0), configuration);
 
             CheckFileExtension(
-                input.FileInfos.Where(x => x.FileType == FileType.RegularFile)
-                    .Select(x => Path.GetExtension(x.FileName)).Distinct().ToList(), configuration);
+                input.FileInfos.Where(x => x.FileType == FileType.RegularFile).Select(x => x.FileName).ToList(),
+                configuration);
             
             var files = new File[input.FileInfos.Count];
 
             for (var i = 0; i < input.FileInfos.Count; i++)
             {
                 var fileInfo = input.FileInfos[i];
-                var parent = await TryGetEntityByNullableIdAsync(fileInfo.ParentId);
-
-                var file = await _fileManager.CreateAsync(fileInfo.FileContainerName, fileInfo.OwnerUserId,
-                    fileInfo.FileName, fileInfo.MimeType, fileInfo.FileType, parent, fileInfo.Content);
+                
+                var file = await CreateFileEntityAsync(fileInfo);
 
                 await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                     new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
@@ -230,7 +226,7 @@ namespace EasyAbp.FileManagement.Files
             
             var configuration = _configurationProvider.Get(file.FileContainerName);
             
-            CheckFileExtension(new[] {Path.GetExtension(newFileName)}, configuration);
+            CheckFileExtension(new[] {newFileName}, configuration);
 
             var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
@@ -314,11 +310,9 @@ namespace EasyAbp.FileManagement.Files
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
-            CheckFileExtension(new[] {Path.GetExtension(input.FileName)}, configuration);
-
-            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
+            CheckFileExtension(new[] {input.FileName}, configuration);
             
-            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
+            await UpdateFileEntityAsync(file, input);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
@@ -330,6 +324,27 @@ namespace EasyAbp.FileManagement.Files
             return await MapToGetOutputDtoAsync(file);
         }
         
+        protected virtual async Task<File> CreateFileEntityAsync(CreateFileInput input)
+        {
+            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
+
+            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
+                input.MimeType, input.FileType, parent, input.Content);
+            
+            input.MapExtraPropertiesTo(file);
+
+            return file;
+        }
+
+        protected virtual async Task UpdateFileEntityAsync(File file, UpdateFileInput input)
+        {
+            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
+
+            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
+            
+            input.MapExtraPropertiesTo(file);
+        }
+
         [Authorize]
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
@@ -339,7 +354,7 @@ namespace EasyAbp.FileManagement.Files
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
-            CheckFileExtension(new[] {Path.GetExtension(fileName)}, configuration);
+            CheckFileExtension(new[] {fileName}, configuration);
             
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
             

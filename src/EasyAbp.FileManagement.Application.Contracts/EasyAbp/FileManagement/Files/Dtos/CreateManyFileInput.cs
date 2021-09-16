@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class CreateManyFileInput : IValidatableObject
+    public class CreateManyFileInput : ExtensibleObject
     {
         public List<CreateFileInput> FileInfos { get; set; }
         
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            base.Validate(validationContext);
+            
             if (FileInfos.IsNullOrEmpty())
             {
                 yield return new ValidationResult("FileInfos should not be null or empty!",
