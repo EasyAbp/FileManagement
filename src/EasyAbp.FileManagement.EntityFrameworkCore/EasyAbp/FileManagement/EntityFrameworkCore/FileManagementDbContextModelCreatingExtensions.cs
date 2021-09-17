@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
+using File = EasyAbp.FileManagement.Files.File;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {

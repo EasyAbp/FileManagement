@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
-using EasyAbp.FileManagement.Files;
+using File = EasyAbp.FileManagement.Files.File;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {

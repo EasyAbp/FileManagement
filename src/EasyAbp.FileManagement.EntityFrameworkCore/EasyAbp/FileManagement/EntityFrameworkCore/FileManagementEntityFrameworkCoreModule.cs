@@ -2,6 +2,7 @@ using EasyAbp.FileManagement.Files;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
+using File = EasyAbp.FileManagement.Files.File;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {

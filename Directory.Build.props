@@ -1,8 +1,7 @@
 <Project>
+  <Import Project="..\..\abp-github\EasyAbpVersion.props" />
+  <Import Project="..\..\abp-github\Directory.Build.props" />
   <PropertyGroup>
-
-    <AbpVersion>14.4.0</AbpVersion>
-    <EasyAbpAbpTagHelperPlusModuleVersion>0.7.1</EasyAbpAbpTagHelperPlusModuleVersion>
-
+	<EasyAbpAbpTagHelperPlusModuleVersion>0.7.1</EasyAbpAbpTagHelperPlusModuleVersion>
   </PropertyGroup>
 </Project>
