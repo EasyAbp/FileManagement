@@ -14,5 +14,7 @@ namespace EasyAbp.FileManagement.Files.Dtos
         public Guid? OwnerUserId { get; set; }
         
         public bool DirectoryOnly { get; set; }
+
+        public string Filter { get; set; }
     }
 }

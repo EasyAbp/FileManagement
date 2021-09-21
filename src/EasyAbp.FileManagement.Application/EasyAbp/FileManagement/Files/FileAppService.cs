@@ -77,7 +77,10 @@ namespace EasyAbp.FileManagement.Files
                             x.FileContainerName == input.FileContainerName)
                 .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
                 .OrderBy(x => x.FileType)
-                .ThenBy(x => x.FileName);
+                .ThenBy(x => x.FileName)
+                .AsEnumerable()
+                .WhereIf(!input.Filter.IsNullOrEmpty(), x => x.FileName.Contains(input.Filter) || x.ExtraProperties.Values.Any(v => (v ?? "").ToString().Contains(input.Filter)))
+                .AsQueryable();
         }
 
         [Authorize]
