@@ -359,6 +359,8 @@ namespace EasyAbp.FileManagement.Files
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
+            input.MapExtraPropertiesTo(file);
+            
             await _repository.UpdateAsync(file, autoSave: true);
 
             return await MapToGetOutputDtoAsync(file);
