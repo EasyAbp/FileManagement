@@ -19,8 +19,8 @@ namespace EasyAbp.FileManagement.Files
 
         Task DeleteAsync(File file, CancellationToken cancellationToken = default);
 
-        Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false,
-            CancellationToken cancellationToken = default);
+        Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool disableBlobReuse = false,
+            bool allowBlobOverriding = false, CancellationToken cancellationToken = default);
         
         Task<byte[]> GetBlobAsync(File file, CancellationToken cancellationToken = default);
 

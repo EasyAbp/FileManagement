@@ -101,7 +101,7 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.InsertAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, input.Content);
+            await TrySaveBlobAsync(file, input.Content, configuration.DisableBlobReuse, configuration.AllowBlobOverriding);
 
             return await MapToCreateOutputDtoAsync(file);
         }
@@ -131,7 +131,7 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.InsertAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, fileContent);
+            await TrySaveBlobAsync(file, fileContent, configuration.DisableBlobReuse, configuration.AllowBlobOverriding);
 
             return await MapToCreateOutputDtoAsync(file);
         }
@@ -232,7 +232,8 @@ namespace EasyAbp.FileManagement.Files
 
             for (var i = 0; i < files.Length; i++)
             {
-                await _fileManager.TrySaveBlobAsync(files[i], input.FileInfos[i].Content);
+                await TrySaveBlobAsync(files[i], input.FileInfos[i].Content, configuration.DisableBlobReuse,
+                    configuration.AllowBlobOverriding);
             }
 
             var items = new List<CreateFileOutput>();
@@ -284,7 +285,8 @@ namespace EasyAbp.FileManagement.Files
 
             for (var i = 0; i < files.Length; i++)
             {
-                await _fileManager.TrySaveBlobAsync(files[i], fileContents[i]);
+                await TrySaveBlobAsync(files[i], fileContents[i], configuration.DisableBlobReuse,
+                    configuration.AllowBlobOverriding);
             }
 
             var items = new List<CreateFileOutput>();
@@ -399,7 +401,8 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, input.Content);
+            await TrySaveBlobAsync(file, input.Content, configuration.DisableBlobReuse,
+                configuration.AllowBlobOverriding);
 
             return await MapToGetOutputDtoAsync(file);
         }
@@ -423,7 +426,8 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, fileContent);
+            await TrySaveBlobAsync(file, fileContent, configuration.DisableBlobReuse,
+                configuration.AllowBlobOverriding);
 
             return await MapToGetOutputDtoAsync(file);
         }
@@ -539,6 +543,19 @@ namespace EasyAbp.FileManagement.Files
         protected virtual string GenerateUniqueFileName(string fileName)
         {
             return Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);
+        }
+
+        protected virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent,
+            bool disableBlobReuse = false, bool allowBlobOverriding = false)
+        {
+            if (file.FileType is not FileType.RegularFile)
+            {
+                return false;
+            }
+
+            await _fileManager.TrySaveBlobAsync(file, fileContent, disableBlobReuse, allowBlobOverriding);
+
+            return true;
         }
     }
 }
