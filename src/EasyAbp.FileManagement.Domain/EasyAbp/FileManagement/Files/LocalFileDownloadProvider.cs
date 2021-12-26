@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using EasyAbp.FileManagement.Options;
 using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Volo.Abp.Caching;
 using Volo.Abp.DependencyInjection;
 
@@ -16,14 +17,14 @@ namespace EasyAbp.FileManagement.Files
         
         public static string BasePath = "api/file-management/file/{0}/download";
 
-        private readonly IConfiguration _configuration;
+        private readonly LocalFileDownloadOptions _options;
         private readonly IDistributedCache<LocalFileDownloadCacheItem> _cache;
 
         public LocalFileDownloadProvider(
-            IConfiguration configuration,
+            IOptions<LocalFileDownloadOptions> options,
             IDistributedCache<LocalFileDownloadCacheItem> cache)
         {
-            _configuration = configuration;
+            _options = options.Value;
             _cache = cache;
         }
         
@@ -35,7 +36,7 @@ namespace EasyAbp.FileManagement.Files
                 new LocalFileDownloadCacheItem {FileId = file.Id},
                 new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TokenCacheDuration});
 
-            var url = _configuration["App:SelfUrl"].EnsureEndsWith('/') + string.Format(BasePath, file.Id) + $"?token={token}";
+            var url = _options.FileDownloadBaseUrl.EnsureEndsWith('/') + string.Format(BasePath, file.Id) + $"?token={token}";
 
             return new FileDownloadInfoModel
             {
