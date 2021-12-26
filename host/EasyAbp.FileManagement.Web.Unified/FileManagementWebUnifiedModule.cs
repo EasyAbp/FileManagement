@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using EasyAbp.FileManagement.Containers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using EasyAbp.FileManagement.MultiTenancy;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Web;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
 using Volo.Abp.Account;
 using Volo.Abp.Account.Web;
@@ -51,6 +53,7 @@ namespace EasyAbp.FileManagement
         typeof(AbpAutofacModule),
         typeof(AbpAccountWebModule),
         typeof(AbpAccountApplicationModule),
+        typeof(AbpBlobStoringFileSystemModule),
         typeof(AbpEntityFrameworkCoreSqlServerModule),
         typeof(AbpSettingManagementEntityFrameworkCoreModule),
         typeof(AbpPermissionManagementEntityFrameworkCoreModule),
@@ -59,15 +62,14 @@ namespace EasyAbp.FileManagement
         typeof(AbpIdentityApplicationModule),
         typeof(AbpIdentityEntityFrameworkCoreModule),
         typeof(AbpPermissionManagementDomainIdentityModule),
+        typeof(AbpFeatureManagementWebModule),
         typeof(AbpFeatureManagementApplicationModule),
         typeof(AbpFeatureManagementEntityFrameworkCoreModule),
-        typeof(AbpFeatureManagementWebModule),
         typeof(AbpTenantManagementWebModule),
         typeof(AbpTenantManagementApplicationModule),
         typeof(AbpTenantManagementEntityFrameworkCoreModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAspNetCoreSerilogModule),
-        typeof(AbpBlobStoringFileSystemModule),
         typeof(AbpSwashbuckleModule)
         )]
     public class FileManagementWebUnifiedModule : AbpModule
@@ -94,7 +96,7 @@ namespace EasyAbp.FileManagement
                 });
             }
 
-            context.Services.AddSwaggerGen(
+            context.Services.AddAbpSwaggerGen(
                 options =>
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "FileManagement API", Version = "v1" });
@@ -106,8 +108,15 @@ namespace EasyAbp.FileManagement
             {
                 options.Languages.Add(new LanguageInfo("cs", "cs", "Čeština"));
                 options.Languages.Add(new LanguageInfo("en", "en", "English"));
+                options.Languages.Add(new LanguageInfo("en-GB", "en-GB", "English (UK)"));
+                options.Languages.Add(new LanguageInfo("fi", "fi", "Finnish"));
+                options.Languages.Add(new LanguageInfo("fr", "fr", "Français"));
+                options.Languages.Add(new LanguageInfo("hi", "hi", "Hindi", "in"));
+                options.Languages.Add(new LanguageInfo("it", "it", "Italian", "it"));
+                options.Languages.Add(new LanguageInfo("hu", "hu", "Magyar"));
                 options.Languages.Add(new LanguageInfo("pt-BR", "pt-BR", "Português (Brasil)"));
                 options.Languages.Add(new LanguageInfo("ru", "ru", "Русский"));
+                options.Languages.Add(new LanguageInfo("sk", "sk", "Slovak"));
                 options.Languages.Add(new LanguageInfo("tr", "tr", "Türkçe"));
                 options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
                 options.Languages.Add(new LanguageInfo("zh-Hant", "zh-Hant", "繁體中文"));
@@ -186,9 +195,9 @@ namespace EasyAbp.FileManagement
 
             app.UseAbpRequestLocalization();
             app.UseAuthorization();
-            
+
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseAbpSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Support APP API");
             });

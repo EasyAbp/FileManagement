@@ -257,4 +257,4 @@ host/EasyAbp.FileManagement.HttpApi.Host/Logs/logs.txt
 host/EasyAbp.FileManagement.Web.Host/Logs/logs.txt
 host/EasyAbp.FileManagement.Web.Unified/Logs/logs.txt
 
-host/EasyAbp.FileManagement.Web.Unified/my-files/
+**/my-files/

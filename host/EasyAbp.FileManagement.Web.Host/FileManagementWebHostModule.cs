@@ -4,10 +4,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using EasyAbp.FileManagement.Localization;
 using EasyAbp.FileManagement.MultiTenancy;
@@ -15,6 +19,8 @@ using EasyAbp.FileManagement.Web;
 using StackExchange.Redis;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Authentication.OAuth;
+using Volo.Abp.AspNetCore.Authentication.OpenIdConnect;
+using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.Client;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI;
@@ -48,7 +54,7 @@ namespace EasyAbp.FileManagement
     [DependsOn(
         typeof(FileManagementWebModule),
         typeof(FileManagementHttpApiClientModule),
-        typeof(AbpAspNetCoreAuthenticationOAuthModule),
+        typeof(AbpAspNetCoreAuthenticationOpenIdConnectModule),
         typeof(AbpAspNetCoreMvcClientModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAutofacModule),
@@ -56,10 +62,10 @@ namespace EasyAbp.FileManagement
         typeof(AbpHttpClientIdentityModelWebModule),
         typeof(AbpIdentityWebModule),
         typeof(AbpIdentityHttpApiClientModule),
+        typeof(AbpFeatureManagementWebModule),
+        typeof(AbpFeatureManagementHttpApiClientModule),
         typeof(AbpTenantManagementWebModule),
         typeof(AbpTenantManagementHttpApiClientModule),
-        typeof(AbpFeatureManagementHttpApiClientModule),
-        typeof(AbpFeatureManagementWebModule),
         typeof(AbpPermissionManagementHttpApiClientModule),
         typeof(AbpAspNetCoreSerilogModule),
         typeof(AbpSwashbuckleModule)
@@ -138,10 +144,10 @@ namespace EasyAbp.FileManagement
                 {
                     options.ExpireTimeSpan = TimeSpan.FromDays(365);
                 })
-                .AddOpenIdConnect("oidc", options =>
+                .AddAbpOpenIdConnect("oidc", options =>
                 {
                     options.Authority = configuration["AuthServer:Authority"];
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                     options.ResponseType = OpenIdConnectResponseType.CodeIdToken;
 
                     options.ClientId = configuration["AuthServer:ClientId"];
@@ -154,9 +160,6 @@ namespace EasyAbp.FileManagement
                     options.Scope.Add("email");
                     options.Scope.Add("phone");
                     options.Scope.Add("FileManagement");
-
-                    options.ClaimActions.MapJsonKey(AbpClaimTypes.UserName, "name");
-                    options.ClaimActions.DeleteClaim("name");
                 });
         }
 
@@ -183,7 +186,7 @@ namespace EasyAbp.FileManagement
 
         private void ConfigureSwaggerServices(IServiceCollection services)
         {
-            services.AddSwaggerGen(
+            services.AddAbpSwaggerGen(
                 options =>
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "FileManagement API", Version = "v1" });
@@ -225,7 +228,7 @@ namespace EasyAbp.FileManagement
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseAuthentication(); 
+            app.UseAuthentication();
 
             if (MultiTenancyConsts.IsEnabled)
             {
@@ -236,7 +239,7 @@ namespace EasyAbp.FileManagement
             app.UseAuthorization();
 
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseAbpSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "FileManagement API");
             });

@@ -39,6 +39,7 @@ using Volo.Abp.PermissionManagement;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.HttpApi;
 using Volo.Abp.PermissionManagement.Identity;
+using Volo.Abp.SettingManagement;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
 using Volo.Abp.Swashbuckle;
 using Volo.Abp.TenantManagement;
@@ -67,8 +68,10 @@ namespace EasyAbp.FileManagement
         typeof(AbpPermissionManagementApplicationModule),
         typeof(AbpPermissionManagementHttpApiModule),
         typeof(AbpSettingManagementEntityFrameworkCoreModule),
-        typeof(AbpFeatureManagementApplicationModule),
+        typeof(AbpSettingManagementApplicationModule),
+        typeof(AbpSettingManagementHttpApiModule),
         typeof(AbpFeatureManagementEntityFrameworkCoreModule),
+        typeof(AbpFeatureManagementApplicationModule),
         typeof(AbpFeatureManagementHttpApiModule),
         typeof(AbpTenantManagementEntityFrameworkCoreModule),
         typeof(AbpTenantManagementApplicationModule),
@@ -80,8 +83,6 @@ namespace EasyAbp.FileManagement
         )]
     public class FileManagementIdentityServerModule : AbpModule
     {
-        private const string DefaultCorsPolicyName = "Default";
-
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
             var hostingEnvironment = context.Services.GetHostingEnvironment();
@@ -92,7 +93,7 @@ namespace EasyAbp.FileManagement
                 options.UseSqlServer();
             });
 
-            context.Services.AddSwaggerGen(
+            context.Services.AddAbpSwaggerGen(
                 options =>
                 {
                     options.SwaggerDoc("v1", new OpenApiInfo { Title = "FileManagement API", Version = "v1" });
@@ -104,8 +105,15 @@ namespace EasyAbp.FileManagement
             {
                 options.Languages.Add(new LanguageInfo("cs", "cs", "Čeština"));
                 options.Languages.Add(new LanguageInfo("en", "en", "English"));
+                options.Languages.Add(new LanguageInfo("en-GB", "en-GB", "English (UK)"));
+                options.Languages.Add(new LanguageInfo("fi", "fi", "Finnish"));
+                options.Languages.Add(new LanguageInfo("fr", "fr", "Français"));
+                options.Languages.Add(new LanguageInfo("hi", "hi", "Hindi", "in"));
+                options.Languages.Add(new LanguageInfo("it", "it", "Italian", "it"));
+                options.Languages.Add(new LanguageInfo("hu", "hu", "Magyar"));
                 options.Languages.Add(new LanguageInfo("pt-BR", "pt-BR", "Português"));
                 options.Languages.Add(new LanguageInfo("ru", "ru", "Русский"));
+                options.Languages.Add(new LanguageInfo("sk", "sk", "Slovak"));
                 options.Languages.Add(new LanguageInfo("tr", "tr", "Türkçe"));
                 options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
                 options.Languages.Add(new LanguageInfo("zh-Hant", "zh-Hant", "繁體中文"));
@@ -126,7 +134,7 @@ namespace EasyAbp.FileManagement
                 .AddJwtBearer(options =>
                 {
                     options.Authority = configuration["AuthServer:Authority"];
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                     options.Audience = configuration["AuthServer:ApiName"];
                 });
 
@@ -150,7 +158,7 @@ namespace EasyAbp.FileManagement
 
             context.Services.AddCors(options =>
             {
-                options.AddPolicy(DefaultCorsPolicyName, builder =>
+                options.AddDefaultPolicy(builder =>
                 {
                     builder
                         .WithOrigins(
@@ -187,10 +195,10 @@ namespace EasyAbp.FileManagement
             app.UseCorrelationId();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors(DefaultCorsPolicyName); 
+            app.UseCors();
             app.UseAuthentication();
             app.UseJwtTokenMiddleware();
-            
+
             if (MultiTenancyConsts.IsEnabled)
             {
                 app.UseMultiTenancy();
@@ -200,7 +208,7 @@ namespace EasyAbp.FileManagement
             app.UseIdentityServer();
             app.UseAuthorization();
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseAbpSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Support APP API");
             });

@@ -2,25 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Claims;
+using EasyAbp.FileManagement.Containers;
 using IdentityModel;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EasyAbp.FileManagement.EntityFrameworkCore;
+using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.MultiTenancy;
+using EasyAbp.FileManagement.Options;
 using StackExchange.Redis;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
-using Volo.Abp.AspNetCore.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.MultiTenancy;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.Autofac;
+using Volo.Abp.BlobStoring;
+using Volo.Abp.BlobStoring.FileSystem;
 using Volo.Abp.Caching;
 using Volo.Abp.Caching.StackExchangeRedis;
 using Volo.Abp.EntityFrameworkCore;
@@ -42,6 +46,7 @@ namespace EasyAbp.FileManagement
         typeof(FileManagementHttpApiModule),
         typeof(AbpAspNetCoreMvcUiMultiTenancyModule),
         typeof(AbpAutofacModule),
+        typeof(AbpBlobStoringFileSystemModule),
         typeof(AbpCachingStackExchangeRedisModule),
         typeof(AbpEntityFrameworkCoreSqlServerModule),
         typeof(AbpAuditLoggingEntityFrameworkCoreModule),
@@ -52,7 +57,6 @@ namespace EasyAbp.FileManagement
         )]
     public class FileManagementHttpApiHostModule : AbpModule
     {
-        private const string DefaultCorsPolicyName = "Default";
 
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
@@ -80,10 +84,15 @@ namespace EasyAbp.FileManagement
                 });
             }
 
-            context.Services.AddSwaggerGen(
+            context.Services.AddAbpSwaggerGenWithOAuth(
+                configuration["AuthServer:Authority"],
+                new Dictionary<string, string>
+                {
+                    {"FileManagement", "FileManagement API"}
+                },
                 options =>
                 {
-                    options.SwaggerDoc("v1", new OpenApiInfo { Title = "FileManagement API", Version = "v1" });
+                    options.SwaggerDoc("v1", new OpenApiInfo {Title = "FileManagement API", Version = "v1"});
                     options.DocInclusionPredicate((docName, description) => true);
                     options.CustomSchemaIds(type => type.FullName);
                 });
@@ -92,18 +101,25 @@ namespace EasyAbp.FileManagement
             {
                 options.Languages.Add(new LanguageInfo("cs", "cs", "Čeština"));
                 options.Languages.Add(new LanguageInfo("en", "en", "English"));
+                options.Languages.Add(new LanguageInfo("en-GB", "en-GB", "English (UK)"));
+                options.Languages.Add(new LanguageInfo("fi", "fi", "Finnish"));
+                options.Languages.Add(new LanguageInfo("fr", "fr", "Français"));
+                options.Languages.Add(new LanguageInfo("hi", "hi", "Hindi", "in"));
+                options.Languages.Add(new LanguageInfo("it", "it", "Italian", "it"));
+                options.Languages.Add(new LanguageInfo("hu", "hu", "Magyar"));
                 options.Languages.Add(new LanguageInfo("pt-BR", "pt-BR", "Português"));
                 options.Languages.Add(new LanguageInfo("ru", "ru", "Русский"));
+                options.Languages.Add(new LanguageInfo("sk", "sk", "Slovak"));
                 options.Languages.Add(new LanguageInfo("tr", "tr", "Türkçe"));
                 options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
                 options.Languages.Add(new LanguageInfo("zh-Hant", "zh-Hant", "繁體中文"));
             });
 
-            context.Services.AddAuthentication("Bearer")
+            context.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
                     options.Authority = configuration["AuthServer:Authority"];
-                    options.RequireHttpsMetadata = false;
+                    options.RequireHttpsMetadata = Convert.ToBoolean(configuration["AuthServer:RequireHttpsMetadata"]);
                     options.Audience = "FileManagement";
                 });
 
@@ -122,7 +138,7 @@ namespace EasyAbp.FileManagement
 
             context.Services.AddCors(options =>
             {
-                options.AddPolicy(DefaultCorsPolicyName, builder =>
+                options.AddDefaultPolicy(builder =>
                 {
                     builder
                         .WithOrigins(
@@ -137,6 +153,51 @@ namespace EasyAbp.FileManagement
                         .AllowAnyMethod()
                         .AllowCredentials();
                 });
+            });
+            
+            Configure<AbpBlobStoringOptions>(options =>
+            {
+                options.Containers.Configure<LocalFileSystemBlobContainer>(container =>
+                {
+                    container.IsMultiTenant = true;
+                    container.UseFileSystem(fileSystem =>
+                    {
+                        // fileSystem.BasePath = "C:\\my-files";
+                        fileSystem.BasePath = Path.Combine(hostingEnvironment.ContentRootPath, "my-files");
+                    });
+                });
+            });
+            
+            Configure<FileManagementOptions>(options =>
+            {
+                options.DefaultFileDownloadProviderType = typeof(LocalFileDownloadProvider);
+                options.Containers.Configure<CommonFileContainer>(container =>
+                {
+                    // private container never be used by non-owner users (except user who has the "File.Manage" permission).
+                    container.FileContainerType = FileContainerType.Public;
+                    container.AbpBlobContainerName = BlobContainerNameAttribute.GetContainerName<LocalFileSystemBlobContainer>();
+                    container.AbpBlobDirectorySeparator = "/";
+                    
+                    container.RetainUnusedBlobs = false;
+                    container.EnableAutoRename = true;
+
+                    container.MaxByteSizeForEachFile = 5 * 1024 * 1024;
+                    container.MaxByteSizeForEachUpload = 10 * 1024 * 1024;
+                    container.MaxFileQuantityForEachUpload = 2;
+
+                    container.AllowOnlyConfiguredFileExtensions = true;
+                    container.FileExtensionsConfiguration.Add(".jpg", true);
+                    container.FileExtensionsConfiguration.Add(".PNG", true);
+                    // container.FileExtensionsConfiguration.Add(".tar.gz", true);
+                    // container.FileExtensionsConfiguration.Add(".exe", false);
+
+                    container.GetDownloadInfoTimesLimitEachUserPerMinute = 10;
+                });
+            });
+            
+            Configure<LocalFileDownloadOptions>(options =>
+            {
+                options.FileDownloadBaseUrl = "https://localhost:44316";
             });
         }
 
@@ -159,9 +220,8 @@ namespace EasyAbp.FileManagement
             app.UseCorrelationId();
             app.UseStaticFiles();
             app.UseRouting();
-            app.UseCors(DefaultCorsPolicyName);        
+            app.UseCors();
             app.UseAuthentication();
-            app.UseAbpClaimsMap();
             if (MultiTenancyConsts.IsEnabled)
             {
                 app.UseMultiTenancy();
@@ -169,9 +229,14 @@ namespace EasyAbp.FileManagement
             app.UseAbpRequestLocalization();
             app.UseAuthorization();
             app.UseSwagger();
-            app.UseSwaggerUI(options =>
+            app.UseAbpSwaggerUI(options =>
             {
                 options.SwaggerEndpoint("/swagger/v1/swagger.json", "Support APP API");
+
+                var configuration = context.GetConfiguration();
+                options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+                options.OAuthClientSecret(configuration["AuthServer:SwaggerClientSecret"]);
+                options.OAuthScopes("FileManagement");
             });
             app.UseAuditing();
             app.UseAbpSerilogEnrichers();

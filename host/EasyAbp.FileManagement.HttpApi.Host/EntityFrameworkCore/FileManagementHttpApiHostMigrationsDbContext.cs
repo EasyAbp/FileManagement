@@ -8,7 +8,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
         public FileManagementHttpApiHostMigrationsDbContext(DbContextOptions<FileManagementHttpApiHostMigrationsDbContext> options)
             : base(options)
         {
-        
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

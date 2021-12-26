@@ -12,7 +12,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
             var configuration = BuildConfiguration();
 
             var builder = new DbContextOptionsBuilder<FileManagementHttpApiHostMigrationsDbContext>()
-                .UseSqlServer(configuration.GetConnectionString("FileManagement"));
+                .UseSqlServer(configuration.GetConnectionString("EasyAbpFileManagement"));
 
             return new FileManagementHttpApiHostMigrationsDbContext(builder.Options);
         }
