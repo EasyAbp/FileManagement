@@ -8,6 +8,7 @@ using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels;
 using Microsoft.AspNetCore.Http;
+using Volo.Abp.Content;
 
 namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 {
@@ -16,18 +17,18 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
         [HiddenInput]
         [BindProperty(SupportsGet = true)]
         public string FileContainerName { get; set; }
-        
+
         [HiddenInput]
         [BindProperty(SupportsGet = true)]
         public Guid? OwnerUserId { get; set; }
-        
+
         [HiddenInput]
         [BindProperty(SupportsGet = true)]
         public Guid? ParentId { get; set; }
 
         [BindProperty]
         public IFormFile[] UploadedFiles { get; set; }
-        
+
         public PublicFileContainerConfiguration Configuration { get; set; }
 
         private readonly IFileAppService _service;
@@ -44,23 +45,22 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
         public virtual async Task<IActionResult> OnPostAsync()
         {
-            var dto = new CreateManyFileInput {FileInfos = new List<CreateFileInput>()};
+            var dto = new CreateManyFileWithStreamInput
+            {
+                FileContainerName = FileContainerName,
+                OwnerUserId = OwnerUserId,
+                ParentId = ParentId,
+            };
             foreach (var uploadedFile in UploadedFiles)
             {
-                dto.FileInfos.Add(new CreateFileInput
+                dto.FileContents.Add(new RemoteStreamContent(uploadedFile.OpenReadStream(), uploadedFile.FileName)
                 {
-                    FileContainerName = FileContainerName,
-                    OwnerUserId = OwnerUserId,
-                    FileName = uploadedFile.FileName,
-                    FileType = FileType.RegularFile,
-                    MimeType = uploadedFile.ContentType,
-                    ParentId = ParentId,
-                    Content = await uploadedFile.GetAllBytesAsync()
+                    ContentType = uploadedFile.ContentType,
                 });
             }
 
-            await _service.CreateManyAsync(dto);
-            
+            await _service.CreateManyWithStreamAsync(dto);
+
             return NoContent();
         }
 

@@ -6,21 +6,14 @@ using Volo.Abp.ObjectExtending;
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class CreateFileInput : ExtensibleObject
+    public class CreateFileInput : CreateFileBase
     {
-        [Required]
-        public string FileContainerName { get; set; }
-        
         [Required]
         public string FileName { get; set; }
         
         public string MimeType { get; set; }
 
         public FileType FileType { get; set; }
-
-        public Guid? ParentId { get; set; }
-        
-        public Guid? OwnerUserId { get; set; }
 
         public byte[] Content { get; set; }
         
@@ -32,12 +25,6 @@ namespace EasyAbp.FileManagement.Files.Dtos
             {
                 yield return new ValidationResult("FileName should not be empty!",
                     new[] {nameof(FileName)});
-            }
-            
-            if (FileContainerName.IsNullOrWhiteSpace())
-            {
-                yield return new ValidationResult("FileContainerName should not be empty!",
-                    new[] {nameof(FileContainerName)});
             }
             
             if (!Enum.IsDefined(typeof(FileType), FileType))

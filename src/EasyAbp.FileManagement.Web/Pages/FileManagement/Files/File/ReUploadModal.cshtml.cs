@@ -9,6 +9,7 @@ using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels;
 using Microsoft.AspNetCore.Http;
+using Volo.Abp.Content;
 
 namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 {
@@ -50,14 +51,15 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
                 throw new ReUploadWithDifferentExtensionException();
             }
 
-            var updateFileDto = new UpdateFileInput
+            var updateFileDto = new UpdateFileWithStreamInput
             {
-                FileName = dto.FileName,
-                MimeType = UploadedFile.ContentType,
-                Content = await UploadedFile.GetAllBytesAsync()
+                Content = new RemoteStreamContent(UploadedFile.OpenReadStream(), UploadedFile.FileName)
+                {
+                    ContentType = UploadedFile.ContentType,
+                }
             };
             
-            await _service.UpdateAsync(Id, updateFileDto);
+            await _service.UpdateWithStreamAsync(Id, updateFileDto);
 
             return NoContent();
         }
