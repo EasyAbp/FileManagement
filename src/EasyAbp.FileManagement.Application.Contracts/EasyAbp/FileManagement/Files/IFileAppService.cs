@@ -4,6 +4,7 @@ using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
+using Volo.Abp.Content;
 
 namespace EasyAbp.FileManagement.Files
 {
@@ -15,9 +16,15 @@ namespace EasyAbp.FileManagement.Files
     {
         Task<CreateFileOutput> CreateAsync(CreateFileInput input);
 
+        Task<CreateFileOutput> CreateWithStreamAsync(CreateFileWithStreamInput input);
+
         Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileInput input);
 
+        Task<CreateManyFileOutput> CreateManyWithStreamAsync(CreateManyFileWithStreamInput input);
+
         Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input);
+
+        Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input);
 
         Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input);
 
@@ -28,6 +35,8 @@ namespace EasyAbp.FileManagement.Files
         Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input);
 
         Task<FileDownloadOutput> DownloadAsync(Guid id, string token);
+
+        Task<IRemoteStreamContent> DownloadWithStreamAsync(Guid id, string token);
 
         Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName, Guid? ownerUserId);
     }

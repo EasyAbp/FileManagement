@@ -62,19 +62,21 @@ namespace EasyAbp.FileManagement.Files
             
             if (fileType == FileType.RegularFile)
             {
-                var existingFile = await _fileRepository.FirstOrDefaultAsync(fileContainerName, hashString, fileContent.LongLength);
+                if (!configuration.DisableBlobReuse)
+                {
+                    var existingFile = await _fileRepository.FirstOrDefaultAsync(fileContainerName, hashString, fileContent.LongLength);
 
-                if (existingFile != null)
-                {
-                    Check.NotNullOrWhiteSpace(existingFile.BlobName, nameof(existingFile.BlobName));
+                    // Todo: should lock the file that provides a reused BLOB.
+                    if (existingFile != null)
+                    {
+                        Check.NotNullOrWhiteSpace(existingFile.BlobName, nameof(existingFile.BlobName));
                     
-                    blobName = existingFile.BlobName;
+                        blobName = existingFile.BlobName;
+                    }
                 }
-                else
-                {
-                    blobName = await _fileBlobNameGenerator.CreateAsync(fileType, fileName, parent, mimeType,
-                        configuration.AbpBlobDirectorySeparator);
-                }
+
+                blobName ??= await _fileBlobNameGenerator.CreateAsync(fileType, fileName, parent, mimeType,
+                    configuration.AbpBlobDirectorySeparator);
             }
 
             if (configuration.EnableAutoRename)
@@ -238,21 +240,22 @@ namespace EasyAbp.FileManagement.Files
             }
         }
 
-        public virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool overrideExisting = false, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent, bool disableBlobReuse = false,
+            bool allowBlobOverriding = false, CancellationToken cancellationToken = default)
         {
             if (file.FileType != FileType.RegularFile)
             {
-                return false;
+                throw new UnexpectedFileTypeException(file.Id, file.FileType);
             }
-            
+
             var blobContainer = GetBlobContainer(file);
 
-            if (!overrideExisting && await blobContainer.ExistsAsync(file.BlobName, cancellationToken))
+            if (!disableBlobReuse && await blobContainer.ExistsAsync(file.BlobName, cancellationToken))
             {
                 return false;
             }
 
-            await blobContainer.SaveAsync(file.BlobName, fileContent, overrideExisting, cancellationToken: cancellationToken);
+            await blobContainer.SaveAsync(file.BlobName, fileContent, allowBlobOverriding, cancellationToken);
 
             return true;
         }

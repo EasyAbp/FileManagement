@@ -4,6 +4,7 @@ using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.Localization;
 using Volo.Abp.Modularity;
 using Microsoft.Extensions.DependencyInjection;
+using EasyAbp.FileManagement.Files.Dtos;
 
 namespace EasyAbp.FileManagement
 {
@@ -27,6 +28,13 @@ namespace EasyAbp.FileManagement
                 options.Resources
                     .Get<FileManagementResource>()
                     .AddBaseTypes(typeof(AbpUiResource));
+            });
+
+            Configure<AbpAspNetCoreMvcOptions>(options =>
+            {
+                options.ConventionalControllers.FormBodyBindingIgnoredTypes.Add(typeof(CreateFileWithStreamInput));
+                options.ConventionalControllers.FormBodyBindingIgnoredTypes.Add(typeof(CreateManyFileWithStreamInput));
+                options.ConventionalControllers.FormBodyBindingIgnoredTypes.Add(typeof(UpdateFileWithStreamInput));
             });
         }
     }

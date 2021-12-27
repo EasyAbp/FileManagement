@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
+using Volo.Abp.Content;
 using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files
@@ -42,7 +43,15 @@ namespace EasyAbp.FileManagement.Files
         {
             return _service.CreateAsync(input);
         }
-        
+
+        [HttpPost]
+        [Route("with-stream")]
+        public virtual Task<CreateFileOutput> CreateWithStreamAsync(CreateFileWithStreamInput input)
+        {
+            return _service.CreateWithStreamAsync(input);
+        }
+
+
         [HttpPost]
         [Consumes("multipart/form-data")]
         public virtual async Task<CreateFileOutput> ActionCreateAsync([FromForm] CreateFileActionInput input)
@@ -80,7 +89,14 @@ namespace EasyAbp.FileManagement.Files
         {
             return _service.CreateManyAsync(input);
         }
-        
+
+        [HttpPost]
+        [Route("many/with-stream")]
+        public virtual Task<CreateManyFileOutput> CreateManyWithStreamAsync(CreateManyFileWithStreamInput input)
+        {
+            return _service.CreateManyWithStreamAsync(input);
+        }
+
         [HttpPost]
         [Route("many")]
         [Consumes("multipart/form-data")]
@@ -141,7 +157,14 @@ namespace EasyAbp.FileManagement.Files
         {
             return _service.UpdateAsync(id, input);
         }
-        
+
+        [HttpPut]
+        [Route("{id}/with-stream")]
+        public Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input)
+        {
+            return _service.UpdateWithStreamAsync(id, input);
+        }
+
         [HttpPut]
         [Route("{id}")]
         [Consumes("multipart/form-data")]
@@ -194,6 +217,13 @@ namespace EasyAbp.FileManagement.Files
         public virtual Task<FileDownloadOutput> DownloadAsync(Guid id, string token)
         {
             return _service.DownloadAsync(id, token);
+        }
+
+        [HttpGet]
+        [Route("{id}/download/with-stream")]
+        public Task<IRemoteStreamContent> DownloadWithStreamAsync(Guid id, string token)
+        {
+            return _service.DownloadWithStreamAsync(id, token);
         }
 
         [HttpGet]

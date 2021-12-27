@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Caching;
+using Volo.Abp.Content;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Users;
 
@@ -39,18 +41,18 @@ namespace EasyAbp.FileManagement.Files
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
-            
+
             return await MapToGetOutputDtoAsync(file);
         }
 
         public override async Task<PagedResultDto<FileInfoDto>> GetListAsync(GetFileListInput input)
         {
             await AuthorizationService.CheckAsync(new FileOperationInfoModel
-                {
-                    ParentId = input.ParentId,
-                    FileContainerName = input.FileContainerName,
-                    OwnerUserId = input.OwnerUserId
-                },
+            {
+                ParentId = input.ParentId,
+                FileContainerName = input.FileContainerName,
+                OwnerUserId = input.OwnerUserId
+            },
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Default});
 
             var query = await CreateFilteredQueryAsync(input);
@@ -71,7 +73,7 @@ namespace EasyAbp.FileManagement.Files
         protected override async Task<IQueryable<File>> CreateFilteredQueryAsync(GetFileListInput input)
         {
             await Task.CompletedTask;
-            
+
             return _repository
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
@@ -96,10 +98,40 @@ namespace EasyAbp.FileManagement.Files
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Create});
-            
+
             await _repository.InsertAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, input.Content);
+            await TrySaveBlobAsync(file, input.Content, configuration.DisableBlobReuse, configuration.AllowBlobOverriding);
+
+            return await MapToCreateOutputDtoAsync(file);
+        }
+
+        [Authorize]
+        public virtual async Task<CreateFileOutput> CreateWithStreamAsync(CreateFileWithStreamInput input)
+        {
+            var configuration = _configurationProvider.Get(input.FileContainerName);
+
+            CheckFileSize(new Dictionary<string, long> { { input.Content.FileName, input.Content?.ContentLength ?? 0 } }, configuration);
+
+            CheckFileExtension(new[] { input.Content.FileName }, configuration);
+
+            var fileContent = await input.Content.GetStream().GetAllBytesAsync();
+
+            var file = await CreateFileEntityAsync(
+                    input: input,
+                    fileType: FileType.RegularFile,
+                    fileName: input.Content.FileName,
+                    mimeType: input.Content.ContentType,
+                    fileContent: fileContent,
+                    generateUniqueFileName: input.GenerateUniqueFileName
+                );
+
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
+
+            await _repository.InsertAsync(file);
+
+            await TrySaveBlobAsync(file, fileContent, configuration.DisableBlobReuse, configuration.AllowBlobOverriding);
 
             return await MapToCreateOutputDtoAsync(file);
         }
@@ -109,7 +141,7 @@ namespace EasyAbp.FileManagement.Files
             var downloadInfo = file.FileType == FileType.RegularFile
                 ? await _fileManager.GetDownloadInfoAsync(file)
                 : null;
-            
+
             return new CreateFileOutput
             {
                 FileInfo = ObjectMapper.Map<File, FileInfoDto>(file),
@@ -133,13 +165,13 @@ namespace EasyAbp.FileManagement.Files
             }
 
             var totalByteSize = fileNameByteSizeMapping.Values.Sum();
-            
+
             if (totalByteSize > configuration.MaxByteSizeForEachUpload)
             {
                 throw new UploadSizeExceededLimitException(totalByteSize, configuration.MaxByteSizeForEachUpload);
             }
         }
-        
+
         protected virtual void CheckFileExtension(IEnumerable<string> fileNames, FileContainerConfiguration configuration)
         {
             foreach (var fileName in fileNames.Where(fileName => !IsFileExtensionAllowed(fileName, configuration)))
@@ -164,7 +196,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task DeleteAsync(Guid id)
         {
             var file = await GetEntityByIdAsync(id);
-            
+
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Delete});
 
@@ -181,13 +213,13 @@ namespace EasyAbp.FileManagement.Files
             CheckFileExtension(
                 input.FileInfos.Where(x => x.FileType == FileType.RegularFile).Select(x => x.FileName).ToList(),
                 configuration);
-            
+
             var files = new File[input.FileInfos.Count];
 
             for (var i = 0; i < input.FileInfos.Count; i++)
             {
                 var fileInfo = input.FileInfos[i];
-                
+
                 var file = await CreateFileEntityAsync(fileInfo);
 
                 await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
@@ -200,7 +232,8 @@ namespace EasyAbp.FileManagement.Files
 
             for (var i = 0; i < files.Length; i++)
             {
-                await _fileManager.TrySaveBlobAsync(files[i], input.FileInfos[i].Content);
+                await TrySaveBlobAsync(files[i], input.FileInfos[i].Content, configuration.DisableBlobReuse,
+                    configuration.AllowBlobOverriding);
             }
 
             var items = new List<CreateFileOutput>();
@@ -213,15 +246,68 @@ namespace EasyAbp.FileManagement.Files
             return new CreateManyFileOutput {Items = items};
         }
 
+        public virtual async Task<CreateManyFileOutput> CreateManyWithStreamAsync(CreateManyFileWithStreamInput input)
+        {
+            var configuration = _configurationProvider.Get(input.FileContainerName);
+
+            CheckFileQuantity(input.FileContents.Count, configuration);
+            CheckFileSize(input.FileContents.ToDictionary(x => x.FileName, x => x.ContentLength ?? 0), configuration);
+
+            CheckFileExtension(
+                input.FileContents.Select(x => x.FileName).ToList(),
+                configuration);
+
+            var files = new File[input.FileContents.Count];
+            var fileContents = new List<byte[]>(input.FileContents.Count);
+
+            for (var i = 0; i < input.FileContents.Count; i++)
+            {
+                var fileContentItem = input.FileContents[i];
+                var fileContent = await fileContentItem.GetStream().GetAllBytesAsync();
+
+                var file = await CreateFileEntityAsync(
+                    input: input,
+                    fileType: FileType.RegularFile,
+                    fileName: fileContentItem.FileName,
+                    mimeType: fileContentItem.ContentType,
+                    fileContent: fileContent,
+                    generateUniqueFileName: input.GenerateUniqueFileName
+                );
+
+                await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
+                    new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
+
+                await _repository.InsertAsync(file);
+
+                files[i] = file;
+                fileContents.Add(fileContent);
+            }
+
+            for (var i = 0; i < files.Length; i++)
+            {
+                await TrySaveBlobAsync(files[i], fileContents[i], configuration.DisableBlobReuse,
+                    configuration.AllowBlobOverriding);
+            }
+
+            var items = new List<CreateFileOutput>();
+
+            foreach (var file in files)
+            {
+                items.Add(await MapToCreateOutputDtoAsync(file));
+            }
+
+            return new CreateManyFileOutput { Items = items };
+        }
+
         [Authorize]
         public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
             var newFileName = input.NewFileName;
-            
+
             var file = await GetEntityByIdAsync(id);
-            
+
             var configuration = _configurationProvider.Get(file.FileContainerName);
-            
+
             CheckFileExtension(new[] {newFileName}, configuration);
 
             var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
@@ -229,7 +315,7 @@ namespace EasyAbp.FileManagement.Files
             var newParent = input.NewParentId == file.ParentId
                 ? oldParent
                 : await TryGetEntityByNullableIdAsync(input.NewParentId);
-            
+
             await _fileManager.ChangeAsync(file, newFileName, oldParent, newParent);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
@@ -256,16 +342,16 @@ namespace EasyAbp.FileManagement.Files
                 LazyServiceProvider.LazyGetRequiredService<IDistributedCache<UserFileDownloadLimitCacheItem>>();
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
-            
+
             if (!configuration.GetDownloadInfoTimesLimitEachUserPerMinute.HasValue)
             {
                 return await _fileManager.GetDownloadInfoAsync(file);
             }
-            
+
             var cacheItemKey = GetDownloadLimitCacheItemKey();
 
             var absoluteExpiration = Clock.Now.AddMinutes(1);
-            
+
             var cacheItem = await downloadLimitCache.GetOrAddAsync(GetDownloadLimitCacheItemKey(),
                 () => Task.FromResult(new UserFileDownloadLimitCacheItem
                 {
@@ -280,7 +366,7 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new UserGetDownloadInfoExceededLimitException();
             }
-            
+
             var infoModel = await _fileManager.GetDownloadInfoAsync(file);
 
             cacheItem.Count++;
@@ -292,7 +378,7 @@ namespace EasyAbp.FileManagement.Files
 
             return infoModel;
         }
-        
+
         protected virtual string GetDownloadLimitCacheItemKey()
         {
             return CurrentUser.GetId().ToString();
@@ -302,12 +388,12 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input)
         {
             var file = await GetEntityByIdAsync(id);
-            
+
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileSize(new Dictionary<string, long> {{input.FileName, input.Content?.LongLength ?? 0}}, configuration);
             CheckFileExtension(new[] {input.FileName}, configuration);
-            
+
             await UpdateFileEntityAsync(file, input);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
@@ -315,29 +401,67 @@ namespace EasyAbp.FileManagement.Files
 
             await _repository.UpdateAsync(file);
 
-            await _fileManager.TrySaveBlobAsync(file, input.Content);
+            await TrySaveBlobAsync(file, input.Content, configuration.DisableBlobReuse,
+                configuration.AllowBlobOverriding);
 
             return await MapToGetOutputDtoAsync(file);
         }
-        
-        protected virtual async Task<File> CreateFileEntityAsync(CreateFileInput input)
+
+        [Authorize]
+        public virtual async Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input)
+        {
+            var file = await GetEntityByIdAsync(id);
+
+            var configuration = _configurationProvider.Get(file.FileContainerName);
+
+            CheckFileSize(new Dictionary<string, long> { { input.Content.FileName, input.Content?.ContentLength ?? 0 } }, configuration);
+            CheckFileExtension(new[] { input.Content.FileName }, configuration);
+
+            var fileContent = await input.Content.GetStream().GetAllBytesAsync();
+
+            await UpdateFileEntityAsync(file, input, input.Content.FileName, input.Content.ContentType, fileContent);
+
+            await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
+                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Update });
+
+            await _repository.UpdateAsync(file);
+
+            await TrySaveBlobAsync(file, fileContent, configuration.DisableBlobReuse,
+                configuration.AllowBlobOverriding);
+
+            return await MapToGetOutputDtoAsync(file);
+        }
+
+        protected virtual Task<File> CreateFileEntityAsync(CreateFileInput input)
+        {
+            return CreateFileEntityAsync(input, input.FileType, input.FileName, input.MimeType, input.Content);
+        }
+
+        protected virtual async Task<File> CreateFileEntityAsync(CreateFileBase input, FileType fileType, string fileName, string mimeType, byte[] fileContent, bool generateUniqueFileName = false)
         {
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
-            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, input.FileName,
-                input.MimeType, input.FileType, parent, input.Content);
-            
+            fileName = generateUniqueFileName ? GenerateUniqueFileName(fileName) : fileName;
+
+            var file = await _fileManager.CreateAsync(input.FileContainerName, input.OwnerUserId, fileName.Trim(),
+                mimeType, fileType, parent, fileContent);
+
             input.MapExtraPropertiesTo(file);
 
             return file;
         }
 
-        protected virtual async Task UpdateFileEntityAsync(File file, UpdateFileInput input)
+        protected virtual Task UpdateFileEntityAsync(File file, UpdateFileInput input)
+        {
+            return UpdateFileEntityAsync(file, input, input.FileName, input.MimeType, input.Content);
+        }
+
+        protected virtual async Task UpdateFileEntityAsync(File file, UpdateFileBase input, string fileName, string mimeType, byte[] fileContent)
         {
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
 
-            await _fileManager.ChangeAsync(file, input.FileName, input.MimeType, input.Content, parent, parent);
-            
+            await _fileManager.ChangeAsync(file, fileName.Trim(), mimeType, fileContent, parent, parent);
+
             input.MapExtraPropertiesTo(file);
         }
 
@@ -345,22 +469,22 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
             var fileName = input.FileName;
-            
+
             var file = await GetEntityByIdAsync(id);
 
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileExtension(new[] {fileName}, configuration);
-            
+
             var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
-            
+
             await _fileManager.ChangeAsync(file, fileName, parent, parent);
 
             await AuthorizationService.CheckAsync(CreateFileOperationInfoModel(file),
                 new OperationAuthorizationRequirement {Name = FileManagementPermissions.File.Update});
 
             input.MapExtraPropertiesTo(file);
-            
+
             await _repository.UpdateAsync(file, autoSave: true);
 
             return await MapToGetOutputDtoAsync(file);
@@ -376,7 +500,7 @@ namespace EasyAbp.FileManagement.Files
                 File = file
             };
         }
-        
+
         public virtual async Task<FileDownloadOutput> DownloadAsync(Guid id, string token)
         {
             var provider = LazyServiceProvider.LazyGetRequiredService<LocalFileDownloadProvider>();
@@ -393,6 +517,20 @@ namespace EasyAbp.FileManagement.Files
             };
         }
 
+        public virtual async Task<IRemoteStreamContent> DownloadWithStreamAsync(Guid id, string token)
+        {
+            var provider = LazyServiceProvider.LazyGetRequiredService<LocalFileDownloadProvider>();
+
+            await provider.CheckTokenAsync(token, id);
+
+            var file = await GetEntityByIdAsync(id);
+
+            return new RemoteStreamContent(new MemoryStream(await _fileManager.GetBlobAsync(file)), fileName: file.FileName)
+            {
+                ContentType = file.MimeType
+            };
+        }
+
         [Authorize]
         public virtual Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName,
             Guid? ownerUserId)
@@ -400,6 +538,24 @@ namespace EasyAbp.FileManagement.Files
             return Task.FromResult(
                 ObjectMapper.Map<FileContainerConfiguration, PublicFileContainerConfiguration>(
                     _configurationProvider.Get(fileContainerName)));
+        }
+
+        protected virtual string GenerateUniqueFileName(string fileName)
+        {
+            return Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);
+        }
+
+        protected virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent,
+            bool disableBlobReuse = false, bool allowBlobOverriding = false)
+        {
+            if (file.FileType is not FileType.RegularFile)
+            {
+                return false;
+            }
+
+            await _fileManager.TrySaveBlobAsync(file, fileContent, disableBlobReuse, allowBlobOverriding);
+
+            return true;
         }
     }
 }
