@@ -53,10 +53,10 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
             };
             foreach (var uploadedFile in UploadedFiles)
             {
-                dto.FileContents.Add(new RemoteStreamContent(uploadedFile.OpenReadStream(), uploadedFile.FileName)
-                {
-                    ContentType = uploadedFile.ContentType,
-                });
+                dto.FileContents.Add(new RemoteStreamContent(
+                    stream: uploadedFile.OpenReadStream(),
+                    fileName: uploadedFile.FileName,
+                    contentType: uploadedFile.ContentType));
             }
 
             await _service.CreateManyWithStreamAsync(dto);

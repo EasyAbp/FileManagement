@@ -5,7 +5,7 @@ using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class UpdateFileBase: ExtensibleObject
+    public class UpdateFileBase : ExtensibleObject
     {
     }
 }

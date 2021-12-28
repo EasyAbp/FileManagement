@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
@@ -12,6 +11,7 @@ using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.EventBus.Local;
 using Volo.Abp.Uow;
 
@@ -19,7 +19,7 @@ namespace EasyAbp.FileManagement.Files
 {
     public class FileManager : DomainService, IFileManager
     {
-        private readonly ILocalEventBus _localEventBus;
+        private readonly IDistributedEventBus _distributedEventBus;
         private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IBlobContainerFactory _blobContainerFactory;
         private readonly IFileRepository _fileRepository;
@@ -28,7 +28,7 @@ namespace EasyAbp.FileManagement.Files
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public FileManager(
-            ILocalEventBus localEventBus,
+            IDistributedEventBus distributedEventBus,
             IUnitOfWorkManager unitOfWorkManager,
             IBlobContainerFactory blobContainerFactory,
             IFileRepository fileRepository,
@@ -36,7 +36,7 @@ namespace EasyAbp.FileManagement.Files
             IFileContentHashProvider fileContentHashProvider,
             IFileContainerConfigurationProvider configurationProvider)
         {
-            _localEventBus = localEventBus;
+            _distributedEventBus = distributedEventBus;
             _unitOfWorkManager = unitOfWorkManager;
             _blobContainerFactory = blobContainerFactory;
             _fileRepository = fileRepository;
@@ -155,9 +155,11 @@ namespace EasyAbp.FileManagement.Files
                 configuration.AbpBlobDirectorySeparator);
 
             _unitOfWorkManager.Current.OnCompleted(async () =>
-                await _localEventBus.PublishAsync(new FileBlobNameChangedEto
+                await _distributedEventBus.PublishAsync(new FileBlobNameChangedEto
                 {
+                    TenantId = file.TenantId,
                     FileId = file.Id,
+                    FileType = file.FileType,
                     FileContainerName = file.FileContainerName,
                     OldBlobName = oldBlobName,
                     NewBlobName = blobName
@@ -279,11 +281,19 @@ namespace EasyAbp.FileManagement.Files
             return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
         }
 
-        public async Task DeleteBlobAsync(File file, CancellationToken cancellationToken = default)
+        public virtual IBlobContainer GetBlobContainer(string fileContainerName)
         {
-            var blobContainer = GetBlobContainer(file);
+            var configuration = _configurationProvider.Get(fileContainerName);
+            
+            return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
+        }
 
-            await blobContainer.DeleteAsync(file.BlobName, cancellationToken);
+        public async Task DeleteBlobAsync(string fileContainerName, string blobName,
+            CancellationToken cancellationToken = default)
+        {
+            var blobContainer = GetBlobContainer(fileContainerName);
+
+            await blobContainer.DeleteAsync(blobName, cancellationToken);
         }
 
         public virtual async Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file)
@@ -300,13 +310,13 @@ namespace EasyAbp.FileManagement.Files
 
         protected virtual IFileDownloadProvider GetFileDownloadProvider(File file)
         {
-            var options = ServiceProvider.GetRequiredService<IOptions<FileManagementOptions>>().Value;
+            var options = LazyServiceProvider.LazyGetRequiredService<IOptions<FileManagementOptions>>().Value;
             
             var configuration = options.Containers.GetConfiguration(file.FileContainerName);
 
             var specifiedProviderType = configuration.SpecifiedFileDownloadProviderType;
 
-            var providers = ServiceProvider.GetServices<IFileDownloadProvider>();
+            var providers = LazyServiceProvider.LazyGetService<IEnumerable<IFileDownloadProvider>>();
 
             return specifiedProviderType == null
                 ? providers.Single(p => p.GetType() == options.DefaultFileDownloadProviderType)

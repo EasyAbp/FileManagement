@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Http;
-using Blazorise.Bootstrap;
+using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +25,7 @@ using Volo.Abp.AspNetCore.Mvc.UI.Theme.Basic.Bundling;
 using Volo.Abp.AspNetCore.Serilog;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.Autofac;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.FeatureManagement;
@@ -76,6 +77,7 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host
         typeof(AbpSettingManagementBlazorServerModule),
         typeof(AbpSettingManagementApplicationModule),
         typeof(AbpSettingManagementEntityFrameworkCoreModule),
+        typeof(AbpBackgroundJobsModule),
         typeof(FileManagementBlazorServerModule)
     )]
     public class FileManagementBlazorHostModule: AbpModule
@@ -185,7 +187,7 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host
             });
 
             context.Services
-                .AddBootstrapProviders()
+                .AddBootstrap5Providers()
                 .AddFontAwesomeIcons();
 
             Configure<AbpNavigationOptions>(options =>

@@ -13,7 +13,7 @@ using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files
 {
-    [RemoteService(Name = "EasyAbpFileManagement")]
+    [RemoteService(Name = FileManagementRemoteServiceConsts.RemoteServiceName)]
     [Route("/api/file-management/file")]
     public class FileController : FileManagementController, IFileAppService
     {

@@ -18,7 +18,7 @@ steps:
 - task: UseDotNet@2
   inputs:
     packageType: 'sdk'
-    version: '5.x'
+    version: '6.x'
 - task: CmdLine@2
   displayName: 'install dotnet-ef'
   inputs:

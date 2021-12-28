@@ -5,3 +5,7 @@
   margin-right: 8px;
   color: #007bff;
 }
+
+table a {
+  text-decoration: none;
+}

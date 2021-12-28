@@ -69,7 +69,7 @@ else
                 <abp-column size-md="_6">
                     <abp-card-title>@L["File"]: @currentPath</abp-card-title>
                 </abp-column>
-                <abp-column size-md="_6" class="text-right">
+                <abp-column size-md="_6" class="text-end">
                     @if (await Authorization.IsGrantedAsync(FileManagementPermissions.File.Create))
                     { 
                         <abp-button id="CreateDirectoryButton"

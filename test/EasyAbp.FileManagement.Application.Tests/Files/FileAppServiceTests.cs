@@ -62,16 +62,8 @@ namespace EasyAbp.FileManagement.Files
                 ParentId = null,
                 FileContents = new List<IRemoteStreamContent>
                 {
-                    new RemoteStreamContent(ms1)
-                    {
-                        FileName = fileName1,
-                        ContentType = contentType
-                    },
-                    new RemoteStreamContent(ms2)
-                    {
-                        FileName = fileName2,
-                        ContentType = contentType
-                    }
+                    new RemoteStreamContent(ms1, fileName1, contentType),
+                    new RemoteStreamContent(ms2, fileName2, contentType)
                 }
             });
 
@@ -207,11 +199,7 @@ namespace EasyAbp.FileManagement.Files
             {
                 FileContainerName = fileContainerName,
                 ParentId = null,
-                Content = new RemoteStreamContent(ms)
-                {
-                    FileName = fileName,
-                    ContentType = contentType
-                }
+                Content = new RemoteStreamContent(ms, fileName, contentType)
             });
         }
 

@@ -39,7 +39,8 @@ namespace EasyAbp.FileManagement
                 return;
             }
             
-            context.Fail();
+            // We don't set fail, so admin (with "manage" permission) can do it.
+            // context.Fail();
             
             await Task.CompletedTask;
         }
@@ -53,7 +54,8 @@ namespace EasyAbp.FileManagement
                 return;
             }
             
-            context.Fail();
+            // We don't set fail, so admin (with "manage" permission) can do it.
+            // context.Fail();
             
             await Task.CompletedTask;
         }
@@ -67,7 +69,8 @@ namespace EasyAbp.FileManagement
                 return;
             }
             
-            context.Fail();
+            // We don't set fail, so admin (with "manage" permission) can do it.
+            // context.Fail();
             
             await Task.CompletedTask;
         }
@@ -89,7 +92,11 @@ namespace EasyAbp.FileManagement
         protected override async Task HandleDeleteAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement,
             FileOperationInfoModel resource)
         {
-            context.Fail();    // Files cannot be deleted.
+            // Files cannot be deleted.
+            await Task.CompletedTask;
+
+            // We don't set fail, so admin (with "manage" permission) can do it.
+            // context.Fail();
         }
     }
 }

@@ -4,8 +4,8 @@ using Volo.Abp.AspNetCore.Mvc;
 
 namespace EasyAbp.FileManagement
 {
-    [Area("file-management")]
-    public abstract class FileManagementController : AbpController
+    [Area(FileManagementRemoteServiceConsts.ModuleName)]
+    public abstract class FileManagementController : AbpControllerBase
     {
         protected FileManagementController()
         {

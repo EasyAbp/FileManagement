@@ -14,7 +14,7 @@ using EasyAbp.FileManagement.Permissions;
 namespace EasyAbp.FileManagement.Web
 {
     [DependsOn(
-        typeof(FileManagementHttpApiModule),
+        typeof(FileManagementApplicationContractsModule),
         typeof(AbpAspNetCoreMvcUiThemeSharedModule),
         typeof(AbpAutoMapperModule),
         typeof(AbpTagHelperPlusModule)

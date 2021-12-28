@@ -1,62 +1,79 @@
-﻿using System.Threading.Tasks;
-using EasyAbp.FileManagement.Containers;
+﻿using System;
+using System.Threading.Tasks;
 using EasyAbp.FileManagement.Options.Containers;
+using JetBrains.Annotations;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.DependencyInjection;
-using Volo.Abp.Domain.Entities.Events;
-using Volo.Abp.EventBus;
+using Volo.Abp.Domain.Entities.Events.Distributed;
+using Volo.Abp.EventBus.Distributed;
+using Volo.Abp.MultiTenancy;
+using Volo.Abp.Uow;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class UnusedBlobCleaner : ILocalEventHandler<EntityDeletedEventData<File>>,
-        ILocalEventHandler<FileBlobNameChangedEto>, ITransientDependency
+    public class UnusedBlobCleaner :
+        IDistributedEventHandler<EntityDeletedEto<FileEto>>,
+        IDistributedEventHandler<FileBlobNameChangedEto>,
+        ITransientDependency
     {
-        private readonly IFileManager _fileManager;
-        private readonly IFileRepository _fileRepository;
+        private readonly ICurrentTenant _currentTenant;
+        private readonly IBackgroundJobManager _backgroundJobManager;
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public UnusedBlobCleaner(
-            IFileManager fileManager,
-            IFileRepository fileRepository,
+            ICurrentTenant currentTenant,
+            IBackgroundJobManager backgroundJobManager,
             IFileContainerConfigurationProvider configurationProvider)
         {
-            _fileManager = fileManager;
-            _fileRepository = fileRepository;
+            _currentTenant = currentTenant;
+            _backgroundJobManager = backgroundJobManager;
             _configurationProvider = configurationProvider;
         }
 
-        public virtual async Task HandleEventAsync(EntityDeletedEventData<File> eventData)
+        [UnitOfWork]
+        public virtual async Task HandleEventAsync(EntityDeletedEto<FileEto> eventData)
         {
-            if (_configurationProvider.Get(eventData.Entity.FileContainerName).RetainUnusedBlobs)
-            {
-                return;
-            }
-            
-            if (await _fileRepository.FirstOrDefaultAsync(eventData.Entity.FileContainerName, eventData.Entity.BlobName) == null)
-            {
-                await _fileManager.DeleteBlobAsync(eventData.Entity);
-            }
+            using var changeTenant = _currentTenant.Change(eventData.Entity.TenantId);
+
+            await TryEnqueueCleaningJobAsync(eventData.Entity.FileType, eventData.Entity.FileContainerName,
+                eventData.Entity.BlobName);
         }
 
+        [UnitOfWork]
         public virtual async Task HandleEventAsync(FileBlobNameChangedEto eventData)
         {
-            var file = await _fileRepository.FindAsync(eventData.FileId);
+            using var changeTenant = _currentTenant.Change(eventData.TenantId);
 
-            if (file == null)
+            if (eventData.NewBlobName == eventData.OldBlobName)
             {
                 return;
             }
 
-            if (_configurationProvider.Get(file.FileContainerName).RetainUnusedBlobs)
+            await TryEnqueueCleaningJobAsync(eventData.FileType, eventData.FileContainerName, eventData.OldBlobName);
+        }
+
+        protected virtual async Task TryEnqueueCleaningJobAsync(FileType fileType, [NotNull] string fileContainerName,
+            [CanBeNull] string blobName)
+        {
+            if (fileType is not FileType.RegularFile || blobName is null)
             {
                 return;
             }
-            
-            if (await _fileRepository.FirstOrDefaultAsync(eventData.FileContainerName, eventData.OldBlobName) == null)
-            {
-                var blobContainer = _fileManager.GetBlobContainer(file);
 
-                await blobContainer.DeleteAsync(eventData.OldBlobName);
+            if (_configurationProvider.Get(fileContainerName).RetainUnusedBlobs)
+            {
+                return;
             }
+
+            // Todo: Improve this.
+            // 5s delay for local distributed event bus.
+            // Since this handler may be invoked inside the transaction (when the file entity change has not been saved).
+            await _backgroundJobManager.EnqueueAsync(new UnusedBlobCleaningArgs
+            {
+                TenantId = _currentTenant.Id,
+                FileContainerName = fileContainerName,
+                BlobName = blobName
+            }, BackgroundJobPriority.Low, TimeSpan.FromSeconds(5));
         }
     }
 }

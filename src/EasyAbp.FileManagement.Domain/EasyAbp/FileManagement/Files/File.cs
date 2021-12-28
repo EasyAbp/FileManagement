@@ -80,7 +80,7 @@ namespace EasyAbp.FileManagement.Files
 
         public void TryAddSubFileUpdatedDomainEvent()
         {
-            if (GetLocalEvents().Any(x => x is SubFileUpdatedEto))
+            if (GetLocalEvents().Any(x => x.GetType() == typeof(SubFileUpdatedEto)))
             {
                 return;
             }

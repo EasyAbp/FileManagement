@@ -74,7 +74,7 @@ namespace EasyAbp.FileManagement.Files
         {
             await Task.CompletedTask;
 
-            return _repository
+            return (await _repository.GetQueryableAsync())
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
                 .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
@@ -525,10 +525,10 @@ namespace EasyAbp.FileManagement.Files
 
             var file = await GetEntityByIdAsync(id);
 
-            return new RemoteStreamContent(new MemoryStream(await _fileManager.GetBlobAsync(file)), fileName: file.FileName)
-            {
-                ContentType = file.MimeType
-            };
+            return new RemoteStreamContent(
+                new MemoryStream(await _fileManager.GetBlobAsync(file)),
+                fileName: file.FileName,
+                contentType: file.MimeType);
         }
 
         [Authorize]

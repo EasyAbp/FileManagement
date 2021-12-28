@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
+#nullable disable
+
 namespace EasyAbp.FileManagement.Migrations
 {
     [DbContext(typeof(FileManagementHttpApiHostMigrationsDbContext))]
@@ -17,9 +19,10 @@ namespace EasyAbp.FileManagement.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("_Abp_DatabaseProvider", EfCoreDatabaseProvider.SqlServer)
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.13")
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("EasyAbp.FileManagement.Files.File", b =>
                 {
@@ -114,7 +117,7 @@ namespace EasyAbp.FileManagement.Migrations
 
                     b.HasIndex("ParentId", "OwnerUserId", "FileContainerName", "FileType");
 
-                    b.ToTable("EasyAbpFileManagementFiles");
+                    b.ToTable("EasyAbpFileManagementFiles", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -22,7 +22,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<List<File>> GetListAsync(Guid? parentId, string fileContainerName, Guid? ownerUserId,
             FileType? specifiedFileType = null, CancellationToken cancellationToken = default)
         {
-            return await DbSet
+            return await (await GetDbSetAsync())
                 .Where(x => x.ParentId == parentId && x.OwnerUserId == ownerUserId &&
                             x.FileContainerName == fileContainerName).WhereIf(specifiedFileType.HasValue,
                     x => x.FileType == specifiedFileType.Value).ToListAsync(cancellationToken);
@@ -31,7 +31,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<File> FindAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId,
             CancellationToken cancellationToken = default)
         {
-            return await DbSet
+            return await (await GetDbSetAsync())
                 .Where(x => x.ParentId == parentId && x.OwnerUserId == ownerUserId &&
                             x.FileContainerName == fileContainerName && x.FileName == fileName)
                 .FirstOrDefaultAsync(cancellationToken);
@@ -40,7 +40,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<File> FirstOrDefaultAsync(string fileContainerName, string hash, long byteSize,
             CancellationToken cancellationToken = default)
         {
-            return await DbSet
+            return await (await GetDbSetAsync())
                 .Where(x => x.Hash == hash && x.ByteSize == byteSize && x.FileContainerName == fileContainerName)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -60,7 +60,7 @@ namespace EasyAbp.FileManagement.Files
                 {
                     SubFilesQuantity = x.Count(),
                     ByteSize = x.Sum(y => y.ByteSize)
-                }).FirstOrDefaultAsync(cancellationToken);
+                }).FirstOrDefaultAsync(cancellationToken) ?? new SubFilesStatisticDataModel();
         }
 
         public virtual async Task<string> GetFileNameWithNextSerialNumberAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId,
@@ -76,7 +76,7 @@ namespace EasyAbp.FileManagement.Files
 
             var part2 = ')' + ext;
 
-            var fileNames = await DbSet
+            var fileNames = await (await GetDbSetAsync())
                 .Where(x => x.ParentId == parentId && x.OwnerUserId == ownerUserId &&
                             x.FileContainerName == fileContainerName && x.FileName.StartsWith(part1) &&
                             x.FileName.EndsWith(part2)).Select(x => x.FileName).ToListAsync(cancellationToken);

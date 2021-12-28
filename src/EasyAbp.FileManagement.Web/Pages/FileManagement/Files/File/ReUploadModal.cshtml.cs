@@ -53,10 +53,10 @@ namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File
 
             var updateFileDto = new UpdateFileWithStreamInput
             {
-                Content = new RemoteStreamContent(UploadedFile.OpenReadStream(), dto.FileName)
-                {
-                    ContentType = UploadedFile.ContentType,
-                }
+                Content = new RemoteStreamContent(
+                    stream: UploadedFile.OpenReadStream(),
+                    fileName: dto.FileName,
+                    contentType: UploadedFile.ContentType)
             };
             
             await _service.UpdateWithStreamAsync(Id, updateFileDto);

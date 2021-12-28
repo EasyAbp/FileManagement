@@ -26,7 +26,10 @@ namespace EasyAbp.FileManagement.Files
 
         IBlobContainer GetBlobContainer(File file);
         
-        Task DeleteBlobAsync(File file, CancellationToken cancellationToken = default);
+        IBlobContainer GetBlobContainer([NotNull] string fileContainerName);
+
+        Task DeleteBlobAsync([NotNull] string fileContainerName, [NotNull] string blobName,
+            CancellationToken cancellationToken = default);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file);
     }
