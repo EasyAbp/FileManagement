@@ -6,13 +6,11 @@ using System.Threading.Tasks;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.EventBus.Distributed;
-using Volo.Abp.EventBus.Local;
 using Volo.Abp.Uow;
 
 namespace EasyAbp.FileManagement.Files
@@ -20,7 +18,6 @@ namespace EasyAbp.FileManagement.Files
     public class FileManager : DomainService, IFileManager
     {
         private readonly IDistributedEventBus _distributedEventBus;
-        private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IBlobContainerFactory _blobContainerFactory;
         private readonly IFileRepository _fileRepository;
         private readonly IFileBlobNameGenerator _fileBlobNameGenerator;
@@ -29,7 +26,6 @@ namespace EasyAbp.FileManagement.Files
 
         public FileManager(
             IDistributedEventBus distributedEventBus,
-            IUnitOfWorkManager unitOfWorkManager,
             IBlobContainerFactory blobContainerFactory,
             IFileRepository fileRepository,
             IFileBlobNameGenerator fileBlobNameGenerator,
@@ -37,7 +33,6 @@ namespace EasyAbp.FileManagement.Files
             IFileContainerConfigurationProvider configurationProvider)
         {
             _distributedEventBus = distributedEventBus;
-            _unitOfWorkManager = unitOfWorkManager;
             _blobContainerFactory = blobContainerFactory;
             _fileRepository = fileRepository;
             _fileBlobNameGenerator = fileBlobNameGenerator;
@@ -125,6 +120,7 @@ namespace EasyAbp.FileManagement.Files
             return file;
         }
 
+        [UnitOfWork]
         public virtual async Task<File> ChangeAsync(File file, string newFileName, string newMimeType, byte[] newFileContent, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
@@ -154,16 +150,15 @@ namespace EasyAbp.FileManagement.Files
             var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, newParent, newMimeType,
                 configuration.AbpBlobDirectorySeparator);
 
-            _unitOfWorkManager.Current.OnCompleted(async () =>
-                await _distributedEventBus.PublishAsync(new FileBlobNameChangedEto
-                {
-                    TenantId = file.TenantId,
-                    FileId = file.Id,
-                    FileType = file.FileType,
-                    FileContainerName = file.FileContainerName,
-                    OldBlobName = oldBlobName,
-                    NewBlobName = blobName
-                }));
+            await _distributedEventBus.PublishAsync(new FileBlobNameChangedEto
+            {
+                TenantId = file.TenantId,
+                FileId = file.Id,
+                FileType = file.FileType,
+                FileContainerName = file.FileContainerName,
+                OldBlobName = oldBlobName,
+                NewBlobName = blobName
+            });
 
             var hashString = _fileContentHashProvider.GetHashString(newFileContent);
 
