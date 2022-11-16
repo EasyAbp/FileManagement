@@ -238,7 +238,7 @@ FakesAssemblies/
 **/*.DesktopClient/ModelManifest.xml
 **/*.Server/GeneratedArtifacts
 **/*.Server/ModelManifest.xml
-_Pvt_Extensions
+_Pvt_Extensions∂
 
 # Paket dependency manager
 .paket/paket.exe
@@ -258,3 +258,5 @@ host/EasyAbp.FileManagement.Web.Host/Logs/logs.txt
 host/EasyAbp.FileManagement.Web.Unified/Logs/logs.txt
 
 **/my-files/
+
+**/appsettings.secrets.json

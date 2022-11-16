@@ -21,7 +21,8 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.EntityFrameworkCore
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false);
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile("appsettings.secrets.json", optional: true);
 
             return builder.Build();
         }
