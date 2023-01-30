@@ -6,7 +6,7 @@ using Volo.Abp.ObjectExtending;
 namespace EasyAbp.FileManagement.Files.Dtos
 {
     [Serializable]
-    public class CreateFileInput : CreateFileBase
+    public class CreateFileInput : CreateFileInputBase
     {
         [Required]
         public string FileName { get; set; }
@@ -19,7 +19,10 @@ namespace EasyAbp.FileManagement.Files.Dtos
         
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            base.Validate(validationContext);
+            foreach (var result in base.Validate(validationContext))
+            {
+                yield return result;
+            }
             
             if (FileName.IsNullOrWhiteSpace())
             {

@@ -6,7 +6,7 @@ using Volo.Abp.Content;
 
 namespace EasyAbp.FileManagement.Files.Dtos
 {
-    public class CreateManyFileWithStreamInput : CreateFileBase
+    public class CreateManyFileWithStreamInput : CreateFileInputBase
     {
         public List<IRemoteStreamContent> FileContents { get; set; } = new();
 
@@ -14,7 +14,10 @@ namespace EasyAbp.FileManagement.Files.Dtos
 
         public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            base.Validate(validationContext);
+            foreach (var result in base.Validate(validationContext))
+            {
+                yield return result;
+            }
 
             if (FileContents.IsNullOrEmpty())
             {

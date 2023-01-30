@@ -437,7 +437,7 @@ namespace EasyAbp.FileManagement.Files
             return CreateFileEntityAsync(input, input.FileType, input.FileName, input.MimeType, input.Content);
         }
 
-        protected virtual async Task<File> CreateFileEntityAsync(CreateFileBase input, FileType fileType, string fileName, string mimeType, byte[] fileContent, bool generateUniqueFileName = false)
+        protected virtual async Task<File> CreateFileEntityAsync(CreateFileInputBase input, FileType fileType, string fileName, string mimeType, byte[] fileContent, bool generateUniqueFileName = false)
         {
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
