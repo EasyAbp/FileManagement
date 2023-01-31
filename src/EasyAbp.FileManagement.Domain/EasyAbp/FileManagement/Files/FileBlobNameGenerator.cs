@@ -17,9 +17,9 @@ namespace EasyAbp.FileManagement.Files
         public virtual Task<string> CreateAsync(FileType fileType, string fileName, File parent, string mimeType, string directorySeparator)
         {
             var now = _clock.Now;
-
+            FileInfo fileinfo = new FileInfo(fileName);
             var blobName = now.Year + directorySeparator + now.Month + directorySeparator + now.Day +
-                           directorySeparator + Guid.NewGuid().ToString("N");
+                           directorySeparator + Guid.NewGuid().ToString("N") + fileinfo.Extension;
 
             return Task.FromResult(blobName);
         }
