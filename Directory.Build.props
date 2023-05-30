@@ -2,7 +2,7 @@
   <PropertyGroup>
 
     <AbpVersion>7.2.1</AbpVersion>
-    <EasyAbpAbpTagHelperPlusModuleVersion>1.4.0</EasyAbpAbpTagHelperPlusModuleVersion>
+    <EasyAbpAbpTagHelperPlusModuleVersion>1.5.0</EasyAbpAbpTagHelperPlusModuleVersion>
 
   </PropertyGroup>
 </Project>
