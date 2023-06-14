@@ -19,6 +19,7 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IDistributedEventBus _distributedEventBus;
         private readonly IBlobContainerFactory _blobContainerFactory;
+        private readonly IUnitOfWorkManager _unitOfWorkManager;
         private readonly IFileRepository _fileRepository;
         private readonly IFileBlobNameGenerator _fileBlobNameGenerator;
         private readonly IFileContentHashProvider _fileContentHashProvider;
@@ -27,6 +28,7 @@ namespace EasyAbp.FileManagement.Files
         public FileManager(
             IDistributedEventBus distributedEventBus,
             IBlobContainerFactory blobContainerFactory,
+            IUnitOfWorkManager unitOfWorkManager,
             IFileRepository fileRepository,
             IFileBlobNameGenerator fileBlobNameGenerator,
             IFileContentHashProvider fileContentHashProvider,
@@ -34,12 +36,14 @@ namespace EasyAbp.FileManagement.Files
         {
             _distributedEventBus = distributedEventBus;
             _blobContainerFactory = blobContainerFactory;
+            _unitOfWorkManager = unitOfWorkManager;
             _fileRepository = fileRepository;
             _fileBlobNameGenerator = fileBlobNameGenerator;
             _fileContentHashProvider = fileContentHashProvider;
             _configurationProvider = configurationProvider;
         }
 
+        [UnitOfWork(true)]
         public virtual async Task<File> CreateAsync(string fileContainerName, Guid? ownerUserId, string fileName,
             string mimeType, FileType fileType, File parent, byte[] fileContent)
         {
@@ -52,20 +56,22 @@ namespace EasyAbp.FileManagement.Files
             CheckDirectoryHasNoFileContent(fileType, fileContent);
 
             var hashString = _fileContentHashProvider.GetHashString(fileContent);
-            
+
             string blobName = null;
-            
+
             if (fileType == FileType.RegularFile)
             {
                 if (!configuration.DisableBlobReuse)
                 {
-                    var existingFile = await _fileRepository.FirstOrDefaultAsync(fileContainerName, hashString, fileContent.LongLength);
+                    var existingFile =
+                        await _fileRepository.FirstOrDefaultAsync(fileContainerName, hashString,
+                            fileContent.LongLength);
 
                     // Todo: should lock the file that provides a reused BLOB.
                     if (existingFile != null)
                     {
                         Check.NotNullOrWhiteSpace(existingFile.BlobName, nameof(existingFile.BlobName));
-                    
+
                         blobName = existingFile.BlobName;
                     }
                 }
@@ -82,15 +88,21 @@ namespace EasyAbp.FileManagement.Files
                         fileContainerName, ownerUserId);
                 }
             }
-            
+
             await CheckFileNotExistAsync(fileName, parent?.Id, fileContainerName, ownerUserId);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, fileContainerName, fileName, mimeType,
                 fileType, 0, fileContent?.LongLength ?? 0, hashString, blobName, ownerUserId);
 
+            if (parent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(parent.Id);
+            }
+
             return file;
         }
 
+        [UnitOfWork(true)]
         public virtual async Task<File> ChangeAsync(File file, string newFileName, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
@@ -116,12 +128,23 @@ namespace EasyAbp.FileManagement.Files
 
             file.UpdateInfo(newFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash, file.BlobName,
                 oldParent, newParent);
-            
+
+            if (oldParent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(oldParent.Id);
+            }
+
+            if (newParent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(newParent.Id);
+            }
+
             return file;
         }
 
-        [UnitOfWork]
-        public virtual async Task<File> ChangeAsync(File file, string newFileName, string newMimeType, byte[] newFileContent, File oldParent, File newParent)
+        [UnitOfWork(true)]
+        public virtual async Task<File> ChangeAsync(File file, string newFileName, string newMimeType,
+            byte[] newFileContent, File oldParent, File newParent)
         {
             Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
 
@@ -129,12 +152,12 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new IncorrectParentException(oldParent);
             }
-            
+
             var configuration = _configurationProvider.Get(file.FileContainerName);
 
             CheckFileName(newFileName, configuration);
             CheckDirectoryHasNoFileContent(file.FileType, newFileContent);
-            
+
             if (newFileName != file.FileName || newParent?.Id != file.ParentId)
             {
                 await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
@@ -144,7 +167,7 @@ namespace EasyAbp.FileManagement.Files
             {
                 await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
             }
-            
+
             var oldBlobName = file.BlobName;
 
             var blobName = await _fileBlobNameGenerator.CreateAsync(file.FileType, newFileName, newParent, newMimeType,
@@ -165,10 +188,21 @@ namespace EasyAbp.FileManagement.Files
             file.UpdateInfo(newFileName, newMimeType, file.SubFilesQuantity, newFileContent?.LongLength ?? 0,
                 hashString, blobName, oldParent, newParent);
 
+            if (oldParent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(oldParent.Id);
+            }
+
+            if (newParent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(newParent.Id);
+            }
+
             return file;
         }
-        
-        protected virtual async Task CheckNotMovingDirectoryToSubDirectoryAsync([NotNull] File file, [CanBeNull] File targetParent)
+
+        protected virtual async Task CheckNotMovingDirectoryToSubDirectoryAsync([NotNull] File file,
+            [CanBeNull] File targetParent)
         {
             if (file.FileType != FileType.Directory)
             {
@@ -176,7 +210,7 @@ namespace EasyAbp.FileManagement.Files
             }
 
             var parent = targetParent;
-            
+
             while (parent != null)
             {
                 if (parent.Id == file.Id)
@@ -188,16 +222,20 @@ namespace EasyAbp.FileManagement.Files
             }
         }
 
+        [UnitOfWork(true)]
         public virtual async Task DeleteAsync([NotNull] File file, CancellationToken cancellationToken = default)
         {
             var parent = file.ParentId.HasValue
                 ? await _fileRepository.GetAsync(file.ParentId.Value, true, cancellationToken)
                 : null;
 
-            parent?.TryAddSubFileUpdatedDomainEvent();
-            
+            if (parent is not null)
+            {
+                await AddOrReplaceSubFilesChangedEventAsync(parent.Id);
+            }
+
             await _fileRepository.DeleteAsync(file, true, cancellationToken);
-            
+
             if (file.FileType == FileType.Directory)
             {
                 await DeleteSubFilesAsync(file, file.FileContainerName, file.OwnerUserId, cancellationToken);
@@ -216,7 +254,7 @@ namespace EasyAbp.FileManagement.Files
                 {
                     await DeleteSubFilesAsync(subFile, fileContainerName, ownerUserId, cancellationToken);
                 }
-                
+
                 await _fileRepository.DeleteAsync(subFile, true, cancellationToken);
             }
         }
@@ -272,14 +310,14 @@ namespace EasyAbp.FileManagement.Files
         public virtual IBlobContainer GetBlobContainer(File file)
         {
             var configuration = _configurationProvider.Get(file.FileContainerName);
-            
+
             return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
         }
 
         public virtual IBlobContainer GetBlobContainer(string fileContainerName)
         {
             var configuration = _configurationProvider.Get(fileContainerName);
-            
+
             return _blobContainerFactory.Create(configuration.AbpBlobContainerName);
         }
 
@@ -297,7 +335,7 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new UnexpectedFileTypeException(file.Id, file.FileType, FileType.RegularFile);
             }
-            
+
             var provider = GetFileDownloadProvider(file);
 
             return await provider.CreateDownloadInfoAsync(file);
@@ -306,7 +344,7 @@ namespace EasyAbp.FileManagement.Files
         protected virtual IFileDownloadProvider GetFileDownloadProvider(File file)
         {
             var options = LazyServiceProvider.LazyGetRequiredService<IOptions<FileManagementOptions>>().Value;
-            
+
             var configuration = options.Containers.GetConfiguration(file.FileContainerName);
 
             var specifiedProviderType = configuration.SpecifiedFileDownloadProviderType;
@@ -318,17 +356,29 @@ namespace EasyAbp.FileManagement.Files
                 : providers.Single(p => p.GetType() == specifiedProviderType);
         }
 
-        protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
+        protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName,
+            Guid? ownerUserId)
         {
             if (await IsFileExistAsync(fileName, parentId, fileContainerName, ownerUserId))
             {
                 throw new FileAlreadyExistsException(fileName, parentId);
             }
         }
-        
-        protected virtual async Task<bool> IsFileExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId)
+
+        [UnitOfWork]
+        protected virtual async Task<bool> IsFileExistAsync(string fileName, Guid? parentId, string fileContainerName,
+            Guid? ownerUserId)
         {
             return await _fileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId) != null;
+        }
+
+        [UnitOfWork(true)]
+        protected virtual Task AddOrReplaceSubFilesChangedEventAsync(Guid directoryId)
+        {
+            _unitOfWorkManager.Current.AddOrReplaceDistributedEvent(new UnitOfWorkEventRecord(
+                typeof(SubFilesChangedEto), new SubFilesChangedEto(directoryId), default));
+
+            return Task.CompletedTask;
         }
     }
 }
