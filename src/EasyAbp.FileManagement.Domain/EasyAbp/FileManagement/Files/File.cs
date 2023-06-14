@@ -10,7 +10,7 @@ namespace EasyAbp.FileManagement.Files
     {
         public virtual Guid? TenantId { get; protected set; }
 
-        public virtual Guid? ParentId { get; set; }
+        public virtual Guid? ParentId { get; protected set; }
 
         [NotNull]
         public virtual string FileContainerName { get; protected set; }
@@ -29,12 +29,12 @@ namespace EasyAbp.FileManagement.Files
 
         [CanBeNull]
         public virtual string Hash { get; protected set; }
-        
+
         [CanBeNull]
         public virtual string BlobName { get; protected set; }
-        
+
         public virtual Guid? OwnerUserId { get; protected set; }
-        
+
         [CanBeNull]
         public virtual string Flag { get; protected set; }
 
@@ -42,7 +42,7 @@ namespace EasyAbp.FileManagement.Files
         {
         }
 
-        public File(
+        internal File(
             Guid id,
             Guid? tenantId,
             [CanBeNull] File parent,
@@ -61,8 +61,6 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new UnexpectedFileContainerNameException(parent.FileContainerName, fileContainerName);
             }
-            
-            parent?.TryAddSubFileUpdatedDomainEvent();
 
             TenantId = tenantId;
             ParentId = parent?.Id;
@@ -78,20 +76,7 @@ namespace EasyAbp.FileManagement.Files
             Flag = flag;
         }
 
-        public void TryAddSubFileUpdatedDomainEvent()
-        {
-            if (GetLocalEvents().Any(x => x.GetType() == typeof(SubFileUpdatedEto)))
-            {
-                return;
-            }
-            
-            AddLocalEvent(new SubFileUpdatedEto
-            {
-                Parent = this
-            });
-        }
-
-        public void UpdateInfo(
+        internal void UpdateInfo(
             [NotNull] string fileName,
             [CanBeNull] string mimeType,
             int subFilesQuantity,
@@ -105,12 +90,6 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new UnexpectedFileContainerNameException(newParent.FileContainerName, FileContainerName);
             }
-            
-            if (ParentId != newParent?.Id || BlobName != blobName)
-            {
-                oldParent?.TryAddSubFileUpdatedDomainEvent();
-                newParent?.TryAddSubFileUpdatedDomainEvent();
-            }
 
             ParentId = newParent?.Id;
             FileName = fileName;
@@ -121,18 +100,17 @@ namespace EasyAbp.FileManagement.Files
             BlobName = blobName;
         }
 
-        public void UpdateLocation(
-            [NotNull] string newFileName,
-            [CanBeNull] File oldParent,
-            [CanBeNull] File newParent)
+        public bool TryUpdateStatisticData(SubFilesStatisticDataModel statisticData)
         {
-            UpdateInfo(newFileName, MimeType, SubFilesQuantity, ByteSize, Hash, BlobName, oldParent, newParent);
-        }
+            if (statisticData.SubFilesQuantity == SubFilesQuantity && statisticData.ByteSize == ByteSize)
+            {
+                return false;
+            }
 
-        public void ForceSetStatisticData(SubFilesStatisticDataModel statisticData)
-        {
             SubFilesQuantity = statisticData.SubFilesQuantity;
             ByteSize = statisticData.ByteSize;
+
+            return true;
         }
 
         public void SetFlag([CanBeNull] string flag)

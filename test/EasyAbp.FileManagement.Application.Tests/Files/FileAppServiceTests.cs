@@ -32,10 +32,10 @@ namespace EasyAbp.FileManagement.Files
             const string contentType = "text/plain";
             const string fileName = "1-1.txt";
             const string text = "Text content 1-1.";
-            
+
             var fileContainerName = FileContainerNameAttribute.GetContainerName<TestFileContainer>();
             var bytes = text.GetBytes();
-            
+
             var resultDto = await CreateFileWithStreamAsync(bytes, fileName, contentType, fileContainerName);
 
             await CheckFileIsCreatedAsync(resultDto, fileName, bytes);
@@ -52,7 +52,7 @@ namespace EasyAbp.FileManagement.Files
 
             var bytes1 = text1.GetBytes();
             var bytes2 = text2.GetBytes();
-            
+
             await using var ms1 = new MemoryStream(bytes1);
             await using var ms2 = new MemoryStream(bytes2);
 
@@ -69,21 +69,21 @@ namespace EasyAbp.FileManagement.Files
 
             resultDto.ShouldNotBeNull();
             resultDto.Items.Count.ShouldBe(2);
-            
+
             await CheckFileIsCreatedAsync(resultDto.Items[0], fileName1, bytes1);
             await CheckFileIsCreatedAsync(resultDto.Items[1], fileName2, bytes2);
         }
-        
+
         [Fact]
         public async Task Should_Create_A_File_With_Bytes()
         {
             const string contentType = "text/plain";
             const string fileName = "3-1.txt";
             const string text = "Text content 3-1.";
-            
+
             var fileContainerName = FileContainerNameAttribute.GetContainerName<TestFileContainer>();
             var bytes = text.GetBytes();
-            
+
             await using var ms = new MemoryStream(bytes);
 
             var resultDto = await _fileAppService.CreateAsync(new CreateFileInput
@@ -98,7 +98,7 @@ namespace EasyAbp.FileManagement.Files
 
             await CheckFileIsCreatedAsync(resultDto, fileName, bytes);
         }
-        
+
         [Fact]
         public async Task Should_Create_Many_Files_With_Bytes()
         {
@@ -107,11 +107,11 @@ namespace EasyAbp.FileManagement.Files
             const string text1 = "Text content 4-1.";
             const string fileName2 = "4-2.txt";
             const string text2 = "Text content 4-2.";
-            
+
             var fileContainerName = FileContainerNameAttribute.GetContainerName<TestFileContainer>();
             var bytes1 = text1.GetBytes();
             var bytes2 = text2.GetBytes();
-            
+
             await using var ms1 = new MemoryStream(bytes1);
             await using var ms2 = new MemoryStream(bytes2);
 
@@ -142,14 +142,16 @@ namespace EasyAbp.FileManagement.Files
 
             resultDto.ShouldNotBeNull();
             resultDto.Items.Count.ShouldBe(2);
-            
+
             await CheckFileIsCreatedAsync(resultDto.Items[0], fileName1, bytes1);
             await CheckFileIsCreatedAsync(resultDto.Items[1], fileName2, bytes2);
         }
-        
+
         [Fact]
         public async Task Should_Reuse_A_Blob()
         {
+            var originalFileCount = await _fileRepository.GetCountAsync();
+
             const string contentType = "text/plain";
             const string fileName1 = "5-1.txt";
             const string fileName2 = "5-2.txt";
@@ -157,21 +159,30 @@ namespace EasyAbp.FileManagement.Files
 
             var fileContainerName = FileContainerNameAttribute.GetContainerName<TestBlobReuseFileContainer>();
             var bytes = text.GetBytes();
-            
-            await CreateFileWithStreamAsync(bytes, fileName1, contentType, fileContainerName);
-            await CreateFileWithStreamAsync(bytes, fileName2, contentType, fileContainerName);
+
+            var output1 = await CreateFileWithStreamAsync(bytes, fileName1, contentType, fileContainerName);
+            var output2 = await CreateFileWithStreamAsync(bytes, fileName2, contentType, fileContainerName);
 
             var files = await _fileRepository.GetListAsync();
 
-            files.Count.ShouldBe(2);
-            files[0].BlobName.ShouldEndWith(fileName1);
-            files[1].BlobName.ShouldEndWith(fileName1);
-            files[1].BlobName.ShouldNotEndWith(fileName2);
+            files.Count.ShouldBe((int)originalFileCount + 2);
+
+            var file1 = files.Find(x => x.Id == output1.FileInfo.Id);
+            var file2 = files.Find(x => x.Id == output2.FileInfo.Id);
+
+            file1.ShouldNotBeNull();
+            file2.ShouldNotBeNull();
+
+            file1.BlobName.ShouldEndWith(fileName1);
+            file2.BlobName.ShouldEndWith(fileName1);
+            file2.BlobName.ShouldNotEndWith(fileName2);
         }
 
         [Fact]
         public async Task Should_Not_Reuse_A_Blob()
         {
+            var originalFileCount = await _fileRepository.GetCountAsync();
+
             const string contentType = "text/plain";
             const string fileName1 = "6-1.txt";
             const string fileName2 = "6-2.txt";
@@ -179,15 +190,22 @@ namespace EasyAbp.FileManagement.Files
 
             var fileContainerName = FileContainerNameAttribute.GetContainerName<TestFileContainer>();
             var bytes = text.GetBytes();
-            
-            await CreateFileWithStreamAsync(bytes, fileName1, contentType, fileContainerName);
-            await CreateFileWithStreamAsync(bytes, fileName2, contentType, fileContainerName);
+
+            var output1 = await CreateFileWithStreamAsync(bytes, fileName1, contentType, fileContainerName);
+            var output2 = await CreateFileWithStreamAsync(bytes, fileName2, contentType, fileContainerName);
 
             var files = await _fileRepository.GetListAsync();
 
-            files.Count.ShouldBe(2);
-            files[0].BlobName.ShouldEndWith(fileName1);
-            files[1].BlobName.ShouldEndWith(fileName2);
+            files.Count.ShouldBe((int)originalFileCount + 2);
+
+            var file1 = files.Find(x => x.Id == output1.FileInfo.Id);
+            var file2 = files.Find(x => x.Id == output2.FileInfo.Id);
+
+            file1.ShouldNotBeNull();
+            file2.ShouldNotBeNull();
+
+            file1.BlobName.ShouldEndWith(fileName1);
+            file2.BlobName.ShouldEndWith(fileName2);
         }
 
         private async Task<CreateFileOutput> CreateFileWithStreamAsync(byte[] bytes, string fileName,
@@ -214,13 +232,13 @@ namespace EasyAbp.FileManagement.Files
             var hashString = _hashProvider.GetHashString(bytes);
 
             var blobBytes = await _blobContainer.GetAllBytesOrNullAsync(file.BlobName);
-            
+
             blobBytes.ShouldBeEquivalentTo(bytes);
-            
+
             resultDto.FileInfo.FileName.ShouldBe(fileName);
             resultDto.FileInfo.Hash.ShouldBe(hashString);
             resultDto.FileInfo.ByteSize.ShouldBe(bytes.Length);
-            
+
             file.FileName.ShouldBe(fileName);
             file.Hash.ShouldBe(hashString);
             file.ByteSize.ShouldBe(bytes.Length);

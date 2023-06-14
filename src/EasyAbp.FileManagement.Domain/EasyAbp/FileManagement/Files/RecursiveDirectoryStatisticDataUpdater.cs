@@ -1,35 +1,58 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Volo.Abp.DependencyInjection;
+using Volo.Abp.DistributedLocking;
 using Volo.Abp.EventBus;
 using Volo.Abp.Uow;
 
-namespace EasyAbp.FileManagement.Files
+namespace EasyAbp.FileManagement.Files;
+
+public class RecursiveDirectoryStatisticDataUpdater : ILocalEventHandler<SubFilesChangedEto>, ITransientDependency
 {
-    public class RecursiveDirectoryStatisticDataUpdater : ILocalEventHandler<SubFileUpdatedEto>, ITransientDependency
+    protected virtual TimeSpan Timeout => TimeSpan.FromSeconds(3);
+
+    private readonly IAbpDistributedLock _abpDistributedLock;
+    private readonly IFileRepository _fileRepository;
+
+    public RecursiveDirectoryStatisticDataUpdater(
+        IAbpDistributedLock abpDistributedLock,
+        IFileRepository fileRepository)
     {
-        private readonly IFileRepository _fileRepository;
+        _abpDistributedLock = abpDistributedLock;
+        _fileRepository = fileRepository;
+    }
 
-        public RecursiveDirectoryStatisticDataUpdater(
-            IFileRepository fileRepository)
+    [UnitOfWork(true)]
+    public virtual async Task HandleEventAsync(SubFilesChangedEto eventData)
+    {
+        await UpdateStatisticDataAsync(eventData.DirectoryId);
+    }
+
+    [UnitOfWork(true)]
+    protected virtual async Task UpdateStatisticDataAsync(Guid? directoryId)
+    {
+        while (directoryId != null)
         {
-            _fileRepository = fileRepository;
-        }
+            var statisticData = await _fileRepository.GetSubFilesStatisticDataAsync(directoryId.Value);
 
-        [UnitOfWork(true)]
-        public virtual async Task HandleEventAsync(SubFileUpdatedEto eventData)
-        {
-            var parent = eventData.Parent;
+            await using var lockHandle =
+                await _abpDistributedLock.TryAcquireAsync(await GetDistributedLockKeyAsync(directoryId.Value), Timeout);
 
-            while (parent != null)
+            var directory = await _fileRepository.FindAsync(directoryId.Value);
+
+            if (!directory.TryUpdateStatisticData(statisticData))
             {
-                var statisticData = await _fileRepository.GetSubFilesStatisticDataAsync(parent.Id);
-            
-                parent.ForceSetStatisticData(statisticData);
-            
-                await _fileRepository.UpdateAsync(parent, true);
-
-                parent = parent.ParentId.HasValue ? await _fileRepository.FindAsync(parent.ParentId.Value) : null;
+                break;
             }
+
+            await _fileRepository.UpdateAsync(directory, true);
+
+            directoryId = directory.ParentId;
         }
+    }
+
+    protected virtual Task<string> GetDistributedLockKeyAsync(Guid fileId)
+    {
+        return Task.FromResult($"updating-dir-stat-{fileId}");
     }
 }

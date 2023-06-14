@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
-    <PackageReference Include="Volo.Abp.BlobStoring.FileSystem" Version="$(AbpVersion)" />
     <ProjectReference Include="..\EasyAbp.FileManagement.EntityFrameworkCore.Tests\EasyAbp.FileManagement.EntityFrameworkCore.Tests.csproj" />
   </ItemGroup>
 
