@@ -96,7 +96,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (parent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(parent.Id);
+                await HandleStatisticDataUpdateAsync(parent.Id);
             }
 
             return file;
@@ -131,12 +131,12 @@ namespace EasyAbp.FileManagement.Files
 
             if (oldParent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(oldParent.Id);
+                await HandleStatisticDataUpdateAsync(oldParent.Id);
             }
 
             if (newParent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(newParent.Id);
+                await HandleStatisticDataUpdateAsync(newParent.Id);
             }
 
             return file;
@@ -190,12 +190,12 @@ namespace EasyAbp.FileManagement.Files
 
             if (oldParent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(oldParent.Id);
+                await HandleStatisticDataUpdateAsync(oldParent.Id);
             }
 
             if (newParent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(newParent.Id);
+                await HandleStatisticDataUpdateAsync(newParent.Id);
             }
 
             return file;
@@ -231,7 +231,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (parent is not null)
             {
-                await AddOrReplaceSubFilesChangedEventAsync(parent.Id);
+                await HandleStatisticDataUpdateAsync(parent.Id);
             }
 
             await _fileRepository.DeleteAsync(file, true, cancellationToken);
@@ -373,10 +373,15 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [UnitOfWork(true)]
-        protected virtual Task AddOrReplaceSubFilesChangedEventAsync(Guid directoryId)
+        protected virtual Task HandleStatisticDataUpdateAsync(Guid directoryId)
         {
-            _unitOfWorkManager.Current.AddOrReplaceDistributedEvent(new UnitOfWorkEventRecord(
-                typeof(SubFilesChangedEto), new SubFilesChangedEto(directoryId), default));
+            var useBackgroundJob = _distributedEventBus is LocalDistributedEventBus;
+
+            _unitOfWorkManager.Current.AddOrReplaceDistributedEvent(
+                new UnitOfWorkEventRecord(
+                    typeof(SubFilesChangedEto),
+                    new SubFilesChangedEto(CurrentTenant.Id, directoryId, useBackgroundJob),
+                    default));
 
             return Task.CompletedTask;
         }
