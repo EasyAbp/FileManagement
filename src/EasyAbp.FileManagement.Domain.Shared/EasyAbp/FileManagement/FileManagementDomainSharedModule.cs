@@ -1,4 +1,5 @@
-﻿using Volo.Abp.Modularity;
+﻿using Volo.Abp.Domain;
+using Volo.Abp.Modularity;
 using Volo.Abp.Localization;
 using EasyAbp.FileManagement.Localization;
 using Volo.Abp.Localization.ExceptionHandling;
@@ -9,7 +10,8 @@ using Volo.Abp.VirtualFileSystem;
 namespace EasyAbp.FileManagement
 {
     [DependsOn(
-        typeof(AbpValidationModule)
+        typeof(AbpValidationModule),
+        typeof(AbpDddDomainSharedModule)
     )]
     public class FileManagementDomainSharedModule : AbpModule
     {
