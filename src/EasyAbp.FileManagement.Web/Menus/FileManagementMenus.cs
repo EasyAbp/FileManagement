@@ -2,7 +2,7 @@
 {
     public class FileManagementMenus
     {
-        private const string Prefix = "EasyAbp.FileManagement";
+        public const string Prefix = "EasyAbp.FileManagement";
 
         //Add your menu items here...
         //public const string Home = Prefix + ".MyNewMenuItem";

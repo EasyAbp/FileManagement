@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using EasyAbp.FileManagement.Localization;
+using EasyAbp.FileManagement.Permissions;
 using Volo.Abp.UI.Navigation;
 
 namespace EasyAbp.FileManagement.Blazor.Menus
@@ -13,12 +15,16 @@ namespace EasyAbp.FileManagement.Blazor.Menus
             }
         }
 
-        private Task ConfigureMainMenuAsync(MenuConfigurationContext context)
+        private async Task ConfigureMainMenuAsync(MenuConfigurationContext context)
         {
-            //Add main menu items.
-            context.Menu.AddItem(new ApplicationMenuItem(FileManagementMenus.Prefix, displayName: "FileManagement", "/FileManagement", icon: "fa fa-globe"));
-            
-            return Task.CompletedTask;
+            var l = context.GetLocalizer<FileManagementResource>();
+
+            if (await context.IsGrantedAsync(FileManagementPermissions.File.Default))
+            {
+                context.Menu.AddItem(new ApplicationMenuItem(FileManagementMenus.Prefix,
+                    l["Menu:File"], "/FileManagement/Files/File", icon: "fa fa-folder")
+                );
+            }
         }
     }
 }

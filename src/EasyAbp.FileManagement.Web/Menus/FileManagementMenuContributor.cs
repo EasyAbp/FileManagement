@@ -18,12 +18,11 @@ namespace EasyAbp.FileManagement.Web.Menus
         private async Task ConfigureMainMenu(MenuConfigurationContext context)
         {
             var l = context.GetLocalizer<FileManagementResource>();
-             //Add main menu items.
 
             if (await context.IsGrantedAsync(FileManagementPermissions.File.Default))
             {
-                context.Menu.AddItem(
-                    new ApplicationMenuItem("File", l["Menu:File"], "/FileManagement/Files/File")
+                context.Menu.AddItem(new ApplicationMenuItem(FileManagementMenus.Prefix,
+                    l["Menu:File"], "/FileManagement/Files/File", icon: "fa fa-folder")
                 );
             }
         }
