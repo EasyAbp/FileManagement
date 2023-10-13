@@ -59,6 +59,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyAbp.FileManagement.Blaz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyAbp.FileManagement.Blazor.WebAssembly", "src\EasyAbp.FileManagement.Blazor.WebAssembly\EasyAbp.FileManagement.Blazor.WebAssembly.csproj", "{9D060D93-B97D-4640-9770-6B507F97C295}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyAbp.FileManagement.Domain.Core", "src\EasyAbp.FileManagement.Domain.Core\EasyAbp.FileManagement.Domain.Core.csproj", "{1CB06CFE-6095-43E1-A624-3A42739ED575}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -165,6 +167,10 @@ Global
 		{9D060D93-B97D-4640-9770-6B507F97C295}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D060D93-B97D-4640-9770-6B507F97C295}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D060D93-B97D-4640-9770-6B507F97C295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CB06CFE-6095-43E1-A624-3A42739ED575}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CB06CFE-6095-43E1-A624-3A42739ED575}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CB06CFE-6095-43E1-A624-3A42739ED575}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CB06CFE-6095-43E1-A624-3A42739ED575}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -195,6 +201,7 @@ Global
 		{FF70CED3-39D6-42BA-83B4-C11478153993} = {649A3FFA-182F-4E56-9717-E6A9A2BEC545}
 		{2553DA49-445E-4911-B40E-109CE3815AEB} = {649A3FFA-182F-4E56-9717-E6A9A2BEC545}
 		{9D060D93-B97D-4640-9770-6B507F97C295} = {649A3FFA-182F-4E56-9717-E6A9A2BEC545}
+		{1CB06CFE-6095-43E1-A624-3A42739ED575} = {649A3FFA-182F-4E56-9717-E6A9A2BEC545}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4324B3B4-B60B-4E3C-91D8-59576B4E26DD}

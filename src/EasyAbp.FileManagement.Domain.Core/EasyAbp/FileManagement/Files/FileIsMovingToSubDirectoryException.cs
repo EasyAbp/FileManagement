@@ -2,9 +2,9 @@
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class FileIsMovedToSubDirectoryException : BusinessException
+    public class FileIsMovingToSubDirectoryException : BusinessException
     {
-        public FileIsMovedToSubDirectoryException() : base(
+        public FileIsMovingToSubDirectoryException() : base(
             message: "A directory cannot be moved from a directory to one of its sub directories.")
         {
         }
