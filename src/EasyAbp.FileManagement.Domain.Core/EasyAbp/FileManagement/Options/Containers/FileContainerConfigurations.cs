@@ -1,21 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using EasyAbp.FileManagement.Containers;
 using JetBrains.Annotations;
 using Volo.Abp;
 
 namespace EasyAbp.FileManagement.Options.Containers
 {
-    public class FileContainerConfigurations
+    public class FileContainerConfigurations<TConfiguration> where TConfiguration : IFileContainerConfiguration, new()
     {
-        private readonly Dictionary<string, FileContainerConfiguration> _containers;
-        
-        public FileContainerConfigurations()
-        {
-            _containers = new Dictionary<string, FileContainerConfiguration>();
-        }
+        private readonly Dictionary<string, TConfiguration> _containers = new();
 
-        public FileContainerConfigurations Configure<TContainer>(
-            Action<FileContainerConfiguration> configureAction)
+        public FileContainerConfigurations<TConfiguration> Configure<TContainer>(
+            Action<TConfiguration> configureAction)
         {
             return Configure(
                 FileContainerNameAttribute.GetContainerName<TContainer>(),
@@ -23,9 +19,9 @@ namespace EasyAbp.FileManagement.Options.Containers
             );
         }
 
-        public FileContainerConfigurations Configure(
+        public FileContainerConfigurations<TConfiguration> Configure(
             [NotNull] string name,
-            [NotNull] Action<FileContainerConfiguration> configureAction)
+            [NotNull] Action<TConfiguration> configureAction)
         {
             Check.NotNullOrWhiteSpace(name, nameof(name));
             Check.NotNull(configureAction, nameof(configureAction));
@@ -33,31 +29,31 @@ namespace EasyAbp.FileManagement.Options.Containers
             configureAction(
                 _containers.GetOrAdd(
                     name,
-                    () => new FileContainerConfiguration()
+                    () => new TConfiguration()
                 )
             );
 
             return this;
         }
 
-        public FileContainerConfigurations ConfigureAll(Action<string, FileContainerConfiguration> configureAction)
+        public FileContainerConfigurations<TConfiguration> ConfigureAll(Action<string, TConfiguration> configureAction)
         {
             foreach (var container in _containers)
             {
                 configureAction(container.Key, container.Value);
             }
-            
+
             return this;
         }
 
         [NotNull]
-        public FileContainerConfiguration GetConfiguration<TContainer>()
+        public TConfiguration GetConfiguration<TContainer>()
         {
             return GetConfiguration(FileContainerNameAttribute.GetContainerName<TContainer>());
         }
 
         [NotNull]
-        public FileContainerConfiguration GetConfiguration([NotNull] string name)
+        public TConfiguration GetConfiguration([NotNull] string name)
         {
             Check.NotNullOrWhiteSpace(name, nameof(name));
 

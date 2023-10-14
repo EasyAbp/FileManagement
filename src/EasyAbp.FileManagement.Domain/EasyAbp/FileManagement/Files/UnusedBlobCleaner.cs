@@ -15,18 +15,18 @@ namespace EasyAbp.FileManagement.Files
         ITransientDependency
     {
         private readonly ICurrentTenant _currentTenant;
-        private readonly IFileManager _fileManager;
+        private readonly IFileBlobManager _fileBlobManager;
         private readonly IFileRepository _fileRepository;
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public UnusedBlobCleaner(
             ICurrentTenant currentTenant,
-            IFileManager fileManager,
+            IFileBlobManager fileBlobManager,
             IFileRepository fileRepository,
             IFileContainerConfigurationProvider configurationProvider)
         {
             _currentTenant = currentTenant;
-            _fileManager = fileManager;
+            _fileBlobManager = fileBlobManager;
             _fileRepository = fileRepository;
             _configurationProvider = configurationProvider;
         }
@@ -61,7 +61,9 @@ namespace EasyAbp.FileManagement.Files
                 return;
             }
 
-            if (_configurationProvider.Get(fileContainerName).RetainUnusedBlobs)
+            var configuration = _configurationProvider.Get<FileContainerConfiguration>(fileContainerName);
+
+            if (configuration.RetainUnusedBlobs)
             {
                 return;
             }
@@ -70,7 +72,7 @@ namespace EasyAbp.FileManagement.Files
             // See: https://github.com/abpframework/abp/issues/11100
             if (await _fileRepository.FirstOrDefaultAsync(fileContainerName, blobName) == null)
             {
-                await _fileManager.DeleteBlobAsync(fileContainerName, blobName);
+                await _fileBlobManager.DeleteAsync(fileContainerName, blobName);
             }
         }
     }

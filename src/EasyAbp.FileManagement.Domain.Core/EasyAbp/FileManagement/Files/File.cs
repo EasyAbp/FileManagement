@@ -1,24 +1,20 @@
 using System;
-using System.Linq;
 using JetBrains.Annotations;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class File : FullAuditedAggregateRoot<Guid>, IMultiTenant
+    public class File : FullAuditedAggregateRoot<Guid>, IFile, IMultiTenant
     {
         public virtual Guid? TenantId { get; protected set; }
 
         public virtual Guid? ParentId { get; protected set; }
 
-        [NotNull]
         public virtual string FileContainerName { get; protected set; }
 
-        [NotNull]
         public virtual string FileName { get; protected set; }
 
-        [CanBeNull]
         public virtual string MimeType { get; protected set; }
 
         public virtual FileType FileType { get; protected set; }
@@ -27,15 +23,12 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual long ByteSize { get; protected set; }
 
-        [CanBeNull]
         public virtual string Hash { get; protected set; }
 
-        [CanBeNull]
         public virtual string BlobName { get; protected set; }
 
         public virtual Guid? OwnerUserId { get; protected set; }
 
-        [CanBeNull]
         public virtual string Flag { get; protected set; }
 
         protected File()

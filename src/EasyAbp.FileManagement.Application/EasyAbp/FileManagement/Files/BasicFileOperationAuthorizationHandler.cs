@@ -66,7 +66,7 @@ namespace EasyAbp.FileManagement.Files
 
             await SetSucceedIfUserIsManagerAsync(context, requirement);
             
-            var configuration = _configurationProvider.Get(resource.FileContainerName);
+            var configuration = _configurationProvider.Get<FileContainerConfiguration>(resource.FileContainerName);
 
             await SetFailIfUserIsNotPersonalContainerOwnerAsync(configuration, context, resource);
         }

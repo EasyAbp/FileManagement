@@ -3,7 +3,7 @@ using Volo.Abp.MultiTenancy;
 
 namespace EasyAbp.FileManagement.Files;
 
-public class FileEto : IMultiTenant
+public class FileEto : IFile, IMultiTenant
 {
     public Guid Id { get; set; }
     
