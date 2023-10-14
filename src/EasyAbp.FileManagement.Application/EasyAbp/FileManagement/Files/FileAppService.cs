@@ -43,8 +43,7 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
 
-            await AuthorizationService.CheckAsync(new FileOperationInfoModel(file.ParentId, file.FileContainerName,
-                    file.FileName, file.MimeType, file.FileType, file.ByteSize, file.OwnerUserId, file),
+            await AuthorizationService.CheckAsync(new FileGetInfoOperationInfoModel(file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Default });
 
             return await MapToGetOutputDtoAsync(file);
@@ -53,8 +52,7 @@ namespace EasyAbp.FileManagement.Files
         public override async Task<PagedResultDto<FileInfoDto>> GetListAsync(GetFileListInput input)
         {
             await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(input.ParentId, input.FileContainerName, null, null, null, null,
-                    input.OwnerUserId, null),
+                new FileGetListOperationInfoModel(input.ParentId, input.FileContainerName, input.OwnerUserId),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Default });
 
             var query = await CreateFilteredQueryAsync(input);
@@ -92,8 +90,8 @@ namespace EasyAbp.FileManagement.Files
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
             await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(input.ParentId, input.FileContainerName, fileName, input.MimeType,
-                    input.FileType, input.Content?.LongLength, input.OwnerUserId, null),
+                new FileCreationOperationInfoModel(parent, input.FileContainerName, fileName, input.MimeType,
+                    input.FileType, input.Content?.LongLength, input.OwnerUserId),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
 
             var model = new CreateFileModel(input.FileContainerName, input.OwnerUserId, fileName.Trim(), input.MimeType,
@@ -113,9 +111,9 @@ namespace EasyAbp.FileManagement.Files
 
             var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
 
-            await AuthorizationService.CheckAsync(new FileOperationInfoModel(input.ParentId, input.FileContainerName,
-                    fileName, input.Content.ContentType, FileType.RegularFile, input.Content.ContentLength,
-                    input.OwnerUserId, null),
+            await AuthorizationService.CheckAsync(
+                new FileCreationOperationInfoModel(parent, input.FileContainerName, fileName, input.Content.ContentType,
+                    FileType.RegularFile, input.Content.ContentLength, input.OwnerUserId),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
 
             var model = new CreateFileWithStreamModel(input.FileContainerName, input.OwnerUserId, fileName,
@@ -147,8 +145,7 @@ namespace EasyAbp.FileManagement.Files
             var file = await GetEntityByIdAsync(id);
 
             await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(file.ParentId, file.FileContainerName, file.FileName, file.MimeType,
-                    file.FileType, file.ByteSize, file.OwnerUserId, file),
+                new FileDeletionOperationInfoModel(file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Delete });
 
             await _fileManager.DeleteAsync(file);
@@ -168,8 +165,10 @@ namespace EasyAbp.FileManagement.Files
                 }
 
                 await AuthorizationService.CheckAsync(
-                    new FileOperationInfoModel(fileInfo.ParentId, fileInfo.FileContainerName, fileNames[fileInfo],
-                        fileInfo.MimeType, fileInfo.FileType, fileInfo.Content?.LongLength, fileInfo.OwnerUserId, null),
+                    new FileCreationOperationInfoModel(
+                        fileInfo.ParentId.HasValue ? parents[fileInfo.ParentId.Value] : null,
+                        fileInfo.FileContainerName, fileInfo.FileName, fileInfo.MimeType, fileInfo.FileType,
+                        fileInfo.Content?.LongLength, fileInfo.OwnerUserId),
                     new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
             }
 
@@ -205,8 +204,8 @@ namespace EasyAbp.FileManagement.Files
                 fileNames[fileInfo] = ProcessInputFileName(input.GenerateUniqueFileName, fileInfo.FileName);
 
                 await AuthorizationService.CheckAsync(
-                    new FileOperationInfoModel(input.ParentId, input.FileContainerName, fileNames[fileInfo],
-                        fileInfo.ContentType, FileType.RegularFile, fileInfo.ContentLength, input.OwnerUserId, null),
+                    new FileCreationOperationInfoModel(parent, input.FileContainerName, fileInfo.FileName,
+                        fileInfo.ContentType, FileType.RegularFile, fileInfo.ContentLength, input.OwnerUserId),
                     new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
             }
 
@@ -242,17 +241,18 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
+            var newFileName = ProcessInputFileName(false, input.NewFileName);
+
             var file = await GetEntityByIdAsync(id);
             var newParent = await TryGetEntityByNullableIdAsync(input.NewParentId);
 
             await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(input.NewParentId, file.FileContainerName, input.NewFileName, file.MimeType,
-                    file.FileType, file.ByteSize, file.OwnerUserId, file),
+                new FileMoveOperationInfoModel(file, newParent, newFileName, file.MimeType),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Move });
 
             input.MapExtraPropertiesTo(file);
 
-            await _fileManager.MoveAsync(file, new MoveFileModel(newParent, input.NewFileName, file.MimeType));
+            await _fileManager.MoveAsync(file, new MoveFileModel(newParent, newFileName, file.MimeType));
 
             return await MapToGetOutputDtoAsync(file);
         }
@@ -266,8 +266,7 @@ namespace EasyAbp.FileManagement.Files
         {
             var file = await GetEntityByIdAsync(id);
 
-            await AuthorizationService.CheckAsync(new FileOperationInfoModel(file.ParentId, file.FileContainerName,
-                    file.FileName, file.MimeType, file.FileType, file.ByteSize, file.OwnerUserId, file),
+            await AuthorizationService.CheckAsync(new FileGetDownloadInfoOperationInfoModel(file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.GetDownloadInfo });
 
             var downloadLimitCache =
@@ -319,17 +318,17 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
-            var fileName = ProcessInputFileName(false, input.FileName);
+            var newFileName = ProcessInputFileName(false, input.FileName);
 
             var file = await GetEntityByIdAsync(id);
 
-            await AuthorizationService.CheckAsync(new FileOperationInfoModel(file.ParentId, file.FileContainerName,
-                    fileName, file.MimeType, file.FileType, file.ByteSize, file.OwnerUserId, file),
+            await AuthorizationService.CheckAsync(
+                new FileUpdateInfoOperationInfoModel(file, newFileName, file.MimeType),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Update });
 
             input.MapExtraPropertiesTo(file);
 
-            await _fileManager.UpdateInfoAsync(file, new UpdateFileInfoModel(fileName, file.MimeType));
+            await _fileManager.UpdateInfoAsync(file, new UpdateFileInfoModel(newFileName, file.MimeType));
 
             return await MapToGetOutputDtoAsync(file);
         }
