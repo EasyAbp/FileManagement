@@ -76,15 +76,14 @@ namespace EasyAbp.FileManagement.Files
             long byteSize,
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
-            [CanBeNull] File oldParent,
-            [CanBeNull] File newParent)
+            [CanBeNull] File parent)
         {
-            if (newParent != null && newParent.FileContainerName != FileContainerName)
+            if (parent != null && parent.FileContainerName != FileContainerName)
             {
-                throw new UnexpectedFileContainerNameException(newParent.FileContainerName, FileContainerName);
+                throw new UnexpectedFileContainerNameException(parent.FileContainerName, FileContainerName);
             }
 
-            ParentId = newParent?.Id;
+            ParentId = parent?.Id;
             FileName = fileName;
             MimeType = mimeType;
             SubFilesQuantity = subFilesQuantity;

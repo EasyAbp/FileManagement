@@ -6,7 +6,6 @@ $(function () {
     var createDirectoryModal = new abp.ModalManager(abp.appPath + 'FileManagement/Files/File/CreateDirectoryModal');
     var uploadModal = new abp.ModalManager(abp.appPath + 'FileManagement/Files/File/UploadModal');
     var renameModal = new abp.ModalManager(abp.appPath + 'FileManagement/Files/File/RenameModal');
-    var reUploadModal = new abp.ModalManager(abp.appPath + 'FileManagement/Files/File/ReUploadModal');
     var moveModal = new abp.ModalManager(abp.appPath + 'FileManagement/Files/File/MoveModal');
 
     var dataTable = $('#FileTable').DataTable(abp.libs.datatables.normalizeConfiguration({
@@ -46,15 +45,6 @@ $(function () {
                                 visible: abp.auth.isGranted('EasyAbp.FileManagement.File.Update'),
                                 action: function (data) {
                                     renameModal.open({ id: data.record.id });
-                                }
-                            },
-                            {
-                                text: l('ReUpload'),
-                                visible: function (data) {
-                                    return data.fileType === 2 && abp.auth.isGranted('EasyAbp.FileManagement.File.Update')
-                                },
-                                action: function (data) {
-                                    reUploadModal.open({ id: data.record.id });
                                 }
                             },
                             {
@@ -110,10 +100,6 @@ $(function () {
     });
 
     renameModal.onResult(function () {
-        dataTable.ajax.reload();
-    });
-
-    reUploadModal.onResult(function () {
         dataTable.ajax.reload();
     });
 

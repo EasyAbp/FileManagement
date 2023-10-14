@@ -25,7 +25,6 @@
     "FileOwnerUserId": "用户 ID",
     "CreateDirectory": "创建目录",
     "UploadFile": "上传",
-    "ReUploadFile": "重新上传",
     "RenameFile": "重命名",
     "MoveFile": "移动",
     "FileDeletionConfirmationMessage": "确认删除文件 {0}?",

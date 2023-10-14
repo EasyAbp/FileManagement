@@ -19,7 +19,8 @@ public class CreateFileModel : ExtensibleObject
 
     public FileType FileType { get; set; }
 
-    public Guid? ParentId { get; set; }
+    [CanBeNull]
+    public File Parent { get; set; }
 
     public byte[] FileContent { get; set; }
 
@@ -28,14 +29,14 @@ public class CreateFileModel : ExtensibleObject
     }
 
     public CreateFileModel([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string fileName,
-        [CanBeNull] string mimeType, FileType fileType, Guid? parentId, byte[] fileContent)
+        [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, byte[] fileContent)
     {
         FileContainerName = fileContainerName;
         OwnerUserId = ownerUserId;
         FileName = fileName;
         MimeType = mimeType;
         FileType = fileType;
-        ParentId = parentId;
+        Parent = parent;
         FileContent = fileContent;
     }
 }

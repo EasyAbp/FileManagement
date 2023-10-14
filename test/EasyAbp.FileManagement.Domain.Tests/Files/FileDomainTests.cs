@@ -53,7 +53,10 @@ public class FileDomainTests : FileManagementDomainTestBase
 
         file1.ShouldNotBeNull();
 
-        await WithUnitOfWorkAsync(async () => { await FileManager.UpdateAsync(file1, file1.FileName, dir11, dir2); });
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await FileManager.MoveAsync(file1, new MoveFileModel(dir2, file1.FileName, file1.MimeType));
+        });
 
         dir1 = await FileRepository.GetAsync(dir1.Id);
         dir1.SubFilesQuantity.ShouldBe(2);
@@ -72,7 +75,7 @@ public class FileDomainTests : FileManagementDomainTestBase
         await WithUnitOfWorkAsync(async () =>
         {
             var newFile = await FileManager.CreateAsync(new CreateFileModel("test", null, "new-file.txt", null,
-                FileType.RegularFile, dir12.Id, "new-content"u8.ToArray()));
+                FileType.RegularFile, dir12, "new-content"u8.ToArray()));
 
             newFileId = newFile.Id;
         });

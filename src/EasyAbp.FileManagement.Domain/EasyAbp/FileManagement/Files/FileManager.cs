@@ -66,8 +66,6 @@ namespace EasyAbp.FileManagement.Files
 
             var hashString = FileContentHashProvider.GetHashString(model.FileContent);
 
-            var parent = await TryGetFileByNullableIdAsync(model.ParentId);
-
             string blobName = null;
 
             if (model.FileType == FileType.RegularFile)
@@ -87,31 +85,31 @@ namespace EasyAbp.FileManagement.Files
                     }
                 }
 
-                blobName ??= await FileBlobNameGenerator.CreateAsync(model.FileType, model.FileName, parent,
+                blobName ??= await FileBlobNameGenerator.CreateAsync(model.FileType, model.FileName, model.Parent,
                     model.MimeType, configuration.AbpBlobDirectorySeparator);
             }
 
             if (configuration.EnableAutoRename)
             {
-                if (await IsFileExistAsync(model.FileName, model.ParentId, model.FileContainerName,
+                if (await IsFileExistAsync(model.FileName, model.Parent?.Id, model.FileContainerName,
                         model.OwnerUserId))
                 {
                     model.FileName = await FileRepository.GetFileNameWithNextSerialNumberAsync(model.FileName,
-                        model.ParentId, model.FileContainerName, model.OwnerUserId, cancellationToken);
+                        model.Parent?.Id, model.FileContainerName, model.OwnerUserId, cancellationToken);
                 }
             }
 
-            await CheckFileNotExistAsync(model.FileName, model.ParentId, model.FileContainerName, model.OwnerUserId);
+            await CheckFileNotExistAsync(model.FileName, model.Parent?.Id, model.FileContainerName, model.OwnerUserId);
 
-            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, parent, model.FileContainerName,
+            var file = new File(GuidGenerator.Create(), CurrentTenant.Id, model.Parent, model.FileContainerName,
                 model.FileName, model.MimeType, model.FileType, 0, model.FileContent?.LongLength ?? 0, hashString,
                 blobName, model.OwnerUserId);
 
             model.MapExtraPropertiesTo(file, MappingPropertyDefinitionChecks.Destination);
 
-            if (parent is not null)
+            if (model.Parent is not null)
             {
-                await HandleStatisticDataUpdateAsync(parent.Id);
+                await HandleStatisticDataUpdateAsync(model.Parent.Id);
             }
 
             return file;
@@ -178,43 +176,30 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [UnitOfWork(true)]
-        public override async Task<File> UpdateAsync(File file, string newFileName, File oldParent, File newParent,
+        public override async Task<File> UpdateInfoAsync(File file, UpdateFileInfoModel model,
             CancellationToken cancellationToken = default)
         {
-            Check.NotNullOrWhiteSpace(newFileName, nameof(File.FileName));
+            Check.NotNullOrWhiteSpace(model.NewFileName, nameof(File.FileName));
 
-            if (file.ParentId != oldParent?.Id)
-            {
-                throw new IncorrectParentException(oldParent);
-            }
+            var parent = await TryGetFileByNullableIdAsync(file.ParentId);
 
             var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
 
-            CheckFileExtension(new[] { newFileName }, configuration);
-            CheckFileName(newFileName, configuration);
+            CheckFileName(model.NewFileName, configuration);
 
-            if (newFileName != file.FileName || newParent?.Id != file.ParentId)
+            if (file.FileType == FileType.RegularFile)
             {
-                await CheckFileNotExistAsync(newFileName, newParent?.Id, file.FileContainerName, file.OwnerUserId);
+                CheckFileExtension(new[] { model.NewFileName }, configuration);
             }
 
-            if (oldParent != newParent)
+            if (model.NewFileName != file.FileName)
             {
-                await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
+                await CheckFileNotExistAsync(model.NewFileName, file.ParentId, file.FileContainerName,
+                    file.OwnerUserId);
             }
 
-            file.UpdateInfo(newFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash, file.BlobName,
-                oldParent, newParent);
-
-            if (oldParent is not null)
-            {
-                await HandleStatisticDataUpdateAsync(oldParent.Id);
-            }
-
-            if (newParent is not null)
-            {
-                await HandleStatisticDataUpdateAsync(newParent.Id);
-            }
+            file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
+                file.BlobName, parent);
 
             await FileRepository.UpdateAsync(file, true, cancellationToken);
 
@@ -222,31 +207,26 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [UnitOfWork(true)]
-        public override async Task<File> UpdateAsync(File file, UpdateFileModel model,
+        public override async Task<File> MoveAsync(File file, MoveFileModel model,
             CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(model.NewFileName, nameof(File.FileName));
 
-            var oldParent = await TryGetFileByNullableIdAsync(file.ParentId);
-
-            var newParent = model.NewParentId == file.ParentId
-                ? oldParent
-                : await TryGetFileByNullableIdAsync(model.NewParentId);
-
-            if (file.ParentId != oldParent?.Id)
-            {
-                throw new IncorrectParentException(oldParent);
-            }
+            var oldParent = model.NewParent?.Id == file.ParentId
+                ? model.NewParent
+                : await TryGetFileByNullableIdAsync(file.ParentId);
+            var newParent = model.NewParent;
 
             var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
 
             CheckFileName(model.NewFileName, configuration);
-            CheckDirectoryHasNoFileContent(file.FileType, model.NewFileContent);
-            CheckFileSize(new Dictionary<string, long> { { model.NewFileName, model.NewFileContent.LongLength } },
-                configuration);
-            CheckFileExtension(new[] { model.NewFileName }, configuration);
 
-            if (model.NewFileName != file.FileName || newParent?.Id != file.ParentId)
+            if (file.FileType == FileType.RegularFile)
+            {
+                CheckFileExtension(new[] { model.NewFileName }, configuration);
+            }
+
+            if (model.NewFileName != file.FileName || newParent?.Id != oldParent?.Id)
             {
                 await CheckFileNotExistAsync(model.NewFileName, newParent?.Id, file.FileContainerName,
                     file.OwnerUserId);
@@ -257,28 +237,8 @@ namespace EasyAbp.FileManagement.Files
                 await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
             }
 
-            var oldBlobName = file.BlobName;
-
-            var blobName = await FileBlobNameGenerator.CreateAsync(file.FileType, model.NewFileName, newParent,
-                model.NewMimeType, configuration.AbpBlobDirectorySeparator);
-
-            await DistributedEventBus.PublishAsync(new FileBlobNameChangedEto
-            {
-                TenantId = file.TenantId,
-                FileId = file.Id,
-                FileType = file.FileType,
-                FileContainerName = file.FileContainerName,
-                OldBlobName = oldBlobName,
-                NewBlobName = blobName
-            });
-
-            var hashString = FileContentHashProvider.GetHashString(model.NewFileContent);
-
-            file.UpdateInfo(model.NewFileName, model.NewMimeType, file.SubFilesQuantity,
-                model.NewFileContent?.LongLength ?? 0,
-                hashString, blobName, oldParent, newParent);
-
-            model.MapExtraPropertiesTo(file, MappingPropertyDefinitionChecks.Destination);
+            file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
+                file.BlobName, newParent);
 
             if (oldParent is not null)
             {
@@ -292,16 +252,7 @@ namespace EasyAbp.FileManagement.Files
 
             await FileRepository.UpdateAsync(file, true, cancellationToken);
 
-            await TrySaveBlobAsync(file, model.NewFileContent, configuration.DisableBlobReuse,
-                configuration.AllowBlobOverriding);
-
             return file;
-        }
-
-        public override async Task<File> UpdateAsync(File file, UpdateFileWithStreamModel model,
-            CancellationToken cancellationToken = default)
-        {
-            return await UpdateAsync(file, await model.ToChangeFileModelAsync(cancellationToken), cancellationToken);
         }
 
         [UnitOfWork(true)]
