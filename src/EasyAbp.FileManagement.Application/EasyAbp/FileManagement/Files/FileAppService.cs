@@ -24,18 +24,15 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IFileManager _fileManager;
         private readonly IFileRepository _repository;
-        private readonly IFileBlobManager _fileBlobManager;
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public FileAppService(
             IFileManager fileManager,
             IFileRepository repository,
-            IFileBlobManager fileBlobManager,
             IFileContainerConfigurationProvider configurationProvider) : base(repository)
         {
             _fileManager = fileManager;
             _repository = repository;
-            _fileBlobManager = fileBlobManager;
             _configurationProvider = configurationProvider;
         }
 
@@ -335,7 +332,7 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual async Task<FileDownloadOutput> DownloadAsync(Guid id, string token)
         {
-            var provider = LazyServiceProvider.LazyGetRequiredService<LocalFileDownloadProvider>();
+            var provider = LazyServiceProvider.LazyGetRequiredService<ILocalFileDownloadProvider>();
 
             await provider.CheckTokenAsync(token, id);
 
@@ -345,20 +342,20 @@ namespace EasyAbp.FileManagement.Files
             {
                 FileName = file.FileName,
                 MimeType = file.MimeType,
-                Content = await _fileBlobManager.GetAsync(file)
+                Content = await provider.GetDownloadBytesAsync(file)
             };
         }
 
         public virtual async Task<IRemoteStreamContent> DownloadWithStreamAsync(Guid id, string token)
         {
-            var provider = LazyServiceProvider.LazyGetRequiredService<LocalFileDownloadProvider>();
+            var provider = LazyServiceProvider.LazyGetRequiredService<ILocalFileDownloadProvider>();
 
             await provider.CheckTokenAsync(token, id);
 
             var file = await GetEntityByIdAsync(id);
 
             return new RemoteStreamContent(
-                new MemoryStream(await _fileBlobManager.GetAsync(file)),
+                await provider.GetDownloadStreamAsync(file),
                 fileName: file.FileName,
                 contentType: file.MimeType);
         }
@@ -367,9 +364,7 @@ namespace EasyAbp.FileManagement.Files
         public virtual Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName,
             Guid? ownerUserId)
         {
-            return Task.FromResult(
-                ObjectMapper.Map<FileContainerConfiguration, PublicFileContainerConfiguration>(
-                    _configurationProvider.Get<FileContainerConfiguration>(fileContainerName)));
+            return Task.FromResult(_configurationProvider.Get(fileContainerName).ToPublicConfiguration());
         }
 
         protected virtual string GenerateUniqueFileName([CanBeNull] string fileName)

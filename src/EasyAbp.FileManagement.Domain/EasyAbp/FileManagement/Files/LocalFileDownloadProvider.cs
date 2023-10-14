@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Options;
 using Microsoft.Extensions.Caching.Distributed;
@@ -8,35 +9,35 @@ using Volo.Abp.DependencyInjection;
 
 namespace EasyAbp.FileManagement.Files
 {
-    public class LocalFileDownloadProvider : IFileDownloadProvider, ISingletonDependency
+    public class LocalFileDownloadProvider : ILocalFileDownloadProvider, ISingletonDependency
     {
         public const string DownloadMethod = "Local";
-        
+
         // Todo: should be a configuration
         public static TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(1);
-        
+
         public static string BasePath = "api/file-management/file/{0}/download";
 
-        private readonly LocalFileDownloadOptions _options;
-        private readonly IDistributedCache<LocalFileDownloadCacheItem> _cache;
+        public IAbpLazyServiceProvider LazyServiceProvider { get; set; }
 
-        public LocalFileDownloadProvider(
-            IOptions<LocalFileDownloadOptions> options,
-            IDistributedCache<LocalFileDownloadCacheItem> cache)
-        {
-            _options = options.Value;
-            _cache = cache;
-        }
-        
+        protected LocalFileDownloadOptions Options =>
+            LazyServiceProvider.LazyGetRequiredService<IOptions<LocalFileDownloadOptions>>().Value;
+
+        protected IDistributedCache<LocalFileDownloadCacheItem> Cache => LazyServiceProvider
+            .LazyGetRequiredService<IDistributedCache<LocalFileDownloadCacheItem>>();
+
+        protected IFileBlobManager FileBlobManager => LazyServiceProvider.LazyGetRequiredService<IFileBlobManager>();
+
         public virtual async Task<FileDownloadInfoModel> CreateDownloadInfoAsync(File file)
         {
             var token = Guid.NewGuid().ToString("N");
 
-            await _cache.SetAsync(token,
-                new LocalFileDownloadCacheItem {FileId = file.Id},
-                new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TokenCacheDuration});
+            await Cache.SetAsync(token,
+                new LocalFileDownloadCacheItem { FileId = file.Id },
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TokenCacheDuration });
 
-            var url = _options.FileDownloadBaseUrl.EnsureEndsWith('/') + string.Format(BasePath, file.Id) + $"?token={token}";
+            var url = Options.FileDownloadBaseUrl.EnsureEndsWith('/') + string.Format(BasePath, file.Id) +
+                      $"?token={token}";
 
             return new FileDownloadInfoModel
             {
@@ -49,12 +50,22 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual async Task CheckTokenAsync(string token, Guid fileId)
         {
-            var cacheItem = await _cache.GetAsync(token);
+            var cacheItem = await Cache.GetAsync(token);
 
             if (cacheItem == null || cacheItem.FileId != fileId)
             {
                 throw new LocalFileDownloadInvalidTokenException();
             }
+        }
+
+        public virtual Task<byte[]> GetDownloadBytesAsync(File file)
+        {
+            return FileBlobManager.GetAsync(file);
+        }
+
+        public virtual async Task<Stream> GetDownloadStreamAsync(File file)
+        {
+            return new MemoryStream(await GetDownloadBytesAsync(file));
         }
     }
 }

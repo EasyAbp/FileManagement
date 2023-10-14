@@ -30,8 +30,10 @@ public interface IFileContainerConfiguration
     int? GetDownloadInfoTimesLimitEachUserPerMinute { get; set; }
 
     // int? UploadTimesLimitEachUserPerMinute { get; set; }
-    //
+
     // int? UploadQuantityLimitEachUserPerMinute { get; set; }
-    //
+
     // int? UploadByteSizeLimitEachUserPerMinute { get; set; }
+
+    PublicFileContainerConfiguration ToPublicConfiguration();
 }

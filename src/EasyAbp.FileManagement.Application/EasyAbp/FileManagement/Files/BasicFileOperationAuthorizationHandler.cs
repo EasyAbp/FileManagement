@@ -72,7 +72,7 @@ public class BasicFileOperationAuthorizationHandler : FileOperationAuthorization
 
         await SetSucceedIfUserIsManagerAsync(context, requirement);
 
-        var configuration = _configurationProvider.Get<FileContainerConfiguration>(resource.FileContainerName);
+        var configuration = _configurationProvider.Get(resource.FileContainerName);
 
         await SetFailIfUserIsNotPersonalContainerOwnerAsync(configuration, context, resource);
     }
@@ -95,7 +95,7 @@ public class BasicFileOperationAuthorizationHandler : FileOperationAuthorization
         }
     }
 
-    protected virtual Task SetFailIfUserIsNotPersonalContainerOwnerAsync(FileContainerConfiguration configuration,
+    protected virtual Task SetFailIfUserIsNotPersonalContainerOwnerAsync(IFileContainerConfiguration configuration,
         AuthorizationHandlerContext context, IFileOperationInfoModel resource)
     {
         if (configuration.FileContainerType == FileContainerType.Private &&
