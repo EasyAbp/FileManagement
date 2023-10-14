@@ -6,7 +6,7 @@
 [![Discord online](https://badgen.net/discord/online-members/xyg8TrRa27?label=Discord)](https://discord.gg/xyg8TrRa27)
 [![GitHub stars](https://img.shields.io/github/stars/EasyAbp/FileManagement?style=social)](https://www.github.com/EasyAbp/FileManagement)
 
-An abp application module that allows users to upload and manage their own files based on the ABP BLOB storing.
+An abp.io application module that allows users to upload and maintain files.
 
 ## Online Demo
 
