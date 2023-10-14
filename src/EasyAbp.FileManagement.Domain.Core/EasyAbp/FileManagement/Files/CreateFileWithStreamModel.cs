@@ -22,7 +22,8 @@ public class CreateFileWithStreamModel : ExtensibleObject
 
     public FileType FileType { get; set; }
 
-    public Guid? ParentId { get; set; }
+    [CanBeNull]
+    public File Parent { get; set; }
 
     public Stream Stream { get; set; }
 
@@ -31,20 +32,20 @@ public class CreateFileWithStreamModel : ExtensibleObject
     }
 
     public CreateFileWithStreamModel([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string fileName,
-        [CanBeNull] string mimeType, FileType fileType, Guid? parentId, Stream stream)
+        [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, Stream stream)
     {
         FileContainerName = fileContainerName;
         OwnerUserId = ownerUserId;
         FileName = fileName;
         MimeType = mimeType;
         FileType = fileType;
-        ParentId = parentId;
+        Parent = parent;
         Stream = stream;
     }
 
     public async Task<CreateFileModel> ToCreateFileModelAsync(CancellationToken cancellationToken = default)
     {
-        var model = new CreateFileModel(FileContainerName, OwnerUserId, FileName, MimeType, FileType, ParentId,
+        var model = new CreateFileModel(FileContainerName, OwnerUserId, FileName, MimeType, FileType, Parent,
             await Stream.GetAllBytesAsync(cancellationToken));
 
         this.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.None);

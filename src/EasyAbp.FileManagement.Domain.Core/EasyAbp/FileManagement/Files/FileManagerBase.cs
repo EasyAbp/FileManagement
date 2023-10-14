@@ -26,14 +26,10 @@ public abstract class FileManagerBase : DomainService, IFileManager
     public abstract Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
         CancellationToken cancellationToken = default);
 
-    public abstract Task<File> UpdateAsync(File file, string newFileName, File oldParent, File newParent,
+    public abstract Task<File> UpdateInfoAsync(File file, UpdateFileInfoModel model,
         CancellationToken cancellationToken = default);
 
-    public abstract Task<File> UpdateAsync(File file, UpdateFileModel model,
-        CancellationToken cancellationToken = default);
-
-    public abstract Task<File> UpdateAsync(File file, UpdateFileWithStreamModel model,
-        CancellationToken cancellationToken = default);
+    public abstract Task<File> MoveAsync(File file, MoveFileModel model, CancellationToken cancellationToken = default);
 
     public abstract Task DeleteAsync(File file, CancellationToken cancellationToken = default);
 

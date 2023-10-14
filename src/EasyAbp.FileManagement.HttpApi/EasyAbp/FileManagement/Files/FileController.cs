@@ -152,46 +152,6 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [HttpPut]
-        [Route("{id}/with-bytes")]
-        public virtual Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input)
-        {
-            return _service.UpdateAsync(id, input);
-        }
-
-        [HttpPut]
-        [Route("{id}/with-stream")]
-        public Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input)
-        {
-            return _service.UpdateWithStreamAsync(id, input);
-        }
-
-        [HttpPut]
-        [Route("{id}")]
-        [Consumes("multipart/form-data")]
-        public virtual async Task<FileInfoDto> ActionUpdateAsync(Guid id, [FromForm] UpdateFileActionInput input)
-        {
-            if (input.File == null)
-            {
-                throw new NoUploadedFileException();
-            }
-            
-            await using var memoryStream = new MemoryStream();
-            
-            await input.File.CopyToAsync(memoryStream);
-
-            var updateDto = new UpdateFileInput
-            {
-                FileName = input.FileName,
-                MimeType = input.File.ContentType,
-                Content = memoryStream.ToArray()
-            };
-            
-            input.MapExtraPropertiesTo(updateDto, MappingPropertyDefinitionChecks.None);
-            
-            return await _service.UpdateAsync(id, updateDto);
-        }
-
-        [HttpPut]
         [Route("{id}/move")]
         public virtual Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {

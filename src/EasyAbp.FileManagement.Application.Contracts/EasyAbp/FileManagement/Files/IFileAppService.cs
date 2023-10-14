@@ -22,10 +22,6 @@ namespace EasyAbp.FileManagement.Files
 
         Task<CreateManyFileOutput> CreateManyWithStreamAsync(CreateManyFileWithStreamInput input);
 
-        Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input);
-
-        Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input);
-
         Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input);
 
         Task DeleteAsync(Guid id);

@@ -21,7 +21,6 @@
     "FileOwnerUserId": "Owner user ID",
     "CreateDirectory": "Create directory",
     "UploadFile": "Upload",
-    "ReUploadFile": "Re-upload",
     "RenameFile": "Rename",
     "MoveFile": "Move",
     "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",

@@ -89,13 +89,15 @@ namespace EasyAbp.FileManagement.Files
         {
             var fileName = ProcessInputFileName(false, input.FileName);
 
+            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
+
             await AuthorizationService.CheckAsync(
                 new FileOperationInfoModel(input.ParentId, input.FileContainerName, fileName, input.MimeType,
                     input.FileType, input.Content?.LongLength, input.OwnerUserId, null),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
 
-            var model = new CreateFileModel(input.FileContainerName,
-                input.OwnerUserId, fileName.Trim(), input.MimeType, input.FileType, input.ParentId, input.Content);
+            var model = new CreateFileModel(input.FileContainerName, input.OwnerUserId, fileName.Trim(), input.MimeType,
+                input.FileType, parent, input.Content);
 
             input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
 
@@ -109,13 +111,15 @@ namespace EasyAbp.FileManagement.Files
         {
             var fileName = ProcessInputFileName(input.GenerateUniqueFileName, input.Content.FileName);
 
+            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
+
             await AuthorizationService.CheckAsync(new FileOperationInfoModel(input.ParentId, input.FileContainerName,
                     fileName, input.Content.ContentType, FileType.RegularFile, input.Content.ContentLength,
                     input.OwnerUserId, null),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Create });
 
             var model = new CreateFileWithStreamModel(input.FileContainerName, input.OwnerUserId, fileName,
-                input.Content.ContentType, FileType.RegularFile, input.ParentId, input.Content.GetStream());
+                input.Content.ContentType, FileType.RegularFile, parent, input.Content.GetStream());
 
             input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
 
@@ -153,10 +157,15 @@ namespace EasyAbp.FileManagement.Files
         public virtual async Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileInput input)
         {
             var fileNames = new Dictionary<CreateFileInput, string>();
+            var parents = new Dictionary<Guid, File>();
 
             foreach (var fileInfo in input.FileInfos)
             {
                 fileNames[fileInfo] = ProcessInputFileName(false, fileInfo.FileName);
+                if (fileInfo.ParentId != null)
+                {
+                    parents[fileInfo.ParentId.Value] ??= await TryGetEntityByNullableIdAsync(fileInfo.ParentId.Value);
+                }
 
                 await AuthorizationService.CheckAsync(
                     new FileOperationInfoModel(fileInfo.ParentId, fileInfo.FileContainerName, fileNames[fileInfo],
@@ -168,7 +177,7 @@ namespace EasyAbp.FileManagement.Files
 
             foreach (var model in input.FileInfos.Select(fileInfo => new CreateFileModel(fileInfo.FileContainerName,
                          fileInfo.OwnerUserId, fileNames[fileInfo], fileInfo.MimeType, fileInfo.FileType,
-                         fileInfo.ParentId, fileInfo.Content)))
+                         fileInfo.ParentId.HasValue ? parents[fileInfo.ParentId.Value] : null, fileInfo.Content)))
             {
                 input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
                 models.Add(model);
@@ -188,6 +197,7 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual async Task<CreateManyFileOutput> CreateManyWithStreamAsync(CreateManyFileWithStreamInput input)
         {
+            var parent = await TryGetEntityByNullableIdAsync(input.ParentId);
             var fileNames = new Dictionary<IRemoteStreamContent, string>();
 
             foreach (var fileInfo in input.FileContents)
@@ -204,7 +214,7 @@ namespace EasyAbp.FileManagement.Files
 
             foreach (var model in input.FileContents.Select(fileInfo => new CreateFileWithStreamModel(
                          input.FileContainerName, input.OwnerUserId, fileNames[fileInfo], fileInfo.ContentType,
-                         FileType.RegularFile, input.ParentId, fileInfo.GetStream())))
+                         FileType.RegularFile, parent, fileInfo.GetStream())))
             {
                 input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
                 models.Add(model);
@@ -232,24 +242,17 @@ namespace EasyAbp.FileManagement.Files
         [Authorize]
         public virtual async Task<FileInfoDto> MoveAsync(Guid id, MoveFileInput input)
         {
-            var newFileName = input.NewFileName;
-
             var file = await GetEntityByIdAsync(id);
+            var newParent = await TryGetEntityByNullableIdAsync(input.NewParentId);
 
             await AuthorizationService.CheckAsync(
                 new FileOperationInfoModel(input.NewParentId, file.FileContainerName, input.NewFileName, file.MimeType,
                     file.FileType, file.ByteSize, file.OwnerUserId, file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Move });
 
-            var oldParent = await TryGetEntityByNullableIdAsync(file.ParentId);
-
-            var newParent = input.NewParentId == file.ParentId
-                ? oldParent
-                : await TryGetEntityByNullableIdAsync(input.NewParentId);
-
             input.MapExtraPropertiesTo(file);
 
-            await _fileManager.UpdateAsync(file, newFileName, oldParent, newParent);
+            await _fileManager.MoveAsync(file, new MoveFileModel(newParent, input.NewFileName, file.MimeType));
 
             return await MapToGetOutputDtoAsync(file);
         }
@@ -314,49 +317,6 @@ namespace EasyAbp.FileManagement.Files
         }
 
         [Authorize]
-        public virtual async Task<FileInfoDto> UpdateAsync(Guid id, UpdateFileInput input)
-        {
-            var file = await GetEntityByIdAsync(id);
-
-            var fileName = ProcessInputFileName(false, input.FileName);
-
-            await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(file.ParentId, file.FileContainerName, fileName, input.MimeType,
-                    file.FileType, input.Content?.LongLength, file.OwnerUserId, file),
-                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Update });
-
-            var model = new UpdateFileModel(fileName, input.MimeType, file.ParentId, file.ParentId, input.Content);
-
-            input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
-
-            await _fileManager.UpdateAsync(file, model);
-
-            return await MapToGetOutputDtoAsync(file);
-        }
-
-        [Authorize]
-        public virtual async Task<FileInfoDto> UpdateWithStreamAsync(Guid id, UpdateFileWithStreamInput input)
-        {
-            var file = await GetEntityByIdAsync(id);
-
-            var fileName = ProcessInputFileName(false, input.Content.FileName);
-
-            await AuthorizationService.CheckAsync(
-                new FileOperationInfoModel(file.ParentId, file.FileContainerName, fileName, input.Content.ContentType,
-                    file.FileType, input.Content.ContentLength, file.OwnerUserId, file),
-                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Update });
-
-            var model = new UpdateFileWithStreamModel(fileName, input.Content.ContentType, file.ParentId, file.ParentId,
-                input.Content.GetStream());
-
-            input.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.Source);
-
-            await _fileManager.UpdateAsync(file, model);
-
-            return await MapToGetOutputDtoAsync(file);
-        }
-
-        [Authorize]
         public virtual async Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input)
         {
             var fileName = ProcessInputFileName(false, input.FileName);
@@ -367,11 +327,9 @@ namespace EasyAbp.FileManagement.Files
                     fileName, file.MimeType, file.FileType, file.ByteSize, file.OwnerUserId, file),
                 new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Update });
 
-            var parent = await TryGetEntityByNullableIdAsync(file.ParentId);
-
             input.MapExtraPropertiesTo(file);
 
-            await _fileManager.UpdateAsync(file, fileName, parent, parent);
+            await _fileManager.UpdateInfoAsync(file, new UpdateFileInfoModel(fileName, file.MimeType));
 
             return await MapToGetOutputDtoAsync(file);
         }

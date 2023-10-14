@@ -17,13 +17,9 @@ namespace EasyAbp.FileManagement.Files
         Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
             CancellationToken cancellationToken = default);
 
-        Task<File> UpdateAsync(File file, [NotNull] string newFileName, [CanBeNull] File oldParent,
-            [CanBeNull] File newParent, CancellationToken cancellationToken = default);
+        Task<File> UpdateInfoAsync(File file, UpdateFileInfoModel model, CancellationToken cancellationToken = default);
 
-        Task<File> UpdateAsync(File file, UpdateFileModel model, CancellationToken cancellationToken = default);
-
-        Task<File> UpdateAsync(File file, UpdateFileWithStreamModel model,
-            CancellationToken cancellationToken = default);
+        Task<File> MoveAsync(File file, MoveFileModel model, CancellationToken cancellationToken = default);
 
         Task DeleteAsync(File file, CancellationToken cancellationToken = default);
 
