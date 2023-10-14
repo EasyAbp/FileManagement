@@ -6,7 +6,7 @@ using Volo.Abp.Application;
 namespace EasyAbp.FileManagement
 {
     [DependsOn(
-        typeof(FileManagementDomainModule),
+        typeof(FileManagementDomainCoreModule),
         typeof(FileManagementApplicationContractsModule),
         typeof(AbpDddApplicationModule),
         typeof(AbpAutoMapperModule)

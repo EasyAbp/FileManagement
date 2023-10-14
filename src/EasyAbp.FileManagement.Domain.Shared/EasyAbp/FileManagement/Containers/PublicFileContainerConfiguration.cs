@@ -26,4 +26,9 @@ public class PublicFileContainerConfiguration : IFileContainerConfiguration
     public virtual Dictionary<string, bool> FileExtensionsConfiguration { get; set; } = new();
 
     public virtual int? GetDownloadInfoTimesLimitEachUserPerMinute { get; set; }
+
+    public virtual PublicFileContainerConfiguration ToPublicConfiguration()
+    {
+        return this;
+    }
 }
