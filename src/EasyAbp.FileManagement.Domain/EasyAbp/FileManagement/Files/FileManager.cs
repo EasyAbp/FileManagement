@@ -34,7 +34,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (model.FileType == FileType.RegularFile)
             {
-                CheckFileSize(new Dictionary<string, long> { { model.FileName, model.FileContent.LongLength } },
+                CheckFileSize(new Dictionary<string, long> { { model.FileName, model.GetContentLength() } },
                     configuration);
                 CheckFileExtension(new[] { model.FileName }, configuration);
             }
@@ -53,7 +53,7 @@ namespace EasyAbp.FileManagement.Files
             FileContainerConfiguration configuration, CancellationToken cancellationToken)
         {
             CheckFileName(model.FileName, configuration);
-            CheckDirectoryHasNoFileContent(model.FileType, model.FileContent?.LongLength ?? 0);
+            CheckDirectoryHasNoFileContent(model.FileType, model.GetContentLength());
 
             var hashString = FileContentHashProvider.GetHashString(model.FileContent);
 
@@ -65,7 +65,7 @@ namespace EasyAbp.FileManagement.Files
                 {
                     var existingFile =
                         await FileRepository.FirstOrDefaultAsync(model.FileContainerName, hashString,
-                            model.FileContent.LongLength, cancellationToken);
+                            model.GetContentLength(), cancellationToken);
 
                     // Todo: should lock the file that provides a reused BLOB.
                     if (existingFile != null)
@@ -93,7 +93,7 @@ namespace EasyAbp.FileManagement.Files
             await CheckFileNotExistAsync(model.FileName, model.Parent?.Id, model.FileContainerName, model.OwnerUserId);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, model.Parent, model.FileContainerName,
-                model.FileName, model.MimeType, model.FileType, 0, model.FileContent?.LongLength ?? 0, hashString,
+                model.FileName, model.MimeType, model.FileType, 0, model.GetContentLength(), hashString,
                 blobName, model.OwnerUserId);
 
             model.MapExtraPropertiesTo(file, MappingPropertyDefinitionChecks.Destination);
@@ -125,7 +125,7 @@ namespace EasyAbp.FileManagement.Files
             var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
 
             CheckFileQuantity(models.Count, configuration);
-            CheckFileSize(models.ToDictionary(x => x.FileName, x => x.FileContent.LongLength),
+            CheckFileSize(models.ToDictionary(x => x.FileName, x => x.GetContentLength()),
                 configuration);
 
             foreach (var model in models)
