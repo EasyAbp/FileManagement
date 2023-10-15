@@ -21,6 +21,6 @@ public class CreateFileModel : CreateFileModelBase
 
     public override long GetContentLength()
     {
-        return FileContent.LongLength;
+        return FileContent?.LongLength ?? 0;
     }
 }
