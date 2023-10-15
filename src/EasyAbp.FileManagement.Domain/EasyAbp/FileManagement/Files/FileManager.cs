@@ -22,7 +22,7 @@ namespace EasyAbp.FileManagement.Files
 
         protected IFileContentHashProvider FileContentHashProvider =>
             LazyServiceProvider.LazyGetRequiredService<IFileContentHashProvider>();
-        
+
 
         [UnitOfWork(true)]
         public override async Task<File> CreateAsync(CreateFileModel model,
@@ -30,7 +30,8 @@ namespace EasyAbp.FileManagement.Files
         {
             Check.NotNullOrWhiteSpace(model.FileContainerName, nameof(File.FileContainerName));
 
-            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(model.FileContainerName);
+            var configuration =
+                FileContainerConfigurationProvider.Get<FileContainerConfiguration>(model.FileContainerName);
 
             if (model.FileType == FileType.RegularFile)
             {
@@ -122,7 +123,8 @@ namespace EasyAbp.FileManagement.Files
                 throw new FileContainerConflictException();
             }
 
-            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
+            var configuration =
+                FileContainerConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
 
             CheckFileQuantity(models.Count, configuration);
             CheckFileSize(models.ToDictionary(x => x.FileName, x => x.GetContentLength()),
@@ -164,123 +166,6 @@ namespace EasyAbp.FileManagement.Files
             }
 
             return await CreateManyAsync(targetModels, cancellationToken);
-        }
-
-        [UnitOfWork(true)]
-        public override async Task<File> UpdateInfoAsync(File file, UpdateFileInfoModel model,
-            CancellationToken cancellationToken = default)
-        {
-            Check.NotNullOrWhiteSpace(model.NewFileName, nameof(File.FileName));
-
-            var parent = await TryGetFileByNullableIdAsync(file.ParentId);
-
-            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
-
-            CheckFileName(model.NewFileName, configuration);
-
-            if (file.FileType == FileType.RegularFile)
-            {
-                CheckFileExtension(new[] { model.NewFileName }, configuration);
-            }
-
-            if (model.NewFileName != file.FileName)
-            {
-                await CheckFileNotExistAsync(model.NewFileName, file.ParentId, file.FileContainerName,
-                    file.OwnerUserId);
-            }
-
-            file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
-                file.BlobName, parent);
-
-            await FileRepository.UpdateAsync(file, true, cancellationToken);
-
-            return file;
-        }
-
-        [UnitOfWork(true)]
-        public override async Task<File> MoveAsync(File file, MoveFileModel model,
-            CancellationToken cancellationToken = default)
-        {
-            Check.NotNullOrWhiteSpace(model.NewFileName, nameof(File.FileName));
-
-            var oldParent = model.NewParent?.Id == file.ParentId
-                ? model.NewParent
-                : await TryGetFileByNullableIdAsync(file.ParentId);
-            var newParent = model.NewParent;
-
-            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
-
-            CheckFileName(model.NewFileName, configuration);
-
-            if (file.FileType == FileType.RegularFile)
-            {
-                CheckFileExtension(new[] { model.NewFileName }, configuration);
-            }
-
-            if (model.NewFileName != file.FileName || newParent?.Id != oldParent?.Id)
-            {
-                await CheckFileNotExistAsync(model.NewFileName, newParent?.Id, file.FileContainerName,
-                    file.OwnerUserId);
-            }
-
-            if (oldParent != newParent)
-            {
-                await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
-            }
-
-            file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
-                file.BlobName, newParent);
-
-            if (oldParent is not null)
-            {
-                await HandleStatisticDataUpdateAsync(oldParent.Id);
-            }
-
-            if (newParent is not null)
-            {
-                await HandleStatisticDataUpdateAsync(newParent.Id);
-            }
-
-            await FileRepository.UpdateAsync(file, true, cancellationToken);
-
-            return file;
-        }
-
-        [UnitOfWork(true)]
-        public override async Task DeleteAsync([NotNull] File file, CancellationToken cancellationToken = default)
-        {
-            var parent = file.ParentId.HasValue
-                ? await FileRepository.GetAsync(file.ParentId.Value, true, cancellationToken)
-                : null;
-
-            if (parent is not null)
-            {
-                await HandleStatisticDataUpdateAsync(parent.Id);
-            }
-
-            await FileRepository.DeleteAsync(file, true, cancellationToken);
-
-            if (file.FileType == FileType.Directory)
-            {
-                await DeleteSubFilesAsync(file, file.FileContainerName, file.OwnerUserId, cancellationToken);
-            }
-        }
-
-        protected virtual async Task DeleteSubFilesAsync([CanBeNull] File file, [NotNull] string fileContainerName,
-            Guid? ownerUserId, CancellationToken cancellationToken = default)
-        {
-            var subFiles = await FileRepository.GetListAsync(file?.Id, fileContainerName, ownerUserId,
-                null, cancellationToken);
-
-            foreach (var subFile in subFiles)
-            {
-                if (subFile.FileType == FileType.Directory)
-                {
-                    await DeleteSubFilesAsync(subFile, fileContainerName, ownerUserId, cancellationToken);
-                }
-
-                await FileRepository.DeleteAsync(subFile, true, cancellationToken);
-            }
         }
 
         protected override IFileDownloadProvider GetFileDownloadProvider(File file)
