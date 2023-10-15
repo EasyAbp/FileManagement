@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
+using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
 using Volo.Abp;
 using Volo.Abp.Domain.Services;
+using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Uow;
 
 namespace EasyAbp.FileManagement.Files;
@@ -15,6 +17,15 @@ public abstract class FileManagerBase : DomainService, IFileManager
 {
     protected IFileRepository FileRepository => LazyServiceProvider.LazyGetRequiredService<IFileRepository>();
 
+    protected IDistributedEventBus DistributedEventBus =>
+        LazyServiceProvider.LazyGetRequiredService<IDistributedEventBus>();
+
+    protected IUnitOfWorkManager UnitOfWorkManager =>
+        LazyServiceProvider.LazyGetRequiredService<IUnitOfWorkManager>();
+
+    protected IFileContainerConfigurationProvider FileContainerConfigurationProvider =>
+        LazyServiceProvider.LazyGetRequiredService<IFileContainerConfigurationProvider>();
+    
     public abstract Task<File> CreateAsync(CreateFileModel model, CancellationToken cancellationToken = default);
 
     public abstract Task<File> CreateAsync(CreateFileWithStreamModel model,
@@ -52,12 +63,26 @@ public abstract class FileManagerBase : DomainService, IFileManager
         return fileId.HasValue ? await FileRepository.GetAsync(fileId.Value) : null;
     }
 
-    protected virtual void CheckDirectoryHasNoFileContent(FileType fileType, byte[] fileContent)
+    protected virtual void CheckDirectoryHasNoFileContent(FileType fileType, long fileContentLength)
     {
-        if (fileType == FileType.Directory && !fileContent.IsNullOrEmpty())
+        if (fileType == FileType.Directory && fileContentLength > 0)
         {
             throw new DirectoryFileContentIsNotEmptyException();
         }
+    }
+
+    [UnitOfWork(true)]
+    protected virtual Task HandleStatisticDataUpdateAsync(Guid directoryId)
+    {
+        var useBackgroundJob = DistributedEventBus is LocalDistributedEventBus;
+
+        UnitOfWorkManager.Current.AddOrReplaceDistributedEvent(
+            new UnitOfWorkEventRecord(
+                typeof(SubFilesChangedEto),
+                new SubFilesChangedEto(CurrentTenant.Id, directoryId, useBackgroundJob),
+                default));
+
+        return Task.CompletedTask;
     }
 
     protected virtual async Task CheckNotMovingDirectoryToSubDirectoryAsync([NotNull] File file,

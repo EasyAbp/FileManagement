@@ -13,6 +13,7 @@
 
     <ItemGroup>
         <PackageReference Include="Volo.Abp.AutoMapper" Version="$(AbpVersion)" />
+        <PackageReference Include="Volo.Abp.BackgroundJobs.Abstractions" Version="$(AbpVersion)" />
         <PackageReference Include="Volo.Abp.Ddd.Domain" Version="$(AbpVersion)" />
         <ProjectReference Include="..\EasyAbp.FileManagement.Domain.Shared\EasyAbp.FileManagement.Domain.Shared.csproj" />
     </ItemGroup>
