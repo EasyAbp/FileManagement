@@ -51,6 +51,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\EasyAbp.FileManagement.Application\EasyAbp.FileManagement.Application.csproj" />
+    <ProjectReference Include="..\..\src\EasyAbp.FileManagement.Domain\EasyAbp.FileManagement.Domain.csproj" />
     <ProjectReference Include="..\..\src\EasyAbp.FileManagement.HttpApi\EasyAbp.FileManagement.HttpApi.csproj" />
     <ProjectReference Include="..\..\src\EasyAbp.FileManagement.EntityFrameworkCore\EasyAbp.FileManagement.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\..\src\EasyAbp.FileManagement.Web\EasyAbp.FileManagement.Web.csproj" />

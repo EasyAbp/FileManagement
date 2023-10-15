@@ -54,6 +54,7 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host
     [DependsOn(
         typeof(FileManagementEntityFrameworkCoreModule),
         typeof(FileManagementApplicationModule),
+        typeof(FileManagementDomainModule),
         typeof(FileManagementHttpApiModule),
         typeof(AbpAspNetCoreMvcUiBasicThemeModule),
         typeof(AbpAutofacModule),

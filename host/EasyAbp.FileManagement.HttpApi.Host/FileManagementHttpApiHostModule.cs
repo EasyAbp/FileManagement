@@ -43,6 +43,7 @@ namespace EasyAbp.FileManagement
 {
     [DependsOn(
         typeof(FileManagementApplicationModule),
+        typeof(FileManagementDomainModule),
         typeof(FileManagementEntityFrameworkCoreModule),
         typeof(FileManagementHttpApiModule),
         typeof(AbpAspNetCoreMvcUiMultiTenancyModule),

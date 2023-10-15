@@ -6,7 +6,7 @@ using Volo.Abp.Modularity;
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
     [DependsOn(
-        typeof(FileManagementDomainModule),
+        typeof(FileManagementDomainCoreModule),
         typeof(AbpEntityFrameworkCoreModule)
     )]
     public class FileManagementEntityFrameworkCoreModule : AbpModule

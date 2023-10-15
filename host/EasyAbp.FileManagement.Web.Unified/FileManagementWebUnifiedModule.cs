@@ -52,6 +52,7 @@ namespace EasyAbp.FileManagement
     [DependsOn(
         typeof(FileManagementWebModule),
         typeof(FileManagementApplicationModule),
+        typeof(FileManagementDomainModule),
         typeof(FileManagementHttpApiModule),
         typeof(FileManagementEntityFrameworkCoreModule),
         typeof(AbpAuditLoggingEntityFrameworkCoreModule),
