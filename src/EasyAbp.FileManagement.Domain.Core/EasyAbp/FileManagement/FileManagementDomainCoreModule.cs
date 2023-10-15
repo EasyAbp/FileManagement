@@ -1,6 +1,7 @@
 ﻿using EasyAbp.FileManagement.Files;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.AutoMapper;
+using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Domain;
 using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.Modularity;
@@ -10,6 +11,7 @@ namespace EasyAbp.FileManagement
     [DependsOn(
         typeof(FileManagementDomainSharedModule),
         typeof(AbpAutoMapperModule),
+        typeof(AbpBackgroundJobsAbstractionsModule),
         typeof(AbpDddDomainModule)
     )]
     public class FileManagementDomainCoreModule : AbpModule

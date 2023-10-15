@@ -8,7 +8,6 @@ using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
-using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Uow;
 
@@ -16,12 +15,6 @@ namespace EasyAbp.FileManagement.Files
 {
     public class FileManager : FileManagerBase, IFileManager
     {
-        protected IDistributedEventBus DistributedEventBus =>
-            LazyServiceProvider.LazyGetRequiredService<IDistributedEventBus>();
-
-        protected IUnitOfWorkManager UnitOfWorkManager =>
-            LazyServiceProvider.LazyGetRequiredService<IUnitOfWorkManager>();
-
         protected IFileBlobManager FileBlobManager => LazyServiceProvider.LazyGetRequiredService<IFileBlobManager>();
 
         protected IFileBlobNameGenerator FileBlobNameGenerator =>
@@ -29,9 +22,7 @@ namespace EasyAbp.FileManagement.Files
 
         protected IFileContentHashProvider FileContentHashProvider =>
             LazyServiceProvider.LazyGetRequiredService<IFileContentHashProvider>();
-
-        protected IFileContainerConfigurationProvider ConfigurationProvider =>
-            LazyServiceProvider.LazyGetRequiredService<IFileContainerConfigurationProvider>();
+        
 
         [UnitOfWork(true)]
         public override async Task<File> CreateAsync(CreateFileModel model,
@@ -39,7 +30,7 @@ namespace EasyAbp.FileManagement.Files
         {
             Check.NotNullOrWhiteSpace(model.FileContainerName, nameof(File.FileContainerName));
 
-            var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(model.FileContainerName);
+            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(model.FileContainerName);
 
             if (model.FileType == FileType.RegularFile)
             {
@@ -62,7 +53,7 @@ namespace EasyAbp.FileManagement.Files
             FileContainerConfiguration configuration, CancellationToken cancellationToken)
         {
             CheckFileName(model.FileName, configuration);
-            CheckDirectoryHasNoFileContent(model.FileType, model.FileContent);
+            CheckDirectoryHasNoFileContent(model.FileType, model.FileContent?.LongLength ?? 0);
 
             var hashString = FileContentHashProvider.GetHashString(model.FileContent);
 
@@ -131,7 +122,7 @@ namespace EasyAbp.FileManagement.Files
                 throw new FileContainerConflictException();
             }
 
-            var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
+            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
 
             CheckFileQuantity(models.Count, configuration);
             CheckFileSize(models.ToDictionary(x => x.FileName, x => x.FileContent.LongLength),
@@ -183,7 +174,7 @@ namespace EasyAbp.FileManagement.Files
 
             var parent = await TryGetFileByNullableIdAsync(file.ParentId);
 
-            var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
+            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
 
             CheckFileName(model.NewFileName, configuration);
 
@@ -217,7 +208,7 @@ namespace EasyAbp.FileManagement.Files
                 : await TryGetFileByNullableIdAsync(file.ParentId);
             var newParent = model.NewParent;
 
-            var configuration = ConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
+            var configuration = FileContainerConfigurationProvider.Get<FileContainerConfiguration>(file.FileContainerName);
 
             CheckFileName(model.NewFileName, configuration);
 
@@ -305,20 +296,6 @@ namespace EasyAbp.FileManagement.Files
             return specifiedProviderType == null
                 ? providers.Single(p => p.GetType() == options.DefaultFileDownloadProviderType)
                 : providers.Single(p => p.GetType() == specifiedProviderType);
-        }
-
-        [UnitOfWork(true)]
-        protected virtual Task HandleStatisticDataUpdateAsync(Guid directoryId)
-        {
-            var useBackgroundJob = DistributedEventBus is LocalDistributedEventBus;
-
-            UnitOfWorkManager.Current.AddOrReplaceDistributedEvent(
-                new UnitOfWorkEventRecord(
-                    typeof(SubFilesChangedEto),
-                    new SubFilesChangedEto(CurrentTenant.Id, directoryId, useBackgroundJob),
-                    default));
-
-            return Task.CompletedTask;
         }
 
         protected virtual async Task<bool> TrySaveBlobAsync(File file, byte[] fileContent,

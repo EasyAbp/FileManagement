@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Volo.Abp.BackgroundJobs.Abstractions" Version="$(AbpVersion)" />
     <PackageReference Include="Volo.Abp.BlobStoring" Version="$(AbpVersion)" />
     <ProjectReference Include="..\EasyAbp.FileManagement.Domain.Core\EasyAbp.FileManagement.Domain.Core.csproj" />
   </ItemGroup>

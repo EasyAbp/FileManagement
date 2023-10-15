@@ -7,24 +7,8 @@ using Volo.Abp.ObjectExtending;
 
 namespace EasyAbp.FileManagement.Files;
 
-public class CreateFileWithStreamModel : ExtensibleObject
+public class CreateFileWithStreamModel : CreateFileModelBase
 {
-    [NotNull]
-    public string FileContainerName { get; set; }
-
-    public Guid? OwnerUserId { get; set; }
-
-    [NotNull]
-    public string FileName { get; set; }
-
-    [CanBeNull]
-    public string MimeType { get; set; }
-
-    public FileType FileType { get; set; }
-
-    [CanBeNull]
-    public File Parent { get; set; }
-
     public Stream Stream { get; set; }
 
     public CreateFileWithStreamModel()
@@ -32,14 +16,9 @@ public class CreateFileWithStreamModel : ExtensibleObject
     }
 
     public CreateFileWithStreamModel([NotNull] string fileContainerName, Guid? ownerUserId, [NotNull] string fileName,
-        [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, Stream stream)
+        [CanBeNull] string mimeType, FileType fileType, [CanBeNull] File parent, Stream stream) : base(
+        fileContainerName, ownerUserId, fileName, mimeType, fileType, parent)
     {
-        FileContainerName = fileContainerName;
-        OwnerUserId = ownerUserId;
-        FileName = fileName;
-        MimeType = mimeType;
-        FileType = fileType;
-        Parent = parent;
         Stream = stream;
     }
 
@@ -51,5 +30,10 @@ public class CreateFileWithStreamModel : ExtensibleObject
         this.MapExtraPropertiesTo(model, MappingPropertyDefinitionChecks.None);
 
         return model;
+    }
+
+    public override long GetContentLength()
+    {
+        return Stream.Length;
     }
 }
