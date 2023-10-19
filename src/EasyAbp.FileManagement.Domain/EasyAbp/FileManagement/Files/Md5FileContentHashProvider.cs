@@ -21,7 +21,8 @@ namespace EasyAbp.FileManagement.Files
 
         protected virtual IEnumerable<byte> GetMd5(byte[] fileContent)
         {
-            return MD5.HashData(fileContent);
+            var hashString = new MD5CryptoServiceProvider();
+            return hashString.ComputeHash(fileContent);
         }
     }
 }
