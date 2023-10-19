@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@abp/aspnetcore.components.server.leptonxlitetheme@~2.3.0":
-  version "2.3.0"
-  resolved "https://registry.npmmirror.com/@abp/aspnetcore.components.server.leptonxlitetheme/-/aspnetcore.components.server.leptonxlitetheme-2.3.0.tgz#c5fb72a291c61769388f59e588dfbac00c8e18a6"
-  integrity sha512-Qaj+mjTts5jWcNEMbW5UV9xIXtxZNIZxhVfqeCJ4HQtTE0jeh7ogXtQ70HdqYOJstB3X6Gd0WBo408abkCfoug==
+"@abp/aspnetcore.components.server.leptonxlitetheme@~2.4.1":
+  version "2.4.1"
+  resolved "https://registry.npmmirror.com/@abp/aspnetcore.components.server.leptonxlitetheme/-/aspnetcore.components.server.leptonxlitetheme-2.4.1.tgz#48d29c8be8b392d61c42e85fbf53a1e9dd20b071"
+  integrity sha512-LlyNUVetmCFIGZcC9Y6Q2pAs5yWHcoUWtoeTMrXu5NI8fYGlPR2Pg6CP1jN/L7wwjRnQ0/WDpduy+X2Z4DGLLA==
   dependencies:
     "@abp/aspnetcore.components.server.theming" "~7.2.1"
 
@@ -17,10 +17,10 @@
     "@abp/bootstrap" "~7.2.1"
     "@abp/font-awesome" "~7.2.1"
 
-"@abp/aspnetcore.mvc.ui.theme.leptonxlite@~2.3.0":
-  version "2.3.0"
-  resolved "https://registry.npmmirror.com/@abp/aspnetcore.mvc.ui.theme.leptonxlite/-/aspnetcore.mvc.ui.theme.leptonxlite-2.3.0.tgz#7e05ce2a897de0f0bb016e0ae4a9adfd0260e7be"
-  integrity sha512-d7p8Pv6g8aocjBIBKHMF8fFDeVzWqkriz6uKy3oowCKSe5tqzq3j35Um7kEu7DapPf9MyBPq8+z9VsGbxJCjww==
+"@abp/aspnetcore.mvc.ui.theme.leptonxlite@~2.4.1":
+  version "2.4.1"
+  resolved "https://registry.npmmirror.com/@abp/aspnetcore.mvc.ui.theme.leptonxlite/-/aspnetcore.mvc.ui.theme.leptonxlite-2.4.1.tgz#414d28d6347aecc7a0246ada8dfa2f447781613c"
+  integrity sha512-qbWEVchynWGGvGbXP/M6KGJHy0ip3DlIIvkBpaCld6n1aisizJ9lz8yatMb/BKVwejPqOROtOOCYRJiz4oI0WA==
   dependencies:
     "@abp/aspnetcore.mvc.ui.theme.shared" "~7.2.1"
 
