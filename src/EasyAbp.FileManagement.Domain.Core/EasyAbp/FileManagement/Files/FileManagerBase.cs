@@ -74,7 +74,7 @@ public abstract class FileManagerBase : DomainService, IFileManager
                 file.OwnerUserId);
         }
 
-        file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
+        file.UpdateInfo(model.NewFileName, model.NewMimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
             file.BlobName, parent);
 
         await FileRepository.UpdateAsync(file, true, cancellationToken);
