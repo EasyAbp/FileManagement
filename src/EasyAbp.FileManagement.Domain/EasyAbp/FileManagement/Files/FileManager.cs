@@ -35,8 +35,7 @@ namespace EasyAbp.FileManagement.Files
 
             if (model.FileType == FileType.RegularFile)
             {
-                CheckFileSize(new Dictionary<string, long> { { model.FileName, model.GetContentLength() } },
-                    configuration);
+                CheckFileSize(new List<(string, long)> { (model.FileName, model.GetContentLength()) }, configuration);
                 CheckFileExtension(new[] { model.FileName }, configuration);
             }
 
@@ -127,8 +126,7 @@ namespace EasyAbp.FileManagement.Files
                 FileContainerConfigurationProvider.Get<FileContainerConfiguration>(models.First().FileContainerName);
 
             CheckFileQuantity(models.Count, configuration);
-            CheckFileSize(models.ToDictionary(x => x.FileName, x => x.GetContentLength()),
-                configuration);
+            CheckFileSize(models.Select(x => (x.FileName, x.GetContentLength())).ToList(), configuration);
 
             foreach (var model in models)
             {

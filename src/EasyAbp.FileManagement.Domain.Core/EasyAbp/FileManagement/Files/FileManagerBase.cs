@@ -250,16 +250,15 @@ public abstract class FileManagerBase : DomainService, IFileManager
         }
     }
 
-    protected virtual void CheckFileSize(Dictionary<string, long> fileNameByteSizeMapping,
+    protected virtual void CheckFileSize(List<(string, long)> fileNameByteSizes,
         IFileContainerConfiguration configuration)
     {
-        foreach (var pair in fileNameByteSizeMapping.Where(
-                     pair => pair.Value > configuration.MaxByteSizeForEachFile))
+        foreach (var tuple in fileNameByteSizes.Where(tuple => tuple.Item2 > configuration.MaxByteSizeForEachFile))
         {
-            throw new FileSizeExceededLimitException(pair.Key, pair.Value, configuration.MaxByteSizeForEachFile);
+            throw new FileSizeExceededLimitException(tuple.Item1, tuple.Item2, configuration.MaxByteSizeForEachFile);
         }
 
-        var totalByteSize = fileNameByteSizeMapping.Values.Sum();
+        var totalByteSize = fileNameByteSizes.Select(x => x.Item2).Sum();
 
         if (totalByteSize > configuration.MaxByteSizeForEachUpload)
         {
