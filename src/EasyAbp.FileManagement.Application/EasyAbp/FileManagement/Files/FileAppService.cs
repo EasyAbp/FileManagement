@@ -156,9 +156,9 @@ namespace EasyAbp.FileManagement.Files
             foreach (var fileInfo in input.FileInfos)
             {
                 fileNames[fileInfo] = ProcessInputFileName(false, fileInfo.FileName);
-                if (fileInfo.ParentId != null)
+                if (fileInfo.ParentId != null && !parents.ContainsKey(fileInfo.ParentId.Value))
                 {
-                    parents[fileInfo.ParentId.Value] ??= await TryGetEntityByNullableIdAsync(fileInfo.ParentId.Value);
+                    parents[fileInfo.ParentId.Value] = await TryGetEntityByNullableIdAsync(fileInfo.ParentId.Value);
                 }
 
                 await AuthorizationService.CheckAsync(
