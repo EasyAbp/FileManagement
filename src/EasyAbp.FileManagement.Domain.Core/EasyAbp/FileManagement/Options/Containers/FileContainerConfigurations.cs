@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using EasyAbp.FileManagement.Containers;
 using JetBrains.Annotations;
@@ -61,9 +62,9 @@ namespace EasyAbp.FileManagement.Options.Containers
             return _containers.GetOrDefault(name);
         }
 
-        public List<TConfiguration> GetAllConfigurations()
+        public ImmutableDictionary<string, TConfiguration> GetAllContainers()
         {
-            return _containers.Values.ToList();
+            return _containers.ToImmutableDictionary();
         }
     }
 }
