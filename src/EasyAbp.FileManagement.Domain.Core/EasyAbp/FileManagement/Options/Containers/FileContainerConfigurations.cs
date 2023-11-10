@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using EasyAbp.FileManagement.Containers;
 using JetBrains.Annotations;
 using Volo.Abp;
@@ -58,6 +59,11 @@ namespace EasyAbp.FileManagement.Options.Containers
             Check.NotNullOrWhiteSpace(name, nameof(name));
 
             return _containers.GetOrDefault(name);
+        }
+
+        public List<TConfiguration> GetAllConfigurations()
+        {
+            return _containers.Values.ToList();
         }
     }
 }
