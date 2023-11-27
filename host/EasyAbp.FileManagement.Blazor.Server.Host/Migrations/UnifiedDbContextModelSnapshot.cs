@@ -31,7 +31,8 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("BlobName")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<long>("ByteSize")
                         .HasColumnType("bigint");
@@ -65,19 +66,23 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
                         .HasColumnName("ExtraProperties");
 
                     b.Property<string>("FileContainerName")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<int>("FileType")
                         .HasColumnType("int");
 
                     b.Property<string>("Flag")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Hash")
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -94,7 +99,8 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
                         .HasColumnName("LastModifierId");
 
                     b.Property<string>("MimeType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<Guid?>("OwnerUserId")
                         .HasColumnType("uniqueidentifier");
@@ -115,9 +121,11 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
 
                     b.HasIndex("Hash");
 
-                    b.HasIndex("FileName", "OwnerUserId", "FileContainerName");
+                    b.HasIndex("ParentId", "OwnerUserId", "FileContainerName");
 
-                    b.HasIndex("ParentId", "OwnerUserId", "FileContainerName", "FileType");
+                    b.HasIndex("FileName", "ParentId", "OwnerUserId", "FileContainerName")
+                        .IsUnique()
+                        .HasFilter("[FileName] IS NOT NULL AND [ParentId] IS NOT NULL AND [OwnerUserId] IS NOT NULL AND [FileContainerName] IS NOT NULL");
 
                     b.ToTable("EasyAbpFileManagementFiles", (string)null);
                 });
