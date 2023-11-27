@@ -3,7 +3,7 @@
 @using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal;
 @using EasyAbp.FileManagement.Localization
 @inject IHtmlLocalizer<FileManagementResource> L
-@model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.UploadModalModel
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.UploadModalModel
 @{
     Layout = null;
     var allowedFileExtensionsJsCode = Model.Configuration.AllowOnlyConfiguredFileExtensions ? Model.GetAllowedFileExtensionsJsCode() : "null";
@@ -26,11 +26,11 @@
     <abp-modal>
         <abp-modal-header title="@L["UploadFile"].Value"></abp-modal-header>
         <abp-modal-body>
-            <abp-input asp-for="FileContainerName" />
-            <abp-input asp-for="OwnerUserId" />
-            <abp-input asp-for="ParentId" />
-            <input asp-for="UploadedFiles" type="file" multiple id="file" data-preview-file-type="text" />
+            <abp-input asp-for="FileContainerName"/>
+            <abp-input asp-for="OwnerUserId"/>
+            <abp-input asp-for="ParentId"/>
+            <input asp-for="UploadedFiles" type="file" multiple id="file" data-preview-file-type="text"/>
         </abp-modal-body>
-        <abp-modal-footer buttons="@(AbpModalButtons.Cancel|AbpModalButtons.Save)"></abp-modal-footer>
+        <abp-modal-footer buttons="@(AbpModalButtons.Cancel | AbpModalButtons.Save)"></abp-modal-footer>
     </abp-modal>
 </form>

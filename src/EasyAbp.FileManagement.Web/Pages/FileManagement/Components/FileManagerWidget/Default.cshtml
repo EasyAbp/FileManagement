@@ -1,0 +1,63 @@
+﻿@using EasyAbp.FileManagement.Localization
+@using EasyAbp.FileManagement.Permissions
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Mvc.Localization
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.FileManagerViewModel
+@inject IHtmlLocalizer<FileManagementResource> L
+@inject IAuthorizationService Authorization
+@{
+    var canUploadFile = Model.Policy.CanUploadFile ?? await Authorization.IsGrantedAsync(FileManagementPermissions.File.Create);
+    var canCreateDirectory = Model.Policy.CanCreateDirectory ?? await Authorization.IsGrantedAsync(FileManagementPermissions.File.Create);
+}
+
+<div class="file-manager-area"
+     data-file-container-name="@Model.FileContainerName"
+     data-owner-user-id="@Model.OwnerUserId"
+     data-parent-id="@Model.ParentId"
+     data-grandparent-id="@Model.GrandparentId"
+     data-can-upload-file="@Model.Policy.CanUploadFile"
+     data-can-create-directory="@Model.Policy.CanCreateDirectory"
+     data-can-delete-file="@Model.Policy.CanDeleteFile"
+     data-can-delete-directory="@Model.Policy.CanDeleteDirectory"
+     data-can-move-file="@Model.Policy.CanMoveFile"
+     data-can-move-directory="@Model.Policy.CanMoveDirectory"
+     data-can-rename-file="@Model.Policy.CanRenameFile"
+     data-can-rename-directory="@Model.Policy.CanRenameDirectory"
+     data-can-download-file="@Model.Policy.CanDownloadFile">
+    <abp-card>
+        <abp-card-header>
+            <abp-row>
+                <abp-column size-md="_6">
+                    <abp-card-title>@L["File"]: @Model.ParentFileName</abp-card-title>
+                </abp-column>
+                <abp-column size-md="_6" class="text-end">
+                    @if (canUploadFile)
+                    {
+                        <abp-button class="create-dir-btn"
+                                    text="@L["CreateDirectory"].Value"
+                                    icon="plus"
+                                    button-type="Secondary"/>
+                    }
+                    @if (canCreateDirectory)
+                    {
+                        <abp-button class="upload-file-btn"
+                                    text="@L["UploadFile"].Value"
+                                    icon="plus"
+                                    button-type="Primary"/>
+                    }
+                </abp-column>
+            </abp-row>
+        </abp-card-header>
+        <abp-card-body>
+            <abp-table striped-rows="true" class="file-table nowrap">
+                <thead>
+                <tr>
+                    <th>@L["Actions"]</th>
+                    <th>@L["FileFileName"]</th>
+                    <th>@L["FileByteSize"]</th>
+                </tr>
+                </thead>
+            </abp-table>
+        </abp-card-body>
+    </abp-card>
+</div>

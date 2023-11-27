@@ -1,7 +1,6 @@
-﻿using EasyAbp.FileManagement.Files.Dtos;
-using EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.ViewModels;
-using AutoMapper;
-using Volo.Abp.AutoMapper;
+﻿using AutoMapper;
+using EasyAbp.FileManagement.Files.Dtos;
+using EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.ViewModels;
 
 namespace EasyAbp.FileManagement.Web
 {

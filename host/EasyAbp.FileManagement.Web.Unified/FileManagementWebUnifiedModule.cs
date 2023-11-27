@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using EasyAbp.FileManagement.EntityFrameworkCore;
 using EasyAbp.FileManagement.Files;
+using EasyAbp.FileManagement.Menus;
 using EasyAbp.FileManagement.MultiTenancy;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Web;
@@ -45,6 +46,7 @@ using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 using Volo.Abp.TenantManagement.Web;
 using Volo.Abp.Threading;
+using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
 
 namespace EasyAbp.FileManagement
@@ -136,6 +138,11 @@ namespace EasyAbp.FileManagement
                 options.Languages.Add(new LanguageInfo("tr", "tr", "Türkçe"));
                 options.Languages.Add(new LanguageInfo("zh-Hans", "zh-Hans", "简体中文"));
                 options.Languages.Add(new LanguageInfo("zh-Hant", "zh-Hant", "繁體中文"));
+            });
+
+            Configure<AbpNavigationOptions>(options =>
+            {
+                options.MenuContributors.Add(new MyMenuContributor());
             });
 
             Configure<AbpMultiTenancyOptions>(options =>

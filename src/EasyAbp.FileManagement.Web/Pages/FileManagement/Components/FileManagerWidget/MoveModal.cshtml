@@ -3,13 +3,13 @@
 @using Microsoft.AspNetCore.Mvc.Localization
 @using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal;
 @inject IHtmlLocalizer<FileManagementResource> L
-@model EasyAbp.FileManagement.Web.Pages.FileManagement.Files.File.RenameModalModel
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.MoveModalModel
 @{
     Layout = null;
 }
-<abp-dynamic-form abp-model="ViewModel" data-ajaxForm="true" asp-page="RenameModal">
+<abp-dynamic-form abp-model="ViewModel" data-ajaxForm="true" asp-page="MoveModal">
     <abp-modal>
-        <abp-modal-header title="@L["RenameFile"].Value"></abp-modal-header>
+        <abp-modal-header title="@L["MoveFile"].Value"></abp-modal-header>
         <abp-modal-body>
             <abp-input asp-for="Id" />
             <abp-form-content />
