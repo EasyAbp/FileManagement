@@ -27,12 +27,12 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
             {
                 //Configure table & schema name
                 b.ToTable(options.TablePrefix + "Questions", options.Schema);
-            
+
                 b.ConfigureByConvention();
-            
+
                 //Properties
                 b.Property(q => q.Title).IsRequired().HasMaxLength(QuestionConsts.MaxTitleLength);
-                
+
                 //Relations
                 b.HasMany(question => question.Tags).WithOne().HasForeignKey(qt => qt.QuestionId);
 
@@ -48,10 +48,16 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.ConfigureByConvention();
 
                 /* Configure more properties here */
+                b.Property(x => x.FileContainerName).HasMaxLength(FileManagementConsts.FileContainerNameMaxLength);
+                b.Property(x => x.FileName).HasMaxLength(FileManagementConsts.File.FileNameMaxLength);
+                b.Property(x => x.BlobName).HasMaxLength(FileManagementConsts.File.BlobNameMaxLength);
+                b.Property(x => x.MimeType).HasMaxLength(FileManagementConsts.File.MimeTypeMaxLength);
+                b.Property(x => x.Hash).HasMaxLength(FileManagementConsts.File.HashMaxLength);
+                b.Property(x => x.Flag).HasMaxLength(FileManagementConsts.File.FlagMaxLength);
                 b.HasIndex(x => x.BlobName);
                 b.HasIndex(x => x.Hash);
-                b.HasIndex(x => new {x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileType});
-                b.HasIndex(x => new {x.FileName, x.OwnerUserId, x.FileContainerName});
+                b.HasIndex(x => new { x.ParentId, x.OwnerUserId, x.FileContainerName });
+                b.HasIndex(x => new { x.FileName, x.ParentId, x.OwnerUserId, x.FileContainerName }).IsUnique();
             });
         }
     }

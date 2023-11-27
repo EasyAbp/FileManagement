@@ -1,5 +1,6 @@
 using System;
 using JetBrains.Annotations;
+using Volo.Abp;
 using Volo.Abp.Domain.Entities.Auditing;
 using Volo.Abp.MultiTenancy;
 
@@ -55,6 +56,14 @@ namespace EasyAbp.FileManagement.Files
                 throw new UnexpectedFileContainerNameException(parent.FileContainerName, fileContainerName);
             }
 
+            Check.NotNullOrWhiteSpace(fileContainerName, nameof(fileContainerName));
+            Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
+            Check.Length(fileContainerName, nameof(fileContainerName), FileManagementConsts.FileContainerNameMaxLength);
+            Check.Length(fileName, nameof(fileName), FileManagementConsts.File.FileNameMaxLength);
+            Check.Length(mimeType, nameof(mimeType), FileManagementConsts.File.MimeTypeMaxLength);
+            Check.Length(hash, nameof(hash), FileManagementConsts.File.HashMaxLength);
+            Check.Length(blobName, nameof(blobName), FileManagementConsts.File.BlobNameMaxLength);
+
             TenantId = tenantId;
             ParentId = parent?.Id;
             FileContainerName = fileContainerName;
@@ -82,6 +91,12 @@ namespace EasyAbp.FileManagement.Files
             {
                 throw new UnexpectedFileContainerNameException(parent.FileContainerName, FileContainerName);
             }
+
+            Check.NotNullOrWhiteSpace(fileName, nameof(fileName));
+            Check.Length(fileName, nameof(fileName), FileManagementConsts.File.FileNameMaxLength);
+            Check.Length(mimeType, nameof(mimeType), FileManagementConsts.File.MimeTypeMaxLength);
+            Check.Length(hash, nameof(hash), FileManagementConsts.File.HashMaxLength);
+            Check.Length(blobName, nameof(blobName), FileManagementConsts.File.BlobNameMaxLength);
 
             ParentId = parent?.Id;
             FileName = fileName;
