@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
@@ -67,6 +68,13 @@ namespace EasyAbp.FileManagement.Files
             );
         }
 
+        protected override IQueryable<File> ApplySorting(IQueryable<File> query, GetFileListInput input)
+        {
+            return input.Sorting.IsNullOrWhiteSpace()
+                ? query.OrderBy(x => x.FileType).ThenBy(x => x.FileName)
+                : query.OrderBy(x => x.FileType).ThenBy(input.Sorting!);
+        }
+
         protected override async Task<IQueryable<File>> CreateFilteredQueryAsync(GetFileListInput input)
         {
             await Task.CompletedTask;
@@ -74,9 +82,7 @@ namespace EasyAbp.FileManagement.Files
             return (await _repository.GetQueryableAsync())
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
-                .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
-                .OrderBy(x => x.FileType)
-                .ThenBy(x => x.FileName);
+                .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory);
         }
 
         [Authorize]
