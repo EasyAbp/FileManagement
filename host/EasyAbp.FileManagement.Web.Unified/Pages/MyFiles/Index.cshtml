@@ -1,0 +1,33 @@
+@page
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Volo.Abp.AspNetCore.Mvc.UI.Layout
+@using EasyAbp.FileManagement.Localization
+@using EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget
+@using Volo.Abp.Users
+@inject IPageLayout PageLayout
+@inject IHtmlLocalizer<FileManagementResource> L
+@inject ICurrentUser CurrentUser
+
+@{
+    PageLayout.Content.Title = L["File"].Value;
+    PageLayout.Content.BreadCrumb.Add(L["Menu:File"].Value);
+    PageLayout.Content.MenuItemName = "FileManagementFile";
+
+    // add a file manager widget
+    @await Component.InvokeAsync("FileManager", new
+           {
+               fileContainerName = "default", // specify a container
+               ownerUserId = CurrentUser.GetId(), // can be null if it's a shared container
+               parentId = (Guid?)null, // the root directory
+               policy = new FileManagerPolicyModel // with a custom policy model
+               { CanUploadFile = false, CanMoveFile = false }
+           })
+
+    // you can add more than one file manager widget on the same page
+    @await Component.InvokeAsync("FileManager", new
+           {
+               fileContainerName = "default",
+               ownerUserId = CurrentUser.GetId(),
+               parentId = (Guid?)null
+           })
+}

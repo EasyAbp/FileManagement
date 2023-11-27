@@ -2,14 +2,11 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using EasyAbp.FileManagement.Localization;
-using EasyAbp.FileManagement.Web.Menus;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.Modularity;
-using Volo.Abp.UI.Navigation;
 using Volo.Abp.VirtualFileSystem;
-using EasyAbp.FileManagement.Permissions;
 
 namespace EasyAbp.FileManagement.Web
 {
@@ -36,11 +33,6 @@ namespace EasyAbp.FileManagement.Web
 
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            Configure<AbpNavigationOptions>(options =>
-            {
-                options.MenuContributors.Add(new FileManagementMenuContributor());
-            });
-
             Configure<AbpVirtualFileSystemOptions>(options =>
             {
                 options.FileSets.AddEmbedded<FileManagementWebModule>();

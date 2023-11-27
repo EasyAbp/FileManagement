@@ -36,11 +36,15 @@ We have launched an online demo for this module: [https://file.samples.easyabp.i
 
 1. Add permissions to the roles you want.
 
-1. Configure a BLOB container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L139-L150) and [doc](https://docs.abp.io/en/abp/latest/Blob-Storing))
+1. Configure a BLOB container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L153-L164) and [doc](https://docs.abp.io/en/abp/latest/Blob-Storing))
 
-1. Configure a file container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L152-L178))
+1. Configure a file container. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/FileManagementWebUnifiedModule.cs#L166-L191))
 
 1. Create a custom **FileOperationAuthorizationHandler**. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/CommonContainerFileOperationAuthorizationHandler.cs))
+
+1. Create a file manager page. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/Pages/MyFiles/Index.cshtml))
+
+1. Add a menu item for the file manager page. (see [sample](https://github.com/EasyAbp/FileManagement/blob/master/host/EasyAbp.FileManagement.Web.Unified/Menus/MyMenuContributor.cs))
 
 ![Files](/docs/images/Files.png)
 ![Upload](/docs/images/Upload.png)

@@ -28,16 +28,12 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
         OperationAuthorizationRequirement requirement, FileGetInfoOperationInfoModel resource)
     {
         context.Succeed(requirement); // Allow everyone to get the file info.
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleGetListAsync(AuthorizationHandlerContext context,
         OperationAuthorizationRequirement requirement, FileGetListOperationInfoModel resource)
     {
         context.Succeed(requirement); // Allow everyone to see the files.
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleGetDownloadInfoAsync(AuthorizationHandlerContext context,
@@ -51,8 +47,6 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
 
         // We don't set fail, so admin (with "manage" permission) can do it.
         // context.Fail();
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleCreateAsync(AuthorizationHandlerContext context,
@@ -66,8 +60,6 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
 
         // We don't set fail, so admin (with "manage" permission) can do it.
         // context.Fail();
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleUpdateInfoAsync(AuthorizationHandlerContext context,
@@ -81,8 +73,6 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
 
         // We don't set fail, so admin (with "manage" permission) can do it.
         // context.Fail();
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleMoveAsync(AuthorizationHandlerContext context,
@@ -95,15 +85,12 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
         }
 
         context.Succeed(requirement);
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleDeleteAsync(AuthorizationHandlerContext context,
         OperationAuthorizationRequirement requirement, FileDeletionOperationInfoModel resource)
     {
         // Files cannot be deleted.
-        await Task.CompletedTask;
 
         // We don't set fail, so admin (with "manage" permission) can do it.
         // context.Fail();

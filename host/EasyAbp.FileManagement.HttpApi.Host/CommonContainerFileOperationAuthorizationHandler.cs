@@ -20,24 +20,20 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
 
         SpecifiedFileContainerNames = new[]
         {
-            FileContainerNameAttribute.GetContainerName(typeof(CommonFileContainer))
-        }; // Only for CommonFileContainer
+            FileContainerNameAttribute.GetContainerName(typeof(CommonFileContainer)) // Only for CommonFileContainer
+        };
     }
 
     protected override async Task HandleGetInfoAsync(AuthorizationHandlerContext context,
         OperationAuthorizationRequirement requirement, FileGetInfoOperationInfoModel resource)
     {
         context.Succeed(requirement); // Allow everyone to get the file info.
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleGetListAsync(AuthorizationHandlerContext context,
         OperationAuthorizationRequirement requirement, FileGetListOperationInfoModel resource)
     {
         context.Succeed(requirement); // Allow everyone to see the files.
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleGetDownloadInfoAsync(AuthorizationHandlerContext context,
@@ -49,9 +45,8 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
             return;
         }
 
-        context.Fail();
-
-        await Task.CompletedTask;
+        // We don't set fail, so admin (with "manage" permission) can do it.
+        // context.Fail();
     }
 
     protected override async Task HandleCreateAsync(AuthorizationHandlerContext context,
@@ -63,9 +58,8 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
             return;
         }
 
-        context.Fail();
-
-        await Task.CompletedTask;
+        // We don't set fail, so admin (with "manage" permission) can do it.
+        // context.Fail();
     }
 
     protected override async Task HandleUpdateInfoAsync(AuthorizationHandlerContext context,
@@ -77,9 +71,8 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
             return;
         }
 
-        context.Fail();
-
-        await Task.CompletedTask;
+        // We don't set fail, so admin (with "manage" permission) can do it.
+        // context.Fail();
     }
 
     protected override async Task HandleMoveAsync(AuthorizationHandlerContext context,
@@ -92,13 +85,14 @@ public class CommonContainerFileOperationAuthorizationHandler : FileOperationAut
         }
 
         context.Succeed(requirement);
-
-        await Task.CompletedTask;
     }
 
     protected override async Task HandleDeleteAsync(AuthorizationHandlerContext context,
         OperationAuthorizationRequirement requirement, FileDeletionOperationInfoModel resource)
     {
-        context.Fail(); // Files cannot be deleted.
+        // Files cannot be deleted.
+
+        // We don't set fail, so admin (with "manage" permission) can do it.
+        // context.Fail();
     }
 }
