@@ -31,14 +31,14 @@
                     <abp-card-title>@L["File"]: @Model.ParentFileName</abp-card-title>
                 </abp-column>
                 <abp-column size-md="_6" class="text-end">
-                    @if (canUploadFile)
+                    @if (canCreateDirectory)
                     {
                         <abp-button class="create-dir-btn"
                                     text="@L["CreateDirectory"].Value"
                                     icon="plus"
                                     button-type="Secondary"/>
                     }
-                    @if (canCreateDirectory)
+                    @if (canUploadFile)
                     {
                         <abp-button class="upload-file-btn"
                                     text="@L["UploadFile"].Value"
