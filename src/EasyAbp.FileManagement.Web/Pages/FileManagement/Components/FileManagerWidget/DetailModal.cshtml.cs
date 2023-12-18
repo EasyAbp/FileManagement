@@ -29,11 +29,45 @@ public class DetailModalModel : FileManagementPageModel
         {
             FileName = dto.FileName,
             FileType = dto.FileType,
+            MimeType = dto.MimeType,
+            ByteSize = HumanFileSize(dto.ByteSize),
+            Hash = dto.Hash,
             Location = (await _service.GetLocationAsync(dto.Id)).Location,
             Creator = dto.Creator?.UserName,
             Created = dto.CreationTime,
             LastModifier = dto.LastModifier?.UserName,
             Modified = dto.LastModificationTime ?? dto.CreationTime
         };
+    }
+
+    protected static string HumanFileSize(long bytes, bool si = false, int dp = 1)
+    {
+        var thresh = si ? 1000 : 1024;
+
+        if (bytes == 0)
+        {
+            return "0 B";
+        }
+
+        if (Math.Abs(bytes) < thresh)
+        {
+            return bytes + " B";
+        }
+
+        var units = si
+            ? new string[] { "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" }
+            : new string[] { "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+
+        var u = -1;
+        var b = bytes;
+        const double r = 10.0d;
+
+        do
+        {
+            b /= thresh;
+            u++;
+        } while (Math.Round(Math.Abs(b) * r) / r >= thresh && u < units.Length - 1);
+
+        return b.ToString("F" + dp) + " " + units[u];
     }
 }

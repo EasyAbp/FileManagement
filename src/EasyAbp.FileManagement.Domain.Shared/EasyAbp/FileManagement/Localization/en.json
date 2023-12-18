@@ -13,7 +13,7 @@
     "FileMimeType": "Mime type",
     "FileFileType": "File type",
     "FileSubFilesQuantity": "Sub files quantity",
-    "FileByteSize": "Byte size",
+    "FileByteSize": "Size",
     "FileHash": "Hash",
     "FileParentId": "Parent ID",
     "FileChildren": "Children",

@@ -17,6 +17,18 @@ public class FileDetailViewModel
     public FileType FileType { get; set; }
 
     [DisabledInput]
+    [Display(Name = "FileMimeType")]
+    public string MimeType { get; set; }
+
+    [DisabledInput]
+    [Display(Name = "FileByteSize")]
+    public string ByteSize { get; set; }
+
+    [DisabledInput]
+    [Display(Name = "FileHash")]
+    public string Hash { get; set; }
+
+    [DisabledInput]
     [Display(Name = "Location")]
     public string Location { get; set; }
 

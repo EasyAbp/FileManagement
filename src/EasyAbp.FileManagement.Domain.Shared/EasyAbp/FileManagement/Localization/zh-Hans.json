@@ -17,7 +17,7 @@
     "FileMimeType": "Mime 类型",
     "FileFileType": "文件类型",
     "FileSubFilesQuantity": "子文件数量",
-    "FileByteSize": "文件大小",
+    "FileByteSize": "大小",
     "FileHash": "哈希值",
     "FileParentId": "父目录 ID",
     "FileChildren": "子目录",
