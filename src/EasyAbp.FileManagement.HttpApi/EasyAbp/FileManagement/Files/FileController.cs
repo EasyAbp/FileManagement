@@ -62,11 +62,11 @@ namespace EasyAbp.FileManagement.Files
             }
 
             var fileName = input.GenerateUniqueFileName ? GenerateUniqueFileName(input.File) : input.File.FileName;
-            
+
             await using var memoryStream = new MemoryStream();
-            
+
             await input.File.CopyToAsync(memoryStream);
-            
+
             var createFileInput = new CreateFileInput
             {
                 FileContainerName = input.FileContainerName,
@@ -77,12 +77,12 @@ namespace EasyAbp.FileManagement.Files
                 OwnerUserId = input.OwnerUserId,
                 Content = memoryStream.ToArray()
             };
-            
+
             input.MapExtraPropertiesTo(createFileInput, MappingPropertyDefinitionChecks.None);
 
             return await _service.CreateAsync(createFileInput);
         }
-        
+
         [HttpPost]
         [Route("many/with-bytes")]
         public virtual Task<CreateManyFileOutput> CreateManyAsync(CreateManyFileInput input)
@@ -100,7 +100,8 @@ namespace EasyAbp.FileManagement.Files
         [HttpPost]
         [Route("many")]
         [Consumes("multipart/form-data")]
-        public virtual async Task<CreateManyFileOutput> ActionCreateManyAsync([FromForm] CreateManyFileActionInput input)
+        public virtual async Task<CreateManyFileOutput> ActionCreateManyAsync(
+            [FromForm] CreateManyFileActionInput input)
         {
             if (input.Files.IsNullOrEmpty())
             {
@@ -108,13 +109,13 @@ namespace EasyAbp.FileManagement.Files
             }
 
             var createFileDtos = new List<CreateFileInput>();
-            
+
             foreach (var file in input.Files)
             {
                 var fileName = input.GenerateUniqueFileName ? GenerateUniqueFileName(file) : file.FileName;
 
                 await using var memoryStream = new MemoryStream();
-                
+
                 await file.CopyToAsync(memoryStream);
 
                 createFileDtos.Add(new CreateFileInput
@@ -128,12 +129,12 @@ namespace EasyAbp.FileManagement.Files
                     Content = memoryStream.ToArray()
                 });
             }
-            
+
             var createManyFileInput = new CreateManyFileInput
             {
                 FileInfos = createFileDtos
             };
-            
+
             input.MapExtraPropertiesTo(createManyFileInput, MappingPropertyDefinitionChecks.None);
 
             return await _service.CreateManyAsync(createManyFileInput);
@@ -193,7 +194,7 @@ namespace EasyAbp.FileManagement.Files
             var dto = await _service.DownloadAsync(id, token);
 
             var memoryStream = new MemoryStream(dto.Content);
-            
+
             return new FileStreamResult(memoryStream, dto.MimeType)
             {
                 FileDownloadName = dto.FileName
@@ -206,6 +207,13 @@ namespace EasyAbp.FileManagement.Files
             Guid? ownerUserId)
         {
             return await _service.GetConfigurationAsync(fileContainerName, ownerUserId);
+        }
+
+        [HttpGet]
+        [Route("location")]
+        public async Task<FileLocationDto> GetLocationAsync(Guid id)
+        {
+            return await _service.GetLocationAsync(id);
         }
     }
 }

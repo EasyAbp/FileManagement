@@ -5,6 +5,7 @@ using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Domain;
 using Volo.Abp.Domain.Entities.Events.Distributed;
 using Volo.Abp.Modularity;
+using Volo.Abp.Users;
 
 namespace EasyAbp.FileManagement
 {
@@ -12,7 +13,8 @@ namespace EasyAbp.FileManagement
         typeof(FileManagementDomainSharedModule),
         typeof(AbpAutoMapperModule),
         typeof(AbpBackgroundJobsAbstractionsModule),
-        typeof(AbpDddDomainModule)
+        typeof(AbpDddDomainModule),
+        typeof(AbpUsersDomainModule)
     )]
     public class FileManagementDomainCoreModule : AbpModule
     {

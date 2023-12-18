@@ -9,6 +9,6 @@ public class MoveFileViewModel
     public Guid? NewParentId { get; set; }
         
     [Required]
-    [Display(Name = "FileNewFileName")]
+    [Display(Name = "FileFileName")]
     public string NewFileName { get; set; }
 }

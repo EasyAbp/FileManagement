@@ -28,7 +28,7 @@
         <abp-card-header>
             <abp-row>
                 <abp-column size-md="_6">
-                    <abp-card-title>@L["File"]: @Model.ParentFileName</abp-card-title>
+                    <abp-card-title>@L["Location"]: @Model.FullPath</abp-card-title>
                 </abp-column>
                 <abp-column size-md="_6" class="text-end">
                     @if (canCreateDirectory)
@@ -55,6 +55,7 @@
                     <th>@L["Actions"]</th>
                     <th>@L["FileFileName"]</th>
                     <th>@L["FileByteSize"]</th>
+                    <th>@L["Modified"]</th>
                 </tr>
                 </thead>
             </abp-table>

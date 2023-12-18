@@ -1,4 +1,6 @@
 using System;
+using EasyAbp.FileManagement.Users;
+using JetBrains.Annotations;
 using Volo.Abp.Application.Dtos;
 
 namespace EasyAbp.FileManagement.Files.Dtos
@@ -23,5 +25,14 @@ namespace EasyAbp.FileManagement.Files.Dtos
         public string Hash { get; set; }
 
         public Guid? OwnerUserId { get; set; }
+
+        [CanBeNull]
+        public BriefFileUserInfoModel Owner { get; set; }
+
+        [CanBeNull]
+        public BriefFileUserInfoModel Creator { get; set; }
+
+        [CanBeNull]
+        public BriefFileUserInfoModel LastModifier { get; set; }
     }
 }

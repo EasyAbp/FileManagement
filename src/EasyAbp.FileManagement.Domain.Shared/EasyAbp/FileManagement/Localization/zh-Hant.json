@@ -24,6 +24,17 @@
     "RenameFile": "重命名",
     "MoveFile": "移動",
     "FileDeletionConfirmationMessage": "確認刪除文件 {0}?",
-    "SuccessfullyDeleted": "刪除成功"
+    "SuccessfullyDeleted": "刪除成功",
+    "LastModifier": "修改人",
+    "Modified": "修改時間",
+    "Creator": "創建人",
+    "Created": "創建時間",
+    "Location": "位置",
+    "Enum:FileType.1": "文件夾",
+    "Enum:FileType.2": "文件",
+    "Details": "詳情",
+    "Download": "下載",
+    "Rename": "重新命名",
+    "Move": "移動"
   }
 }

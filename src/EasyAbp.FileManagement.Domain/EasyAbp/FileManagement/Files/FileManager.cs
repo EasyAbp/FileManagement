@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Options.Containers;
-using JetBrains.Annotations;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
 using Volo.Abp.ObjectExtending;
@@ -164,6 +163,23 @@ namespace EasyAbp.FileManagement.Files
             }
 
             return await CreateManyAsync(targetModels, cancellationToken);
+        }
+
+        public override async Task<string> GetFileLocationAsync(File file,
+            CancellationToken cancellationToken = default)
+        {
+            if (!file.ParentId.HasValue)
+            {
+                return file.FileName;
+            }
+
+            var parent = await FileRepository.GetAsync(file.ParentId.Value, true, cancellationToken);
+
+            var parentLocation = await GetFileLocationAsync(parent, cancellationToken);
+
+            return parentLocation.IsNullOrEmpty()
+                ? file.FileName
+                : $"{parentLocation}{FileManagementConsts.DirectorySeparator}{file.FileName}";
         }
 
         protected override IFileDownloadProvider GetFileDownloadProvider(File file)

@@ -24,6 +24,17 @@
     "RenameFile": "Rename",
     "MoveFile": "Move",
     "FileDeletionConfirmationMessage": "Are you sure to delete the file {0}?",
-    "SuccessfullyDeleted": "Successfully deleted"
+    "SuccessfullyDeleted": "Successfully deleted",
+    "LastModifier": "Modifier",
+    "Modified": "Modified",
+    "Creator": "Creator",
+    "Created": "Created",
+    "Location": "Location",
+    "Enum:FileType.1": "Directory",
+    "Enum:FileType.2": "File",
+    "Details": "Details",
+    "Download": "Download",
+    "Rename": "Rename",
+    "Move": "Move"
   }
 }

@@ -44,6 +44,7 @@
             var uploadModal = new abp.ModalManager(abp.appPath + 'FileManagement/Components/FileManagerWidget/UploadModal');
             var renameModal = new abp.ModalManager(abp.appPath + 'FileManagement/Components/FileManagerWidget/RenameModal');
             var moveModal = new abp.ModalManager(abp.appPath + 'FileManagement/Components/FileManagerWidget/MoveModal');
+            var detailModal = new abp.ModalManager(abp.appPath + 'FileManagement/Components/FileManagerWidget/DetailModal');
 
             var dataTable = $widget.find('.file-table').DataTable(abp.libs.datatables.normalizeConfiguration({
                 processing: true,
@@ -56,7 +57,7 @@
                     return {fileContainerName: fileContainerName, ownerUserId: ownerUserId, parentId: parentId};
                 }, function (result) {
                     if (parentId) {
-                        result.items.unshift({ id: grandparentId, fileName: "...", byteSize: null, fileType: 1 })
+                        result.items.unshift({ id: grandparentId, fileName: "[...]", byteSize: null, fileType: 1, lastModificationTime: null, creationTime: null })
                     }
                     return {
                         recordsTotal: result.totalCount,
@@ -72,7 +73,7 @@
                                     {
                                         text: l('Download'),
                                         visible: function (data) {
-                                            return data.fileType === 2 && canDownloadFile
+                                            return data.fileType === 2 && canDownloadFile && data.id !== grandparentId
                                         },
                                         action: function (data) {
                                             easyAbp.fileManagement.files.file.getDownloadInfo(data.record.id, {
@@ -89,7 +90,7 @@
                                     {
                                         text: l('Rename'),
                                         visible: function (data) {
-                                            return data.fileType === 1 ? canRenameDirectory : canRenameFile
+                                            return (data.fileType === 1 ? canRenameDirectory : canRenameFile) && data.id !== grandparentId
                                         },
                                         action: function (data) {
                                             renameModal.open({id: data.record.id});
@@ -98,7 +99,7 @@
                                     {
                                         text: l('Move'),
                                         visible: function (data) {
-                                            return data.fileType === 1 ? canMoveDirectory : canMoveFile
+                                            return (data.fileType === 1 ? canMoveDirectory : canMoveFile) && data.id !== grandparentId
                                         },
                                         action: function (data) {
                                             moveModal.open({id: data.record.id});
@@ -107,7 +108,7 @@
                                     {
                                         text: l('Delete'),
                                         visible: function (data) {
-                                            return data.fileType === 1 ? canDeleteDirectory : canDeleteFile
+                                            return (data.fileType === 1 ? canDeleteDirectory : canDeleteFile) && data.id !== grandparentId
                                         },
                                         confirmMessage: function (data) {
                                             return l('FileDeletionConfirmationMessage', data.record.id);
@@ -119,7 +120,16 @@
                                                     dataTable.ajax.reload();
                                                 });
                                         }
-                                    }
+                                    },
+                                    {
+                                        text: l('Details'),
+                                        visible: function (data) {
+                                            return data.id !== grandparentId
+                                        },
+                                        action: function (data) {
+                                            detailModal.open({id: data.record.id});
+                                        }
+                                    },
                                 ]
                         }
                     },
@@ -138,6 +148,12 @@
                         data: "byteSize",
                         render: function (data, type, row) {
                             return humanFileSize(data, true);
+                        }
+                    },
+                    {
+                        data: "modified",
+                        render: function (data, type, row) {
+                            return row.lastModificationTime || row.creationTime
                         }
                     },
                 ]

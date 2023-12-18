@@ -1,0 +1,17 @@
+@page
+@using EasyAbp.FileManagement.Localization
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Volo.Abp.AspNetCore.Mvc.UI.Bootstrap.TagHelpers.Modal;
+@inject IHtmlLocalizer<FileManagementResource> L
+@model EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.DetailModalModel
+@{
+    Layout = null;
+}
+<abp-dynamic-form abp-model="ViewModel" asp-page="DetailModal" submit-button="false">
+    <abp-modal>
+        <abp-modal-header title="@Model.ViewModel.FileName"></abp-modal-header>
+        <abp-modal-body>
+            <abp-form-content />
+        </abp-modal-body>
+    </abp-modal>
+</abp-dynamic-form>

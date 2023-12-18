@@ -24,5 +24,7 @@ namespace EasyAbp.FileManagement.Files
         Task DeleteAsync(File file, CancellationToken cancellationToken = default);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file);
+
+        Task<string> GetFileLocationAsync(File file, CancellationToken cancellationToken = default);
     }
 }

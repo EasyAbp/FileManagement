@@ -9,9 +9,9 @@ using Volo.Abp.Content;
 namespace EasyAbp.FileManagement.Files
 {
     public interface IFileAppService :
-        IReadOnlyAppService< 
-            FileInfoDto, 
-            Guid, 
+        IReadOnlyAppService<
+            FileInfoDto,
+            Guid,
             GetFileListInput>
     {
         Task<CreateFileOutput> CreateAsync(CreateFileInput input);
@@ -27,7 +27,7 @@ namespace EasyAbp.FileManagement.Files
         Task DeleteAsync(Guid id);
 
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(Guid id);
-        
+
         Task<FileInfoDto> UpdateInfoAsync(Guid id, UpdateFileInfoInput input);
 
         Task<FileDownloadOutput> DownloadAsync(Guid id, string token);
@@ -35,5 +35,7 @@ namespace EasyAbp.FileManagement.Files
         Task<IRemoteStreamContent> DownloadWithStreamAsync(Guid id, string token);
 
         Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName, Guid? ownerUserId);
+
+        Task<FileLocationDto> GetLocationAsync(Guid id);
     }
 }

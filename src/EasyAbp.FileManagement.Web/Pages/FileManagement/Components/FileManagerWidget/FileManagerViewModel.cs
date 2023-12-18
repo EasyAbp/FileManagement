@@ -15,18 +15,18 @@ public class FileManagerViewModel
     public Guid? GrandparentId { get; set; }
 
     [CanBeNull]
-    public string ParentFileName { get; set; } // Todo: should be full path
+    public string FullPath { get; set; }
 
     public FileManagerPolicyModel Policy { get; set; }
 
     public FileManagerViewModel([NotNull] string fileContainerName, Guid? ownerUserId, Guid? parentId,
-        Guid? grandparentId, [CanBeNull] string parentFileName, [CanBeNull] FileManagerPolicyModel policy = null)
+        Guid? grandparentId, [CanBeNull] string fullPath, [CanBeNull] FileManagerPolicyModel policy = null)
     {
         FileContainerName = fileContainerName;
         OwnerUserId = ownerUserId;
         ParentId = parentId;
         GrandparentId = grandparentId;
-        ParentFileName = parentFileName;
+        FullPath = fullPath;
         Policy = policy ?? new FileManagerPolicyModel();
     }
 }
