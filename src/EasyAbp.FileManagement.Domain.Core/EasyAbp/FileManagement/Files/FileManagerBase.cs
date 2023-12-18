@@ -143,6 +143,10 @@ public abstract class FileManagerBase : DomainService, IFileManager
             await HandleStatisticDataUpdateAsync(parent.Id);
         }
 
+        // It is used to accommodate both soft deletion and unique indexing.
+        file.SoftDeletionToken = Guid.NewGuid().ToString();
+        await FileRepository.UpdateAsync(file, true, cancellationToken);
+
         await FileRepository.DeleteAsync(file, true, cancellationToken);
 
         if (file.FileType == FileType.Directory)
@@ -163,6 +167,10 @@ public abstract class FileManagerBase : DomainService, IFileManager
             {
                 await DeleteSubFilesAsync(subFile, fileContainerName, ownerUserId, cancellationToken);
             }
+
+            // It is used to accommodate both soft deletion and unique indexing.
+            subFile.SoftDeletionToken = Guid.NewGuid().ToString();
+            await FileRepository.UpdateAsync(subFile, true, cancellationToken);
 
             await FileRepository.DeleteAsync(subFile, true, cancellationToken);
         }

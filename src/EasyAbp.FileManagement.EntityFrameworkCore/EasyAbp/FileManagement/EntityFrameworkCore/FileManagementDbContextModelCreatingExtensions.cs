@@ -56,8 +56,10 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.Property(x => x.Flag).HasMaxLength(FileManagementConsts.File.FlagMaxLength);
                 b.HasIndex(x => x.BlobName);
                 b.HasIndex(x => x.Hash);
-                b.HasIndex(x => new { x.ParentId, x.OwnerUserId, x.FileContainerName });
-                b.HasIndex(x => new { x.FileName, x.ParentId, x.OwnerUserId, x.FileContainerName }).IsUnique();
+                b.HasIndex(x => new { x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileName });
+                b.HasIndex(x => new
+                        { x.FileName, x.ParentId, x.OwnerUserId, x.FileContainerName, x.TenantId, x.SoftDeletionToken })
+                    .IsUnique().HasFilter(null);
             });
         }
     }
