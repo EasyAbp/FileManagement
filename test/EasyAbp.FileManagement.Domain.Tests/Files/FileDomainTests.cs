@@ -1,7 +1,11 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Shouldly;
+using Volo.Abp;
+using Volo.Abp.Data;
+using Volo.Abp.MultiTenancy;
 using Xunit;
 
 namespace EasyAbp.FileManagement.Files;
@@ -101,5 +105,42 @@ public class FileDomainTests : FileManagementDomainTestBase
         dir12 = await FileRepository.GetAsync(dir12.Id);
         dir12.SubFilesQuantity.ShouldBe(1);
         dir12.ByteSize.ShouldBe(8);
+    }
+
+    [Fact]
+    public async Task Should_SoftDeletionToken_Work()
+    {
+        var tenantId = Guid.NewGuid(); // since SQLite doesn't support unique index with null values.
+        var ownerUserId = Guid.NewGuid(); // since SQLite doesn't support unique index with null values.
+
+        var softDeleteFilter = GetRequiredService<IDataFilter<ISoftDelete>>();
+        var currentTenant = GetRequiredService<ICurrentTenant>();
+
+        using var changeTenant = currentTenant.Change(tenantId);
+
+        // since SQLite doesn't support unique index with null values.
+        var parent = await FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, null,
+            "test", "parent", null, FileType.Directory, 0, 0, null, null, ownerUserId), true);
+
+        var dir = await FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
+            "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true);
+
+        await Should.ThrowAsync<DbUpdateException>(() =>
+            FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
+                "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true));
+
+        await FileManager.DeleteAsync(dir);
+
+        await Should.NotThrowAsync(() =>
+            FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
+                "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true));
+
+        using (softDeleteFilter.Disable())
+        {
+            var files = await FileRepository.GetListAsync(parent.Id, "test", ownerUserId, FileType.Directory);
+
+            files.ShouldContain(x => x.FileName == "dir" && x.SoftDeletionToken == string.Empty);
+            files.ShouldContain(x => x.FileName == "dir" && x.SoftDeletionToken != string.Empty);
+        }
     }
 }

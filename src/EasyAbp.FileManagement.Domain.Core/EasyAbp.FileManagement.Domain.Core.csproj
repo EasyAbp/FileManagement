@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="EasyAbp.FileManagement.Domain" />
+        <InternalsVisibleTo Include="EasyAbp.FileManagement.Domain.Tests" />
     </ItemGroup>
 
     <ItemGroup>

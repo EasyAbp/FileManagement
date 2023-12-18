@@ -32,6 +32,12 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual string Flag { get; protected set; }
 
+        /// <summary>
+        /// It is used to accommodate both soft deletion and unique indexing.
+        /// Initially, it is an empty string, and it is set to a random value during soft deletion.
+        /// </summary>
+        public virtual string SoftDeletionToken { get; set; }
+
         protected File()
         {
         }
@@ -76,6 +82,7 @@ namespace EasyAbp.FileManagement.Files
             BlobName = blobName;
             OwnerUserId = ownerUserId;
             Flag = flag;
+            SoftDeletionToken = string.Empty;
         }
 
         internal void UpdateInfo(
