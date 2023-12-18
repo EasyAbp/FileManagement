@@ -108,6 +108,9 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("SoftDeletionToken")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("SubFilesQuantity")
                         .HasColumnType("int");
 
@@ -121,11 +124,10 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
 
                     b.HasIndex("Hash");
 
-                    b.HasIndex("ParentId", "OwnerUserId", "FileContainerName");
+                    b.HasIndex("ParentId", "OwnerUserId", "FileContainerName", "FileName");
 
-                    b.HasIndex("FileName", "ParentId", "OwnerUserId", "FileContainerName")
-                        .IsUnique()
-                        .HasFilter("[FileName] IS NOT NULL AND [ParentId] IS NOT NULL AND [OwnerUserId] IS NOT NULL AND [FileContainerName] IS NOT NULL");
+                    b.HasIndex("FileName", "ParentId", "OwnerUserId", "FileContainerName", "TenantId", "SoftDeletionToken")
+                        .IsUnique();
 
                     b.ToTable("EasyAbpFileManagementFiles", (string)null);
                 });
