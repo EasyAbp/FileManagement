@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget.ViewModels;
@@ -34,13 +35,18 @@ public class DetailModalModel : FileManagementPageModel
             Hash = dto.Hash,
             Location = (await _service.GetLocationAsync(dto.Id)).Location,
             Creator = dto.Creator?.UserName,
-            Created = dto.CreationTime,
+            Created = ToDateTimeString(dto.CreationTime),
             LastModifier = dto.LastModifier?.UserName,
-            Modified = dto.LastModificationTime ?? dto.CreationTime
+            Modified = ToDateTimeString(dto.LastModificationTime ?? dto.CreationTime)
         };
     }
 
-    protected static string HumanFileSize(long bytes, bool si = false, int dp = 1)
+    protected virtual string ToDateTimeString(DateTime time)
+    {
+        return time.ToString(CultureInfo.CurrentUICulture);
+    }
+
+    protected virtual string HumanFileSize(long bytes, bool si = false, int dp = 1)
     {
         var thresh = si ? 1000 : 1024;
 
