@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using EasyAbp.FileManagement.Files;
+using EasyAbp.FileManagement.Users;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
@@ -12,6 +13,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
          * public DbSet<Question> Questions { get; set; }
          */
         public DbSet<File> Files { get; set; }
+        public DbSet<FileUser> FileUsers { get; set; }
 
         public FileManagementDbContext(DbContextOptions<FileManagementDbContext> options) 
             : base(options)

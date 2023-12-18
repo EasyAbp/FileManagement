@@ -1,8 +1,10 @@
 using EasyAbp.FileManagement.Files;
 using System;
+using EasyAbp.FileManagement.Users;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp;
 using Volo.Abp.EntityFrameworkCore.Modeling;
+using Volo.Abp.Users.EntityFrameworkCore;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
@@ -41,7 +43,6 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
             });
             */
 
-
             builder.Entity<File>(b =>
             {
                 b.ToTable(options.TablePrefix + "Files", options.Schema);
@@ -54,12 +55,21 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.Property(x => x.MimeType).HasMaxLength(FileManagementConsts.File.MimeTypeMaxLength);
                 b.Property(x => x.Hash).HasMaxLength(FileManagementConsts.File.HashMaxLength);
                 b.Property(x => x.Flag).HasMaxLength(FileManagementConsts.File.FlagMaxLength);
+                b.Property(x => x.SoftDeletionToken).HasDefaultValue(string.Empty);
                 b.HasIndex(x => x.BlobName);
                 b.HasIndex(x => x.Hash);
                 b.HasIndex(x => new { x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileName });
                 b.HasIndex(x => new
                         { x.FileName, x.ParentId, x.OwnerUserId, x.FileContainerName, x.TenantId, x.SoftDeletionToken })
                     .IsUnique().HasFilter(null);
+            });
+
+            builder.Entity<FileUser>(b =>
+            {
+                b.ToTable(options.TablePrefix + "Users", options.Schema);
+
+                b.ConfigureByConvention();
+                b.ConfigureAbpUser();
             });
         }
     }

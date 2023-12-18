@@ -37,6 +37,8 @@ public abstract class FileManagerBase : DomainService, IFileManager
     public abstract Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
         CancellationToken cancellationToken = default);
 
+    public abstract Task<string> GetFileLocationAsync(File file, CancellationToken cancellationToken = default);
+
     protected abstract IFileDownloadProvider GetFileDownloadProvider(File file);
 
     public virtual async Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file)

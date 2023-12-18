@@ -1,13 +1,16 @@
 using EasyAbp.FileManagement.Files;
+using EasyAbp.FileManagement.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.Modularity;
+using Volo.Abp.Users.EntityFrameworkCore;
 
 namespace EasyAbp.FileManagement.EntityFrameworkCore
 {
     [DependsOn(
         typeof(FileManagementDomainCoreModule),
-        typeof(AbpEntityFrameworkCoreModule)
+        typeof(AbpEntityFrameworkCoreModule),
+        typeof(AbpUsersEntityFrameworkCoreModule)
     )]
     public class FileManagementEntityFrameworkCoreModule : AbpModule
     {
@@ -19,6 +22,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                  * options.AddRepository<Question, EfCoreQuestionRepository>();
                  */
                 options.AddRepository<File, FileRepository>();
+                options.AddRepository<FileUser, FileRepository>();
             });
         }
     }

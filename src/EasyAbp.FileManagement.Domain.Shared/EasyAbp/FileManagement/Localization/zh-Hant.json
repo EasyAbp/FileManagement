@@ -13,7 +13,7 @@
     "FileMimeType": "Mime 類型",
     "FileFileType": "文件類型",
     "FileSubFilesQuantity": "子文件數量",
-    "FileByteSize": "文件大小",
+    "FileByteSize": "大小",
     "FileHash": "哈希值",
     "FileParentId": "父目錄 ID",
     "FileChildren": "子目錄",
@@ -24,6 +24,17 @@
     "RenameFile": "重命名",
     "MoveFile": "移動",
     "FileDeletionConfirmationMessage": "確認刪除文件 {0}?",
-    "SuccessfullyDeleted": "刪除成功"
+    "SuccessfullyDeleted": "刪除成功",
+    "LastModifier": "修改人",
+    "LastModificationTime": "修改時間",
+    "Creator": "創建人",
+    "CreationTime": "創建時間",
+    "Location": "位置",
+    "Enum:FileType.1": "文件夾",
+    "Enum:FileType.2": "文件",
+    "Details": "詳情",
+    "Download": "下載",
+    "Rename": "重新命名",
+    "Move": "移動"
   }
 }

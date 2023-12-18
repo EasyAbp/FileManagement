@@ -1,6 +1,7 @@
 using EasyAbp.FileManagement.Files;
 using EasyAbp.FileManagement.Files.Dtos;
 using AutoMapper;
+using Volo.Abp.AutoMapper;
 
 namespace EasyAbp.FileManagement
 {
@@ -12,7 +13,11 @@ namespace EasyAbp.FileManagement
              * Alternatively, you can split your mapping configurations
              * into multiple profile classes for a better organization. */
             
-            CreateMap<File, FileInfoDto>().MapExtraProperties();
+            CreateMap<File, FileInfoDto>()
+                .Ignore(x => x.Owner)
+                .Ignore(x => x.Creator)
+                .Ignore(x => x.LastModifier)
+                .MapExtraProperties();
         }
     }
 }

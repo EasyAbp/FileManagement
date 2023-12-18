@@ -8,6 +8,7 @@ using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Options.Containers;
 using EasyAbp.FileManagement.Permissions;
+using EasyAbp.FileManagement.Users;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -25,15 +26,18 @@ namespace EasyAbp.FileManagement.Files
     {
         private readonly IFileManager _fileManager;
         private readonly IFileRepository _repository;
+        private readonly IFileUserLookupService _fileUserLookupService;
         private readonly IFileContainerConfigurationProvider _configurationProvider;
 
         public FileAppService(
             IFileManager fileManager,
             IFileRepository repository,
+            IFileUserLookupService fileUserLookupService,
             IFileContainerConfigurationProvider configurationProvider) : base(repository)
         {
             _fileManager = fileManager;
             _repository = repository;
+            _fileUserLookupService = fileUserLookupService;
             _configurationProvider = configurationProvider;
         }
 
@@ -57,15 +61,81 @@ namespace EasyAbp.FileManagement.Files
 
             var totalCount = await AsyncExecuter.CountAsync(query);
 
-            query = ApplySorting(query, input);
-            query = ApplyPaging(query, input);
+            var entityDtos = new List<FileInfoDto>();
 
-            var entities = await AsyncExecuter.ToListAsync(query);
+            if (totalCount > 0)
+            {
+                query = ApplySorting(query, input);
+                query = ApplyPaging(query, input);
+
+                var entities = await AsyncExecuter.ToListAsync(query);
+                entityDtos = await MapToGetListOutputDtosAsync(entities);
+            }
 
             return new PagedResultDto<FileInfoDto>(
                 totalCount,
-                entities.Select(MapToGetListOutputDto).ToList()
+                entityDtos
             );
+        }
+
+        protected override async Task<List<FileInfoDto>> MapToGetListOutputDtosAsync(List<File> entities)
+        {
+            var dtos = await base.MapToGetListOutputDtosAsync(entities);
+
+            await LoadRelatedUserInfoModelsAsync(dtos);
+
+            return dtos;
+        }
+
+        protected override async Task<FileInfoDto> MapToGetOutputDtoAsync(File entity)
+        {
+            var dto = await base.MapToGetOutputDtoAsync(entity);
+
+            await LoadRelatedUserInfoModelsAsync(new List<FileInfoDto> { dto });
+
+            return dto;
+        }
+
+        protected virtual async Task LoadRelatedUserInfoModelsAsync(IList<FileInfoDto> dtos)
+        {
+            var userIds = dtos
+                .Where(x => x.CreatorId.HasValue)
+                .Select(x => x.CreatorId.Value)
+                .Distinct()
+                .Union(dtos
+                    .Where(x => x.LastModifierId.HasValue)
+                    .Select(x => x.LastModifierId.Value)
+                    .Distinct())
+                .Union(dtos
+                    .Where(x => x.OwnerUserId.HasValue)
+                    .Select(x => x.OwnerUserId.Value)
+                    .Distinct())
+                .ToList();
+
+            var users = new Dictionary<Guid, BriefFileUserInfoModel>();
+
+            foreach (var userId in userIds)
+            {
+                users[userId] = (await _fileUserLookupService.FindByIdAsync(userId)).ToBriefUserInfoModel();
+            }
+
+            foreach (var dto in dtos)
+            {
+                if (dto.CreatorId.HasValue)
+                {
+                    dto.Creator = users[dto.CreatorId.Value];
+                }
+
+                if (dto.LastModifierId.HasValue)
+                {
+                    dto.LastModifier = users[dto.LastModifierId.Value];
+                }
+
+                if (dto.OwnerUserId.HasValue)
+                {
+                    dto.Owner = users[dto.OwnerUserId.Value];
+                }
+            }
         }
 
         protected override IQueryable<File> ApplySorting(IQueryable<File> query, GetFileListInput input)
@@ -371,6 +441,20 @@ namespace EasyAbp.FileManagement.Files
             Guid? ownerUserId)
         {
             return Task.FromResult(_configurationProvider.Get(fileContainerName).ToPublicConfiguration());
+        }
+
+        public virtual async Task<FileLocationDto> GetLocationAsync(Guid id)
+        {
+            var file = await GetEntityByIdAsync(id);
+
+            var location = await _fileManager.GetFileLocationAsync(file);
+
+            return new FileLocationDto
+            {
+                Id = file.Id,
+                FileName = file.FileName,
+                Location = location
+            };
         }
 
         protected virtual string GenerateUniqueFileName([CanBeNull] string fileName)

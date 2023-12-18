@@ -34,10 +34,10 @@ public class FileManagerWidgetViewComponent : AbpViewComponent
         }
 
         var dir = await _fileAppService.GetAsync(parentId.Value);
+        var location = (await _fileAppService.GetLocationAsync(dir.Id)).Location;
 
         return View(
             "~/Pages/FileManagement/Components/FileManagerWidget/Default.cshtml",
-            new FileManagerViewModel(dir.FileContainerName, dir.OwnerUserId, parentId, dir.ParentId, dir.FileName,
-                policy));
+            new FileManagerViewModel(dir.FileContainerName, dir.OwnerUserId, parentId, dir.ParentId, location, policy));
     }
 }
