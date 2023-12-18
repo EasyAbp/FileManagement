@@ -151,7 +151,7 @@
                         }
                     },
                     {
-                        data: "modified",
+                        data: "lastModificationTime",
                         render: function (data, type, row) {
                             return row.lastModificationTime || row.creationTime
                         }

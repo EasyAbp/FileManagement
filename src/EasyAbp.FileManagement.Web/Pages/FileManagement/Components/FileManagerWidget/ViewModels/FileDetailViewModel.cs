@@ -25,7 +25,7 @@ public class FileDetailViewModel
     public string Creator { get; set; }
 
     [DisabledInput]
-    [Display(Name = "Created")]
+    [Display(Name = "CreationTime")]
     public DateTime Created { get; set; }
 
     [DisabledInput]
@@ -33,6 +33,6 @@ public class FileDetailViewModel
     public string LastModifier { get; set; }
 
     [DisabledInput]
-    [Display(Name = "Modified")]
+    [Display(Name = "LastModificationTime")]
     public DateTime Modified { get; set; }
 }
