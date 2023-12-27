@@ -8,10 +8,6 @@
 
 An abp.io application module that allows users to upload and maintain files.
 
-## Online Demo
-
-We have launched an online demo for this module: [https://file.samples.easyabp.io](https://file.samples.easyabp.io)
-
 ## Installation
 
 1. Install the following NuGet packages. ([see how](https://github.com/EasyAbp/EasyAbpGuide/blob/master/docs/How-To.md#add-nuget-packages))

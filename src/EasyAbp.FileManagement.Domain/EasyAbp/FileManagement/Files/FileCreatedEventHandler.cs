@@ -17,6 +17,7 @@ public class FileCreatedEventHandler : ILocalEventHandler<EntityCreatedEventData
     public virtual async Task HandleEventAsync(EntityCreatedEventData<File> eventData)
     {
         // Update the entity to set the LastModificationTime property.
+        eventData.Entity.TriggerAuditingChanges();
         await _repository.UpdateAsync(eventData.Entity, true);
     }
 }

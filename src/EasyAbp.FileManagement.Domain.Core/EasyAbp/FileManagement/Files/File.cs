@@ -131,5 +131,11 @@ namespace EasyAbp.FileManagement.Files
         {
             Flag = flag;
         }
+
+        public void TriggerAuditingChanges()
+        {
+            // after ABP v8, LastModificationTime doesn't change if no entity properties have changed.
+            LastModificationTime = DateTime.MinValue;
+        }
     }
 }
