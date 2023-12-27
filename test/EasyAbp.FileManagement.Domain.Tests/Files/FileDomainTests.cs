@@ -147,9 +147,14 @@ public class FileDomainTests : FileManagementDomainTestBase
     [Fact]
     public async Task Should_New_File_Have_LastModificationTime_Value()
     {
-        var dir = await FileRepository.InsertAsync(new File(Guid.NewGuid(), null, null,
-            "test", "dir", null, FileType.Directory, 0, 0, null, null, null), true);
+        var dirId = Guid.NewGuid();
+
+        await WithUnitOfWorkAsync(() => FileRepository.InsertAsync(new File(dirId, null, null,
+            "test", "dir", null, FileType.Directory, 0, 0, null, null, null), true));
+
+        var dir = await FileRepository.GetAsync(dirId);
 
         dir.LastModificationTime.ShouldNotBeNull();
+        dir.LastModificationTime.ShouldNotBe(DateTime.MinValue);
     }
 }
