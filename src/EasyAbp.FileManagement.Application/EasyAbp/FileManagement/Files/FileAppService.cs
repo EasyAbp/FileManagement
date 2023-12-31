@@ -452,7 +452,6 @@ namespace EasyAbp.FileManagement.Files
             return new FileLocationDto
             {
                 Id = file.Id,
-                FileName = file.FileName,
                 Location = location
             };
         }

@@ -33,7 +33,7 @@ public class DetailModalModel : FileManagementPageModel
             MimeType = dto.MimeType,
             ByteSize = HumanFileSize(dto.ByteSize),
             Hash = dto.Hash,
-            Location = (await _service.GetLocationAsync(dto.Id)).Location,
+            Location = (await _service.GetLocationAsync(dto.Id)).Location.FilePath,
             Creator = dto.Creator?.UserName,
             Created = ToDateTimeString(dto.CreationTime),
             LastModifier = dto.LastModifier?.UserName,

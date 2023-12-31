@@ -1,4 +1,5 @@
 ﻿using System;
+using EasyAbp.FileManagement.Files;
 using JetBrains.Annotations;
 
 namespace EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget;
@@ -14,19 +15,18 @@ public class FileManagerViewModel
 
     public Guid? GrandparentId { get; set; }
 
-    [CanBeNull]
-    public string FullPath { get; set; }
+    public FileLocationModel Location { get; set; }
 
     public FileManagerPolicyModel Policy { get; set; }
 
     public FileManagerViewModel([NotNull] string fileContainerName, Guid? ownerUserId, Guid? parentId,
-        Guid? grandparentId, [CanBeNull] string fullPath, [CanBeNull] FileManagerPolicyModel policy = null)
+        Guid? grandparentId, [CanBeNull] FileLocationModel location, [CanBeNull] FileManagerPolicyModel policy = null)
     {
         FileContainerName = fileContainerName;
         OwnerUserId = ownerUserId;
         ParentId = parentId;
         GrandparentId = grandparentId;
-        FullPath = fullPath;
+        Location = location;
         Policy = policy ?? new FileManagerPolicyModel();
     }
 }

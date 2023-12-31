@@ -157,4 +157,39 @@ public class FileDomainTests : FileManagementDomainTestBase
         dir.LastModificationTime.ShouldNotBeNull();
         dir.LastModificationTime.ShouldNotBe(DateTime.MinValue);
     }
+
+    [Fact]
+    public async Task Should_Get_File_Location()
+    {
+        var dir = await FileManager.CreateAsync(new CreateFileModel("test", null, "dir", null,
+            FileType.Directory, null, null));
+
+        var subDir = await FileManager.CreateAsync(new CreateFileModel("test", null, "sub-dir", null,
+            FileType.Directory, dir, null));
+
+        var file = await FileManager.CreateAsync(new CreateFileModel("test", null, "file.txt", null,
+            FileType.RegularFile, subDir, "new-content"u8.ToArray()));
+
+        var dirLocation = await FileManager.GetFileLocationAsync(dir);
+        var subDirLocation = await FileManager.GetFileLocationAsync(subDir);
+        var fileLocation = await FileManager.GetFileLocationAsync(file);
+
+        dirLocation.ShouldNotBeNull();
+        dirLocation.IsDirectory.ShouldBeTrue();
+        dirLocation.FileName.ShouldBe("dir");
+        dirLocation.FilePath.ShouldBe("dir");
+        dirLocation.ParentPath.ShouldBe("");
+
+        subDirLocation.ShouldNotBeNull();
+        subDirLocation.IsDirectory.ShouldBeTrue();
+        subDirLocation.FileName.ShouldBe("sub-dir");
+        subDirLocation.FilePath.ShouldBe("dir/sub-dir");
+        subDirLocation.ParentPath.ShouldBe("dir");
+
+        fileLocation.ShouldNotBeNull();
+        fileLocation.IsDirectory.ShouldBeFalse();
+        fileLocation.FileName.ShouldBe("file.txt");
+        fileLocation.FilePath.ShouldBe("dir/sub-dir/file.txt");
+        fileLocation.ParentPath.ShouldBe("dir/sub-dir");
+    }
 }
