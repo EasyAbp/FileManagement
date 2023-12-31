@@ -37,7 +37,22 @@ public abstract class FileManagerBase : DomainService, IFileManager
     public abstract Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
         CancellationToken cancellationToken = default);
 
-    public abstract Task<string> GetFileLocationAsync(File file, CancellationToken cancellationToken = default);
+    public virtual async Task<FileLocationModel> GetFileLocationAsync(File file,
+        CancellationToken cancellationToken = default)
+    {
+        var isDirectory = file.FileType == FileType.Directory;
+
+        if (!file.ParentId.HasValue)
+        {
+            return new FileLocationModel(isDirectory, string.Empty, file.FileName);
+        }
+
+        var parent = await FileRepository.GetAsync(file.ParentId.Value, true, cancellationToken);
+
+        var parentLocation = await GetFileLocationAsync(parent, cancellationToken);
+
+        return new FileLocationModel(isDirectory, parentLocation.FilePath, file.FileName);
+    }
 
     protected abstract IFileDownloadProvider GetFileDownloadProvider(File file);
 
