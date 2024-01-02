@@ -211,9 +211,16 @@ namespace EasyAbp.FileManagement.Files
 
         [HttpGet]
         [Route("location")]
-        public async Task<FileLocationDto> GetLocationAsync(Guid id)
+        public virtual Task<FileLocationDto> GetLocationAsync(Guid id)
         {
-            return await _service.GetLocationAsync(id);
+            return _service.GetLocationAsync(id);
+        }
+
+        [HttpGet]
+        [Route("by-path")]
+        public virtual Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+        {
+            return _service.GetByPathAsync(path, fileContainerName, ownerUserId);
         }
     }
 }

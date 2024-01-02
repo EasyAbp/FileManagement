@@ -192,4 +192,21 @@ public class FileDomainTests : FileManagementDomainTestBase
         fileLocation.FilePath.ShouldBe("dir/sub-dir/file.txt");
         fileLocation.ParentPath.ShouldBe("dir/sub-dir");
     }
+
+    [Fact]
+    public async Task Should_Get_File_By_Path()
+    {
+        var dir = await FileManager.CreateAsync(new CreateFileModel("test", null, "dir", null,
+            FileType.Directory, null, null));
+
+        var subDir = await FileManager.CreateAsync(new CreateFileModel("test", null, "sub-dir", null,
+            FileType.Directory, dir, null));
+
+        var file = await FileManager.CreateAsync(new CreateFileModel("test", null, "file.txt", null,
+            FileType.RegularFile, subDir, "new-content"u8.ToArray()));
+
+        (await FileManager.GetByPathAsync("dir", "test", null)).Id.ShouldBe(dir.Id);
+        (await FileManager.GetByPathAsync("dir/sub-dir", "test", null)).Id.ShouldBe(subDir.Id);
+        (await FileManager.GetByPathAsync("dir/sub-dir/file.txt", "test", null)).Id.ShouldBe(file.Id);
+    }
 }

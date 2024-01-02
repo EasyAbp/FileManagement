@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
@@ -26,5 +27,7 @@ namespace EasyAbp.FileManagement.Files
         Task<FileDownloadInfoModel> GetDownloadInfoAsync(File file);
 
         Task<FileLocationModel> GetFileLocationAsync(File file, CancellationToken cancellationToken = default);
+
+        Task<File> GetByPathAsync([NotNull] string path, [NotNull] string fileContainerName, Guid? ownerUserId);
     }
 }
