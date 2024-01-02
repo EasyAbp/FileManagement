@@ -6,6 +6,8 @@ public static class FileManagementConsts
 
     public static int DirectoryMaxSubResourceCount { get; set; } = 99999; // todo
 
+    public static int DirectoryMaxDepth { get; set; } = 500; // todo
+
     public static int FileContainerNameMaxLength { get; set; } = 64;
 
     public static class File

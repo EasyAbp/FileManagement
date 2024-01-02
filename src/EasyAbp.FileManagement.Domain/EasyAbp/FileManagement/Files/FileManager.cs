@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Options.Containers;
 using Microsoft.Extensions.Options;
 using Volo.Abp;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.ObjectExtending;
 using Volo.Abp.Uow;
 
@@ -162,6 +164,41 @@ namespace EasyAbp.FileManagement.Files
             }
 
             return await CreateManyAsync(targetModels, cancellationToken);
+        }
+
+        public override async Task<File> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+        {
+            Check.NotNullOrWhiteSpace(path, nameof(path));
+            Check.NotNullOrWhiteSpace(fileContainerName, nameof(fileContainerName));
+
+            var splitFileName = path.Split(FileManagementConsts.DirectorySeparator);
+
+            foreach (var fileName in splitFileName)
+            {
+                Check.Length(fileName, "fileName", FileManagementConsts.File.FileNameMaxLength, 1);
+            }
+
+            File foundFile = null;
+            Guid? parentId = null;
+
+            foreach (var fileName in splitFileName)
+            {
+                foundFile = await FileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId);
+
+                if (foundFile is null)
+                {
+                    throw new EntityNotFoundException(typeof(File));
+                }
+
+                parentId = foundFile.Id;
+            }
+
+            if (foundFile is null)
+            {
+                throw new EntityNotFoundException(typeof(File));
+            }
+
+            return foundFile;
         }
 
         protected override IFileDownloadProvider GetFileDownloadProvider(File file)

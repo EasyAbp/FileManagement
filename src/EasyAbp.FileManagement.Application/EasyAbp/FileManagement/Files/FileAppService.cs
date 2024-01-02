@@ -456,6 +456,16 @@ namespace EasyAbp.FileManagement.Files
             };
         }
 
+        public virtual async Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+        {
+            var file = await _fileManager.GetByPathAsync(path, fileContainerName, ownerUserId);
+
+            await AuthorizationService.CheckAsync(new FileGetInfoOperationInfoModel(file),
+                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Default });
+
+            return await MapToGetOutputDtoAsync(file);
+        }
+
         protected virtual string GenerateUniqueFileName([CanBeNull] string fileName)
         {
             return Guid.NewGuid().ToString("N") + Path.GetExtension(fileName);

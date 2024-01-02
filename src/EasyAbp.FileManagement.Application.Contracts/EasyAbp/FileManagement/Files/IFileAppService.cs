@@ -37,5 +37,7 @@ namespace EasyAbp.FileManagement.Files
         Task<PublicFileContainerConfiguration> GetConfigurationAsync(string fileContainerName, Guid? ownerUserId);
 
         Task<FileLocationDto> GetLocationAsync(Guid id);
+
+        Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId);
     }
 }

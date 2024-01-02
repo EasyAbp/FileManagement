@@ -37,6 +37,8 @@ public abstract class FileManagerBase : DomainService, IFileManager
     public abstract Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
         CancellationToken cancellationToken = default);
 
+    public abstract Task<File> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId);
+
     public virtual async Task<FileLocationModel> GetFileLocationAsync(File file,
         CancellationToken cancellationToken = default)
     {
