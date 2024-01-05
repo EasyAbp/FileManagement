@@ -152,7 +152,8 @@ namespace EasyAbp.FileManagement.Files
             return (await _repository.GetQueryableAsync())
                 .Where(x => x.ParentId == input.ParentId && x.OwnerUserId == input.OwnerUserId &&
                             x.FileContainerName == input.FileContainerName)
-                .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory);
+                .WhereIf(input.DirectoryOnly, x => x.FileType == FileType.Directory)
+                .WhereIf(!input.Filter.IsNullOrWhiteSpace(), x => x.FileName.Contains(input.Filter));
         }
 
         [Authorize]
