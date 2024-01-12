@@ -1,8 +1,10 @@
 @page
+@using EasyAbp.FileManagement.Files
 @using Microsoft.AspNetCore.Mvc.Localization
 @using Volo.Abp.AspNetCore.Mvc.UI.Layout
 @using EasyAbp.FileManagement.Localization
 @using EasyAbp.FileManagement.Web.Pages.FileManagement.Components.FileManagerWidget
+@using Microsoft.Extensions.DependencyInjection
 @using Volo.Abp.Users
 @inject IPageLayout PageLayout
 @inject IHtmlLocalizer<FileManagementResource> L
@@ -13,21 +15,34 @@
     PageLayout.Content.BreadCrumb.Add(L["Menu:File"].Value);
     PageLayout.Content.MenuItemName = "FileManagementFile";
 
+    const string fileContainerName = "default";
+    var ownerUserId = CurrentUser.GetId();
+    Guid? parentId = null; // the root directory
+
+    var path = HttpContext.Request.Query["path"].FirstOrDefault();
+
+    if (path is not null)
+    {
+        var fileAppService = HttpContext.RequestServices.GetRequiredService<IFileAppService>();
+        var parent = await fileAppService.GetByPathAsync(path, fileContainerName, ownerUserId);
+        parentId = parent.Id;
+    }
+
     // add a file manager widget
     @await Component.InvokeAsync("FileManager", new
-           {
-               fileContainerName = "default", // specify a container
-               ownerUserId = CurrentUser.GetId(), // can be null if it's a shared container
-               parentId = (Guid?)null, // the root directory
-               policy = new FileManagerPolicyModel // with a custom policy model
-               { CanUploadFile = false, CanMoveFile = false }
-           })
+    {
+        fileContainerName = "default", // specify a container
+        ownerUserId = CurrentUser.GetId(), // can be null if it's a shared container
+        parentId = parentId,
+        policy = new FileManagerPolicyModel // with a custom policy model
+            { CanUploadFile = false, CanMoveFile = false }
+    })
 
     // you can add more than one file manager widget on the same page
     @await Component.InvokeAsync("FileManager", new
-           {
-               fileContainerName = "default",
-               ownerUserId = CurrentUser.GetId(),
-               parentId = (Guid?)null
-           })
+    {
+        fileContainerName = "default",
+        ownerUserId = CurrentUser.GetId(),
+        parentId = (Guid?)null
+    })
 }
