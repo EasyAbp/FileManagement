@@ -28,7 +28,7 @@
         <abp-card-header>
             <abp-row>
                 <abp-column size-md="_6">
-                    <abp-card-title>@L["Location"]: @Model.Location.FilePath</abp-card-title>
+                    <abp-card-title>@L["Location"]: @Model.Location?.FilePath</abp-card-title>
                 </abp-column>
                 <abp-column size-md="_6" class="text-end">
                     @if (canCreateDirectory)
