@@ -38,12 +38,4 @@
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Pages\FileManagement\Files\File\CreateDirectoryModal.cshtml" />
-    <_ContentIncludedByDefault Remove="Pages\FileManagement\Files\File\Index.cshtml" />
-    <_ContentIncludedByDefault Remove="Pages\FileManagement\Files\File\MoveModal.cshtml" />
-    <_ContentIncludedByDefault Remove="Pages\FileManagement\Files\File\RenameModal.cshtml" />
-    <_ContentIncludedByDefault Remove="Pages\FileManagement\Files\File\UploadModal.cshtml" />
-  </ItemGroup>
-
 </Project>
