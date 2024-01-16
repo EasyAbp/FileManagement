@@ -7,6 +7,7 @@ using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Options.Containers;
 using JetBrains.Annotations;
 using Volo.Abp;
+using Volo.Abp.Domain.Entities;
 using Volo.Abp.Domain.Services;
 using Volo.Abp.EventBus.Distributed;
 using Volo.Abp.Uow;
@@ -37,7 +38,47 @@ public abstract class FileManagerBase : DomainService, IFileManager
     public abstract Task<List<File>> CreateManyAsync(List<CreateFileWithStreamModel> models,
         CancellationToken cancellationToken = default);
 
-    public abstract Task<File> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId);
+    public virtual async Task<File> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+    {
+        var foundFile = await FindByPathAsync(path, fileContainerName, ownerUserId);
+
+        if (foundFile is null)
+        {
+            throw new EntityNotFoundException(typeof(File), path);
+        }
+
+        return foundFile;
+    }
+
+    public virtual async Task<File> FindByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+    {
+        Check.NotNullOrWhiteSpace(path, nameof(path));
+        Check.NotNullOrWhiteSpace(fileContainerName, nameof(fileContainerName));
+
+        var splitFileName = path.Split(FileManagementConsts.DirectorySeparator);
+
+        foreach (var fileName in splitFileName)
+        {
+            Check.Length(fileName, "fileName", FileManagementConsts.File.FileNameMaxLength, 1);
+        }
+
+        File foundFile = null;
+        Guid? parentId = null;
+
+        foreach (var fileName in splitFileName)
+        {
+            foundFile = await FileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId);
+
+            if (foundFile is null)
+            {
+                return null;
+            }
+
+            parentId = foundFile.Id;
+        }
+
+        return foundFile;
+    }
 
     public virtual async Task<FileLocationModel> GetFileLocationAsync(File file,
         CancellationToken cancellationToken = default)

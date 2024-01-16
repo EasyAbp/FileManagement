@@ -29,5 +29,8 @@ namespace EasyAbp.FileManagement.Files
         Task<FileLocationModel> GetFileLocationAsync(File file, CancellationToken cancellationToken = default);
 
         Task<File> GetByPathAsync([NotNull] string path, [NotNull] string fileContainerName, Guid? ownerUserId);
+
+        [ItemCanBeNull]
+        Task<File> FindByPathAsync([NotNull] string path, [NotNull] string fileContainerName, Guid? ownerUserId);
     }
 }

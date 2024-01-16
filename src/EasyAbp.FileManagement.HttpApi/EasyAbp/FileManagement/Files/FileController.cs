@@ -218,7 +218,8 @@ namespace EasyAbp.FileManagement.Files
 
         [HttpGet]
         [Route("by-path")]
-        public virtual Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+        public virtual Task<GetFileByPathOutputDto> GetByPathAsync(string path, string fileContainerName,
+            Guid? ownerUserId)
         {
             return _service.GetByPathAsync(path, fileContainerName, ownerUserId);
         }
