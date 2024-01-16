@@ -24,8 +24,15 @@
     if (path is not null)
     {
         var fileAppService = HttpContext.RequestServices.GetRequiredService<IFileAppService>();
-        var parent = await fileAppService.GetByPathAsync(path, fileContainerName, ownerUserId);
-        parentId = parent.Id;
+        var result = await fileAppService.GetByPathAsync(path, fileContainerName, ownerUserId);
+
+        if (!result.Found)
+        {
+            Response.Redirect(Request.Path);
+            return;
+        }
+
+        parentId = result.FileInfo!.Id;
     }
 
     // add a file manager widget

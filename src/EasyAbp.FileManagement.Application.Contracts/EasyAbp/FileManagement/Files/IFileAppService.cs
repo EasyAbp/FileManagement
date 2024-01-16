@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
-using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Content;
 
@@ -38,6 +37,6 @@ namespace EasyAbp.FileManagement.Files
 
         Task<FileLocationDto> GetLocationAsync(Guid id);
 
-        Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId);
+        Task<GetFileByPathOutputDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId);
     }
 }

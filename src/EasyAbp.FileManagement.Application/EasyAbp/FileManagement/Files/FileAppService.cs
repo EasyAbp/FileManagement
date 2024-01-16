@@ -457,14 +457,20 @@ namespace EasyAbp.FileManagement.Files
             };
         }
 
-        public virtual async Task<FileInfoDto> GetByPathAsync(string path, string fileContainerName, Guid? ownerUserId)
+        public virtual async Task<GetFileByPathOutputDto> GetByPathAsync(string path, string fileContainerName,
+            Guid? ownerUserId)
         {
-            var file = await _fileManager.GetByPathAsync(path, fileContainerName, ownerUserId);
+            var file = await _fileManager.FindByPathAsync(path, fileContainerName, ownerUserId);
 
-            await AuthorizationService.CheckAsync(new FileGetInfoOperationInfoModel(file),
-                new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Default });
+            var found = file is not null;
 
-            return await MapToGetOutputDtoAsync(file);
+            if (found) // todo: should throw auth exceptions even if file not found.
+            {
+                await AuthorizationService.CheckAsync(new FileGetInfoOperationInfoModel(file),
+                    new OperationAuthorizationRequirement { Name = FileManagementPermissions.File.Default });
+            }
+
+            return new GetFileByPathOutputDto(found, found ? await MapToGetOutputDtoAsync(file) : null);
         }
 
         protected virtual string GenerateUniqueFileName([CanBeNull] string fileName)
