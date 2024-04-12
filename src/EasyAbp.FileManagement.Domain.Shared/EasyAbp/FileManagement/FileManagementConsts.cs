@@ -16,7 +16,7 @@ public static class FileManagementConsts
 
         public static int BlobNameMaxLength { get; set; } = 64;
 
-        public static int MimeTypeMaxLength { get; set; } = 32;
+        public static int MimeTypeMaxLength { get; set; } = 128;
 
         public static int HashMaxLength { get; set; } = 32;
 

@@ -30,7 +30,7 @@ namespace EasyAbp.FileManagement
                     .AddBaseTypes(typeof(AbpUiResource));
             });
 
-            Configure<AbpAspNetCoreMvcOptions>(options =>
+            PreConfigure<AbpAspNetCoreMvcOptions>(options =>
             {
                 options.ConventionalControllers.FormBodyBindingIgnoredTypes.Add(typeof(CreateFileWithStreamInput));
                 options.ConventionalControllers.FormBodyBindingIgnoredTypes.Add(typeof(CreateManyFileWithStreamInput));
