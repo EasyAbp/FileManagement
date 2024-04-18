@@ -10,9 +10,12 @@ namespace EasyAbp.FileManagement.Files
     {
         Task<List<File>> GetListAsync(Guid? parentId, string fileContainerName, Guid? ownerUserId,
             FileType? specifiedFileType = null, CancellationToken cancellationToken = default);
-        
+
         Task<File> FindAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId,
-            CancellationToken cancellationToken = default);
+            bool forceCaseSensitive, CancellationToken cancellationToken = default);
+
+        Task<bool> ExistAsync(string fileName, Guid? parentId, string fileContainerName, Guid? ownerUserId,
+            bool forceCaseSensitive, CancellationToken cancellationToken = default);
 
         Task<File> FirstOrDefaultAsync(string fileContainerName, string hash, long byteSize,
             CancellationToken cancellationToken = default);

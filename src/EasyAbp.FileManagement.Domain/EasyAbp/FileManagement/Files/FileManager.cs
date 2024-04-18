@@ -81,14 +81,15 @@ namespace EasyAbp.FileManagement.Files
             if (configuration.EnableAutoRename)
             {
                 if (await IsFileExistAsync(model.FileName, model.Parent?.Id, model.FileContainerName,
-                        model.OwnerUserId))
+                        model.OwnerUserId, false))
                 {
                     model.FileName = await FileRepository.GetFileNameWithNextSerialNumberAsync(model.FileName,
                         model.Parent?.Id, model.FileContainerName, model.OwnerUserId, cancellationToken);
                 }
             }
 
-            await CheckFileNotExistAsync(model.FileName, model.Parent?.Id, model.FileContainerName, model.OwnerUserId);
+            await CheckFileNotExistAsync(
+                model.FileName, model.Parent?.Id, model.FileContainerName, model.OwnerUserId, false);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, model.Parent, model.FileContainerName,
                 model.FileName, model.MimeType, model.FileType, 0, model.GetContentLength(), hashString,

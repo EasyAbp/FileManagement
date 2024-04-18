@@ -67,7 +67,7 @@ public abstract class FileManagerBase : DomainService, IFileManager
 
         foreach (var fileName in splitFileName)
         {
-            foundFile = await FileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId);
+            foundFile = await FileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId, false);
 
             if (foundFile is null)
             {
@@ -131,7 +131,7 @@ public abstract class FileManagerBase : DomainService, IFileManager
         if (model.NewFileName != file.FileName)
         {
             await CheckFileNotExistAsync(model.NewFileName, file.ParentId, file.FileContainerName,
-                file.OwnerUserId);
+                file.OwnerUserId, true);
         }
 
         file.UpdateInfo(model.NewFileName, model.NewMimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
@@ -165,7 +165,7 @@ public abstract class FileManagerBase : DomainService, IFileManager
         if (model.NewFileName != file.FileName || newParent?.Id != oldParent?.Id)
         {
             await CheckFileNotExistAsync(model.NewFileName, newParent?.Id, file.FileContainerName,
-                file.OwnerUserId);
+                file.OwnerUserId, true);
         }
 
         if (oldParent != newParent)
@@ -296,15 +296,15 @@ public abstract class FileManagerBase : DomainService, IFileManager
 
     [UnitOfWork]
     protected virtual async Task<bool> IsFileExistAsync(string fileName, Guid? parentId, string fileContainerName,
-        Guid? ownerUserId)
+        Guid? ownerUserId, bool forceCaseSensitive)
     {
-        return await FileRepository.FindAsync(fileName, parentId, fileContainerName, ownerUserId) != null;
+        return await FileRepository.ExistAsync(fileName, parentId, fileContainerName, ownerUserId, forceCaseSensitive);
     }
 
     protected virtual async Task CheckFileNotExistAsync(string fileName, Guid? parentId, string fileContainerName,
-        Guid? ownerUserId)
+        Guid? ownerUserId, bool forceCaseSensitive)
     {
-        if (await IsFileExistAsync(fileName, parentId, fileContainerName, ownerUserId))
+        if (await IsFileExistAsync(fileName, parentId, fileContainerName, ownerUserId, forceCaseSensitive))
         {
             throw new FileAlreadyExistsException(fileName, parentId);
         }
