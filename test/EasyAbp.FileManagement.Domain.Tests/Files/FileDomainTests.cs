@@ -209,4 +209,36 @@ public class FileDomainTests : FileManagementDomainTestBase
         (await FileManager.GetByPathAsync("dir/sub-dir", "test", null)).Id.ShouldBe(subDir.Id);
         (await FileManager.GetByPathAsync("dir/sub-dir/file.txt", "test", null)).Id.ShouldBe(file.Id);
     }
+
+    [Fact]
+    public async Task Should_Rename_From_abc_To_ABC()
+    {
+        var dir = await FileManager.CreateAsync(new CreateFileModel("test", null, "abc", null,
+            FileType.Directory, null, null));
+
+        await Should.NotThrowAsync(() =>
+            FileManager.UpdateInfoAsync(dir, new UpdateFileInfoModel("ABC", dir.MimeType)));
+
+        dir.FileName.ShouldBe("ABC");
+
+        dir = await FileRepository.GetAsync(dir.Id);
+
+        dir.FileName.ShouldBe("ABC");
+    }
+
+    [Fact]
+    public async Task Should_Rename_From_abc_To_abc()
+    {
+        var dir = await FileManager.CreateAsync(new CreateFileModel("test", null, "abc", null,
+            FileType.Directory, null, null));
+
+        await Should.NotThrowAsync(() =>
+            FileManager.UpdateInfoAsync(dir, new UpdateFileInfoModel("abc", dir.MimeType)));
+
+        dir.FileName.ShouldBe("abc");
+
+        dir = await FileRepository.GetAsync(dir.Id);
+
+        dir.FileName.ShouldBe("abc");
+    }
 }
