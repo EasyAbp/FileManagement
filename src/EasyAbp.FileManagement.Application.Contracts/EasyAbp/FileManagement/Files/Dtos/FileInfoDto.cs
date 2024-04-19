@@ -20,6 +20,8 @@ namespace EasyAbp.FileManagement.Files.Dtos
 
         public int SubFilesQuantity { get; set; }
 
+        public bool HasSubdirectories { get; set; }
+
         public long ByteSize { get; set; }
 
         public string Hash { get; set; }

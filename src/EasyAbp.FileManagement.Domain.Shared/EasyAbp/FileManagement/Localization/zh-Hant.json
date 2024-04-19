@@ -13,6 +13,7 @@
     "FileMimeType": "Mime 類型",
     "FileFileType": "文件類型",
     "FileSubFilesQuantity": "子文件數量",
+    "FileHasSubdirectories": "包含子資料夾",
     "FileByteSize": "大小",
     "FileHash": "哈希值",
     "FileParentId": "父目錄 ID",

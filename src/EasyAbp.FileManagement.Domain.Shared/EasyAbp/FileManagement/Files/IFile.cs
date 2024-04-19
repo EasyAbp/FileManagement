@@ -22,6 +22,8 @@ public interface IFile
 
     int SubFilesQuantity { get; }
 
+    bool HasSubdirectories { get; }
+
     long ByteSize { get; }
 
     [CanBeNull]
