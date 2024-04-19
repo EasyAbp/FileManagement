@@ -92,8 +92,8 @@ namespace EasyAbp.FileManagement.Files
                 model.FileName, model.Parent?.Id, model.FileContainerName, model.OwnerUserId, false);
 
             var file = new File(GuidGenerator.Create(), CurrentTenant.Id, model.Parent, model.FileContainerName,
-                model.FileName, model.MimeType, model.FileType, 0, model.GetContentLength(), hashString,
-                blobName, model.OwnerUserId);
+                model.FileName, model.MimeType, model.FileType, model.GetContentLength(), hashString, blobName,
+                model.OwnerUserId);
 
             model.MapExtraPropertiesTo(file, MappingPropertyDefinitionChecks.Destination);
 

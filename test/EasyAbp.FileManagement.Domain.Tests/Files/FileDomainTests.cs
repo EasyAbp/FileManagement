@@ -30,23 +30,27 @@ public class FileDomainTests : FileManagementDomainTestBase
         dir2.ShouldNotBeNull();
 
         dir1.SubFilesQuantity.ShouldBe(2);
+        dir1.HasSubdirectories.ShouldBeTrue();
         dir1.ByteSize.ShouldBe(7 + 8);
         dir2.SubFilesQuantity.ShouldBe(2);
+        dir2.HasSubdirectories.ShouldBeTrue();
         dir2.ByteSize.ShouldBe(0);
 
-        var dirs1 = await FileRepository.GetListAsync(dir1.Id, "test", null, FileType.Directory);
+        var subdirs1 = await FileRepository.GetListAsync(dir1.Id, "test", null, FileType.Directory);
 
-        dirs1.Count.ShouldBe(2);
+        subdirs1.Count.ShouldBe(2);
 
-        var dir11 = dirs1.FirstOrDefault(x => x.FileName == "dir11");
-        var dir12 = dirs1.FirstOrDefault(x => x.FileName == "dir12");
+        var dir11 = subdirs1.FirstOrDefault(x => x.FileName == "dir11");
+        var dir12 = subdirs1.FirstOrDefault(x => x.FileName == "dir12");
 
         dir11.ShouldNotBeNull();
         dir12.ShouldNotBeNull();
 
         dir11.SubFilesQuantity.ShouldBe(1);
+        dir11.HasSubdirectories.ShouldBeFalse();
         dir11.ByteSize.ShouldBe(7);
         dir12.SubFilesQuantity.ShouldBe(1);
+        dir11.HasSubdirectories.ShouldBeFalse();
         dir12.ByteSize.ShouldBe(8);
 
         var files11 = await FileRepository.GetListAsync(dir11.Id, "test", null);
@@ -64,14 +68,17 @@ public class FileDomainTests : FileManagementDomainTestBase
 
         dir1 = await FileRepository.GetAsync(dir1.Id);
         dir1.SubFilesQuantity.ShouldBe(2);
+        dir1.HasSubdirectories.ShouldBeTrue();
         dir1.ByteSize.ShouldBe(8);
 
         dir11 = await FileRepository.GetAsync(dir11.Id);
         dir11.SubFilesQuantity.ShouldBe(0);
+        dir11.HasSubdirectories.ShouldBeFalse();
         dir11.ByteSize.ShouldBe(0);
 
         dir2 = await FileRepository.GetAsync(dir2.Id);
         dir2.SubFilesQuantity.ShouldBe(3);
+        dir2.HasSubdirectories.ShouldBeTrue();
         dir2.ByteSize.ShouldBe(7);
 
         Guid newFileId = default;
@@ -86,10 +93,12 @@ public class FileDomainTests : FileManagementDomainTestBase
 
         dir1 = await FileRepository.GetAsync(dir1.Id);
         dir1.SubFilesQuantity.ShouldBe(2);
+        dir1.HasSubdirectories.ShouldBeTrue();
         dir1.ByteSize.ShouldBe(8 + 11);
 
         dir12 = await FileRepository.GetAsync(dir12.Id);
         dir12.SubFilesQuantity.ShouldBe(2);
+        dir12.HasSubdirectories.ShouldBeFalse();
         dir12.ByteSize.ShouldBe(8 + 11);
 
         await WithUnitOfWorkAsync(async () =>
@@ -100,10 +109,23 @@ public class FileDomainTests : FileManagementDomainTestBase
 
         dir1 = await FileRepository.GetAsync(dir1.Id);
         dir1.SubFilesQuantity.ShouldBe(2);
+        dir1.HasSubdirectories.ShouldBeTrue();
         dir1.ByteSize.ShouldBe(8);
 
         dir12 = await FileRepository.GetAsync(dir12.Id);
         dir12.SubFilesQuantity.ShouldBe(1);
+        dir12.HasSubdirectories.ShouldBeFalse();
+        dir12.ByteSize.ShouldBe(8);
+
+        await WithUnitOfWorkAsync(async () =>
+        {
+            await FileManager.CreateAsync(new CreateFileModel("test", null, "new-dir", null,
+                FileType.Directory, dir12, null));
+        });
+
+        dir12 = await FileRepository.GetAsync(dir12.Id);
+        dir12.SubFilesQuantity.ShouldBe(2);
+        dir12.HasSubdirectories.ShouldBeTrue();
         dir12.ByteSize.ShouldBe(8);
     }
 
@@ -120,20 +142,20 @@ public class FileDomainTests : FileManagementDomainTestBase
 
         // since SQLite doesn't support unique index with null values.
         var parent = await FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, null,
-            "test", "parent", null, FileType.Directory, 0, 0, null, null, ownerUserId), true);
+            "test", "parent", null, FileType.Directory, 0, null, null, ownerUserId), true);
 
         var dir = await FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
-            "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true);
+            "test", "dir", null, FileType.Directory, 0, null, null, ownerUserId), true);
 
         await Should.ThrowAsync<DbUpdateException>(() =>
             FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
-                "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true));
+                "test", "dir", null, FileType.Directory, 0, null, null, ownerUserId), true));
 
         await FileManager.DeleteAsync(dir);
 
         await Should.NotThrowAsync(() =>
             FileRepository.InsertAsync(new File(Guid.NewGuid(), tenantId, parent,
-                "test", "dir", null, FileType.Directory, 0, 0, null, null, ownerUserId), true));
+                "test", "dir", null, FileType.Directory, 0, null, null, ownerUserId), true));
 
         using (softDeleteFilter.Disable())
         {
@@ -150,7 +172,7 @@ public class FileDomainTests : FileManagementDomainTestBase
         var dirId = Guid.NewGuid();
 
         await WithUnitOfWorkAsync(() => FileRepository.InsertAsync(new File(dirId, null, null,
-            "test", "dir", null, FileType.Directory, 0, 0, null, null, null), true));
+            "test", "dir", null, FileType.Directory, 0, null, null, null), true));
 
         var dir = await FileRepository.GetAsync(dirId);
 

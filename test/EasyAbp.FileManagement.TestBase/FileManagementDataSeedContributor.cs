@@ -16,8 +16,13 @@ namespace EasyAbp.FileManagement
 
         public async Task SeedAsync(DataSeedContext context)
         {
-            /* Instead of returning the Task.CompletedTask, you can insert your test data
-             * at this point!
+            /*
+             * Directories:
+             * dir1/        dir1/dir11      dir1/dir12
+             * dir2/        dir2/dir21      dir2/dir22
+             *
+             * Files:
+             * dir1/dir11/file1.txt         dir1/dir12/file2.txt
              */
 
             var dir1 = await _fileManager.CreateAsync(

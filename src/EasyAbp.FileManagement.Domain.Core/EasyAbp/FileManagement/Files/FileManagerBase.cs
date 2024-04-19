@@ -134,8 +134,8 @@ public abstract class FileManagerBase : DomainService, IFileManager
                 file.OwnerUserId, true);
         }
 
-        file.UpdateInfo(model.NewFileName, model.NewMimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
-            file.BlobName, parent);
+        file.UpdateInfo(model.NewFileName, model.NewMimeType, file.SubFilesQuantity, file.HasSubdirectories,
+            file.ByteSize, file.Hash, file.BlobName, parent);
 
         await FileRepository.UpdateAsync(file, true, cancellationToken);
 
@@ -173,8 +173,8 @@ public abstract class FileManagerBase : DomainService, IFileManager
             await CheckNotMovingDirectoryToSubDirectoryAsync(file, newParent);
         }
 
-        file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.ByteSize, file.Hash,
-            file.BlobName, newParent);
+        file.UpdateInfo(model.NewFileName, file.MimeType, file.SubFilesQuantity, file.HasSubdirectories, file.ByteSize,
+            file.Hash, file.BlobName, newParent);
 
         if (oldParent is not null)
         {

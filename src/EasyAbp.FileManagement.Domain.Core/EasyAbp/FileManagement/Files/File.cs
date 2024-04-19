@@ -22,6 +22,8 @@ namespace EasyAbp.FileManagement.Files
 
         public virtual int SubFilesQuantity { get; protected set; }
 
+        public virtual bool HasSubdirectories { get; protected set; }
+
         public virtual long ByteSize { get; protected set; }
 
         public virtual string Hash { get; protected set; }
@@ -50,7 +52,6 @@ namespace EasyAbp.FileManagement.Files
             [NotNull] string fileName,
             [CanBeNull] string mimeType,
             FileType fileType,
-            int subFilesQuantity,
             long byteSize,
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
@@ -76,7 +77,8 @@ namespace EasyAbp.FileManagement.Files
             FileName = fileName;
             MimeType = mimeType;
             FileType = fileType;
-            SubFilesQuantity = subFilesQuantity;
+            SubFilesQuantity = 0;
+            HasSubdirectories = false;
             ByteSize = byteSize;
             Hash = hash;
             BlobName = blobName;
@@ -89,6 +91,7 @@ namespace EasyAbp.FileManagement.Files
             [NotNull] string fileName,
             [CanBeNull] string mimeType,
             int subFilesQuantity,
+            bool hasSubdirectories,
             long byteSize,
             [CanBeNull] string hash,
             [CanBeNull] string blobName,
@@ -109,6 +112,7 @@ namespace EasyAbp.FileManagement.Files
             FileName = fileName;
             MimeType = mimeType;
             SubFilesQuantity = subFilesQuantity;
+            HasSubdirectories = hasSubdirectories;
             ByteSize = byteSize;
             Hash = hash;
             BlobName = blobName;
@@ -116,12 +120,15 @@ namespace EasyAbp.FileManagement.Files
 
         public bool TryUpdateStatisticData(SubFilesStatisticDataModel statisticData)
         {
-            if (statisticData.SubFilesQuantity == SubFilesQuantity && statisticData.ByteSize == ByteSize)
+            if (statisticData.SubFilesQuantity == SubFilesQuantity &&
+                statisticData.HasSubdirectories == HasSubdirectories &&
+                statisticData.ByteSize == ByteSize)
             {
                 return false;
             }
 
             SubFilesQuantity = statisticData.SubFilesQuantity;
+            HasSubdirectories = statisticData.HasSubdirectories;
             ByteSize = statisticData.ByteSize;
 
             return true;
