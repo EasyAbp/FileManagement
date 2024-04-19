@@ -92,11 +92,11 @@ namespace EasyAbp.FileManagement.Files
             CancellationToken cancellationToken = default)
         {
             return await (await GetQueryableAsync()).Where(x => x.ParentId == id).GroupBy(x => true).Select(x =>
-                new SubFilesStatisticDataModel
-                {
-                    SubFilesQuantity = x.Count(),
-                    ByteSize = x.Sum(y => y.ByteSize)
-                }).FirstOrDefaultAsync(cancellationToken) ?? new SubFilesStatisticDataModel();
+                new SubFilesStatisticDataModel(
+                    x.Count(),
+                    x.Any(y => y.FileType == FileType.Directory),
+                    x.Sum(y => y.ByteSize)
+                )).FirstOrDefaultAsync(cancellationToken) ?? new SubFilesStatisticDataModel(0, false, 0);
         }
 
         public virtual async Task<string> GetFileNameWithNextSerialNumberAsync(string fileName, Guid? parentId,
