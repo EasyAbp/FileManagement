@@ -80,6 +80,9 @@ namespace EasyAbp.FileManagement.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<bool>("HasSubdirectories")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Hash")
                         .HasMaxLength(32)
                         .HasColumnType("nvarchar(32)");

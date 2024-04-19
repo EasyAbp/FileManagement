@@ -4,6 +4,7 @@ using EasyAbp.FileManagement.Blazor.Server.Host.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace EasyAbp.FileManagement.Blazor.Server.Host.Migrations
 {
     [DbContext(typeof(UnifiedDbContext))]
-    partial class UnifiedDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240419130451_AddedHasSubdirectories")]
+    partial class AddedHasSubdirectories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

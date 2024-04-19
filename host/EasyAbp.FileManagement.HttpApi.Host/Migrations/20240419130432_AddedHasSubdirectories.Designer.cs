@@ -4,6 +4,7 @@ using EasyAbp.FileManagement.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace EasyAbp.FileManagement.Migrations
 {
     [DbContext(typeof(FileManagementHttpApiHostMigrationsDbContext))]
-    partial class FileManagementHttpApiHostMigrationsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240419130432_AddedHasSubdirectories")]
+    partial class AddedHasSubdirectories
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
