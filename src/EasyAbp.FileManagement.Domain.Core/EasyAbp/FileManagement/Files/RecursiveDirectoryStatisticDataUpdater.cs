@@ -60,7 +60,7 @@ public class RecursiveDirectoryStatisticDataUpdater : IRecursiveDirectoryStatist
 
             var directory = await _fileRepository.FindAsync(directoryId.Value);
 
-            if (!directory.TryUpdateStatisticData(statisticData))
+            if (directory is null || !directory.TryUpdateStatisticData(statisticData))
             {
                 break;
             }
