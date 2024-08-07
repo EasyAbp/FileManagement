@@ -120,7 +120,7 @@ namespace EasyAbp.FileManagement.Files
             var nextNumber =
                 fileNames
                     .Select(x =>
-                        x.Substring(part1.Length, x.LastIndexOf(part2, StringComparison.Ordinal) - part1.Length))
+                        x.LastIndexOf(part2, StringComparison.Ordinal) > 0 ? x.Substring(part1.Length, x.LastIndexOf(part2, StringComparison.Ordinal) - part1.Length) : "")
                     .Select(x => int.TryParse(x, out var number) ? number : 0).Where(x => x > 0).OrderBy(x => x)
                     .TakeWhile((x, i) => x == i + 1).LastOrDefault() + 1;
 
