@@ -129,6 +129,8 @@ namespace EasyAbp.FileManagement.Migrations
 
                     b.HasIndex("Hash");
 
+                    b.HasIndex("ParentId");
+
                     b.HasIndex("ParentId", "OwnerUserId", "FileContainerName", "FileName");
 
                     b.HasIndex("FileName", "ParentId", "OwnerUserId", "FileContainerName", "TenantId", "SoftDeletionToken")

@@ -256,6 +256,8 @@ host/EasyAbp.FileManagement.IdentityServer/Logs/logs.txt
 host/EasyAbp.FileManagement.HttpApi.Host/Logs/logs.txt
 host/EasyAbp.FileManagement.Web.Host/Logs/logs.txt
 host/EasyAbp.FileManagement.Web.Unified/Logs/logs.txt
+host/EasyAbp.FileManagement.Blazor.Host/Logs/logs.txt
+host/EasyAbp.FileManagement.Blazor.Server.Host/Logs/logs.txt
 
 **/my-files/
 
