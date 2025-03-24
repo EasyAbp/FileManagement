@@ -58,6 +58,7 @@ namespace EasyAbp.FileManagement.EntityFrameworkCore
                 b.Property(x => x.SoftDeletionToken).HasDefaultValue(string.Empty);
                 b.HasIndex(x => x.BlobName);
                 b.HasIndex(x => x.Hash);
+                b.HasIndex(x => x.ParentId);
                 b.HasIndex(x => new { x.ParentId, x.OwnerUserId, x.FileContainerName, x.FileName });
                 b.HasIndex(x => new
                         { x.FileName, x.ParentId, x.OwnerUserId, x.FileContainerName, x.TenantId, x.SoftDeletionToken })
