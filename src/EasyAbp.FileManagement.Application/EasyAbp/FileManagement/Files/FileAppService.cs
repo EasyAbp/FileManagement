@@ -6,6 +6,7 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Containers;
 using EasyAbp.FileManagement.Files.Dtos;
+using EasyAbp.FileManagement.Localization;
 using EasyAbp.FileManagement.Options.Containers;
 using EasyAbp.FileManagement.Permissions;
 using EasyAbp.FileManagement.Users;
@@ -39,6 +40,9 @@ namespace EasyAbp.FileManagement.Files
             _repository = repository;
             _fileUserLookupService = fileUserLookupService;
             _configurationProvider = configurationProvider;
+
+            LocalizationResource = typeof(FileManagementResource);
+            ObjectMapperContext = typeof(FileManagementApplicationModule);
         }
 
         public override async Task<FileInfoDto> GetAsync(Guid id)

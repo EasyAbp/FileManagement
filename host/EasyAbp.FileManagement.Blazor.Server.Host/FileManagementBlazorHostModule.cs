@@ -222,8 +222,8 @@ namespace EasyAbp.FileManagement.Blazor.Server.Host
 
             app.UseHttpsRedirection();
             app.UseCorrelationId();
-            app.MapAbpStaticAssets();
             app.UseRouting();
+            app.MapAbpStaticAssets();
             app.UseAuthentication();
             app.UseJwtTokenMiddleware();
 

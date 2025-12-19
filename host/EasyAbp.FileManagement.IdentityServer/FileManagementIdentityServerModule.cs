@@ -193,8 +193,8 @@ namespace EasyAbp.FileManagement
 
             app.UseHttpsRedirection();
             app.UseCorrelationId();
-            app.MapAbpStaticAssets();
             app.UseRouting();
+            app.MapAbpStaticAssets();
             app.UseCors();
             app.UseAuthentication();
             app.UseJwtTokenMiddleware();
