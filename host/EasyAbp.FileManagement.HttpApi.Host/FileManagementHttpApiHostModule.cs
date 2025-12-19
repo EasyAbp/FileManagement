@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using EasyAbp.FileManagement.Containers;
-using IdentityModel;
+using Duende.IdentityModel;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Cors;
@@ -222,8 +222,8 @@ namespace EasyAbp.FileManagement
 
             app.UseHttpsRedirection();
             app.UseCorrelationId();
-            app.MapAbpStaticAssets();
             app.UseRouting();
+            app.MapAbpStaticAssets();
             app.UseCors();
             app.UseAuthentication();
             if (MultiTenancyConsts.IsEnabled)

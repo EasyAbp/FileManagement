@@ -232,8 +232,8 @@ namespace EasyAbp.FileManagement
             }
 
             app.UseHttpsRedirection();
-            app.MapAbpStaticAssets();
             app.UseRouting();
+            app.MapAbpStaticAssets();
             app.UseAuthentication();
 
             if (MultiTenancyConsts.IsEnabled)

@@ -153,7 +153,7 @@
                     {
                         data: "lastModificationTime",
                         render: function (data, type, row) {
-                            return row.lastModificationTime || row.creationTime
+                            return abp.clock.normalizeToLocaleString(row.lastModificationTime || row.creationTime)
                         }
                     },
                 ]
