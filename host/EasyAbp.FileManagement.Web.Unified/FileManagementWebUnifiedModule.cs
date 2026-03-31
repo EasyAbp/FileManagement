@@ -10,7 +10,7 @@ using EasyAbp.FileManagement.Menus;
 using EasyAbp.FileManagement.MultiTenancy;
 using EasyAbp.FileManagement.Options;
 using EasyAbp.FileManagement.Web;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
 using Volo.Abp.Account;
