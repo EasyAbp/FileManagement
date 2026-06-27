@@ -142,7 +142,10 @@ namespace EasyAbp.FileManagement.Files
         public void TriggerAuditingChanges()
         {
             // after ABP v8, LastModificationTime doesn't change if no entity properties have changed.
-            LastModificationTime = DateTime.MinValue;
+            // Use a UTC-kind placeholder so that, if this value were ever serialized before the auditing
+            // interceptor overwrites it, AbpDateTimeConverter won't try to convert an Unspecified-kind
+            // boundary value and emit warnings under a UTC clock with a user timezone.
+            LastModificationTime = DateTime.SpecifyKind(DateTime.MinValue, DateTimeKind.Utc);
         }
     }
 }
