@@ -14,7 +14,7 @@ namespace EasyAbp.FileManagement.Files
         public const string DownloadMethod = "Local";
 
         // Todo: should be a configuration
-        public static TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(1);
+        // public static TimeSpan TokenCacheDuration = TimeSpan.FromMinutes(1);
 
         public static string BasePath = "api/file-management/file/{0}/download";
 
@@ -34,7 +34,7 @@ namespace EasyAbp.FileManagement.Files
 
             await Cache.SetAsync(token,
                 new LocalFileDownloadCacheItem { FileId = file.Id },
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TokenCacheDuration });
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = Options.TokenCacheDuration });
 
             var url = Options.FileDownloadBaseUrl.EnsureEndsWith('/') + string.Format(BasePath, file.Id) +
                       $"?token={token}";
