@@ -1,6 +1,6 @@
 ﻿using EasyAbp.FileManagement.Files;
 using Microsoft.Extensions.DependencyInjection;
-using Volo.Abp.AutoMapper;
+using Volo.Abp.Mapperly;
 using Volo.Abp.BackgroundJobs;
 using Volo.Abp.Domain;
 using Volo.Abp.Domain.Entities.Events.Distributed;
@@ -11,7 +11,7 @@ namespace EasyAbp.FileManagement
 {
     [DependsOn(
         typeof(FileManagementDomainSharedModule),
-        typeof(AbpAutoMapperModule),
+        typeof(AbpMapperlyModule),
         typeof(AbpBackgroundJobsAbstractionsModule),
         typeof(AbpDddDomainModule),
         typeof(AbpUsersDomainModule)
@@ -29,12 +29,7 @@ namespace EasyAbp.FileManagement
 
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            context.Services.AddAutoMapperObjectMapper<FileManagementDomainCoreModule>();
-
-            Configure<AbpAutoMapperOptions>(options =>
-            {
-                options.AddProfile<FileManagementDomainAutoMapperProfile>(validate: true);
-            });
+            context.Services.AddMapperlyObjectMapper<FileManagementDomainCoreModule>();
         }
     }
 }
