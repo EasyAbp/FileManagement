@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using EasyAbp.FileManagement.Localization;
 using Volo.Abp.AspNetCore.Mvc.Localization;
 using Volo.Abp.AspNetCore.Mvc.UI.Theme.Shared;
-using Volo.Abp.AutoMapper;
+using Volo.Abp.Mapperly;
 using Volo.Abp.Modularity;
 using Volo.Abp.VirtualFileSystem;
 
@@ -13,7 +13,7 @@ namespace EasyAbp.FileManagement.Web
     [DependsOn(
         typeof(FileManagementApplicationContractsModule),
         typeof(AbpAspNetCoreMvcUiThemeSharedModule),
-        typeof(AbpAutoMapperModule),
+        typeof(AbpMapperlyModule),
         typeof(AbpTagHelperPlusModule)
     )]
     public class FileManagementWebModule : AbpModule
@@ -38,11 +38,7 @@ namespace EasyAbp.FileManagement.Web
                 options.FileSets.AddEmbedded<FileManagementWebModule>();
             });
 
-            context.Services.AddAutoMapperObjectMapper<FileManagementWebModule>();
-            Configure<AbpAutoMapperOptions>(options =>
-            {
-                options.AddMaps<FileManagementWebModule>(validate: true);
-            });
+            context.Services.AddMapperlyObjectMapper<FileManagementWebModule>();
 
             Configure<RazorPagesOptions>(options =>
             {
