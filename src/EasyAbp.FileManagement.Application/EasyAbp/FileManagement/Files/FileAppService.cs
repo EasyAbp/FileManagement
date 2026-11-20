@@ -120,7 +120,9 @@ namespace EasyAbp.FileManagement.Files
 
             foreach (var userId in userIds)
             {
-                users[userId] = (await _fileUserLookupService.FindByIdAsync(userId)).ToBriefUserInfoModel();
+                // The user may have been deleted (or never synchronized); leave it empty rather than failing the
+                // whole list.
+                users[userId] = (await _fileUserLookupService.FindByIdAsync(userId))?.ToBriefUserInfoModel();
             }
 
             foreach (var dto in dtos)

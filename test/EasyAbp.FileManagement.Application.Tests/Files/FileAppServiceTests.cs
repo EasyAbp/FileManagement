@@ -5,6 +5,7 @@ using Shouldly;
 using System.Threading.Tasks;
 using EasyAbp.FileManagement.Files.Dtos;
 using EasyAbp.FileManagement.Options.Containers;
+using Volo.Abp;
 using Volo.Abp.BlobStoring;
 using Volo.Abp.Content;
 using Xunit;
@@ -206,6 +207,38 @@ namespace EasyAbp.FileManagement.Files
 
             file1.BlobName.ShouldEndWith(fileName1);
             file2.BlobName.ShouldEndWith(fileName2);
+        }
+
+        [Fact]
+        public async Task Should_Get_And_List_A_File_Whose_Creator_Does_Not_Exist()
+        {
+            const string fileName = "7-1.txt";
+
+            var fileContainerName = FileContainerNameAttribute.GetContainerName<TestFileContainer>();
+            var output = await CreateFileWithStreamAsync("Text content 7-1.".GetBytes(), fileName, "text/plain",
+                fileContainerName);
+
+            var missingUserId = Guid.NewGuid();
+
+            await WithUnitOfWorkAsync(async () =>
+            {
+                var file = await _fileRepository.GetAsync(output.FileInfo.Id);
+                ObjectHelper.TrySetProperty(file, x => x.CreatorId, () => missingUserId);
+                await _fileRepository.UpdateAsync(file);
+            });
+
+            var dto = await _fileAppService.GetAsync(output.FileInfo.Id);
+
+            dto.CreatorId.ShouldBe(missingUserId);
+            dto.Creator.ShouldBeNull();
+
+            var list = await _fileAppService.GetListAsync(new GetFileListInput
+            {
+                FileContainerName = fileContainerName,
+                MaxResultCount = 1000
+            });
+
+            list.Items.ShouldContain(x => x.Id == output.FileInfo.Id && x.Creator == null);
         }
 
         private async Task<CreateFileOutput> CreateFileWithStreamAsync(byte[] bytes, string fileName,
